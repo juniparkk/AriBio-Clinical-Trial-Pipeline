@@ -43,6 +43,7 @@ from drug_classification import (
     load_scope_overrides,
     build_scope_audit_dataframe,
     PIPELINE_SCOPE_LABELS,
+    build_drug_date_rollup,
 )
 
 PIPELINE_CSV_PATH = os.path.join(os.path.dirname(__file__), "data", "official_pipeline.csv")
@@ -1081,6 +1082,67 @@ def test_rollup_ar1001_confirmed_trial_produces_one_row():
     assert result.iloc[0]["unverified_trial_count"] == 0
 
 
+# --- regression: every phase_clean value pipeline_viz.py's clean_phase()
+# can produce (not just Phase 1/2/3) must have a _DRUG_ROLLUP_PHASE_RANK
+# entry, or a drug whose trials are ALL one of the newer values (NA,
+# Early Phase 1, Phase 4, or a combined Phase 1/Phase 2 / Phase 2/Phase 3
+# designation) would make g["phase_rank"].max() NaN, leaving top_rows
+# empty and raising an IndexError building the rollup — this used to be
+# unreachable because those trials were filtered out entirely upstream.
+
+def test_rollup_drug_with_only_na_phase_trial_does_not_crash():
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT20", "Some Sponsor", "SomeDrug", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, phase="NA"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert len(result) == 1
+    assert result.iloc[0]["phase_reached"] == "NA"
+
+
+def test_rollup_drug_with_only_phase4_trial_does_not_crash():
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT21", "Some Sponsor", "SomeDrug", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, phase="Phase 4"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert len(result) == 1
+    assert result.iloc[0]["phase_reached"] == "Phase 4"
+
+
+def test_rollup_drug_with_only_early_phase1_trial_does_not_crash():
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT22", "Some Sponsor", "SomeDrug", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, phase="Early Phase 1"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert len(result) == 1
+    assert result.iloc[0]["phase_reached"] == "Early Phase 1"
+
+
+def test_rollup_combined_dual_phase_values_do_not_crash():
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT23", "Some Sponsor", "SomeDrug", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, phase="Phase 1/Phase 2"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert len(result) == 1
+    assert result.iloc[0]["phase_reached"] == "Phase 1/Phase 2"
+
+
+def test_rollup_phase4_outranks_na_for_the_same_drug():
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT24", "Some Sponsor", "SomeDrug", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, phase="NA"),
+        make_trial_row("NCT25", "Some Sponsor", "SomeDrug", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, phase="Phase 4"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert len(result) == 1
+    assert result.iloc[0]["phase_reached"] == "Phase 4"
+    assert result.iloc[0]["trial_count"] == 2
+
+
 def test_rollup_wujia_unverified_trial_produces_one_row():
     trials_df = pd.DataFrame([
         make_trial_row("NCT5", "Some Sponsor", "Wujia Yizhi granules", "investigational_therapeutic_unverified",
@@ -1244,6 +1306,46 @@ def test_build_resolved_drug_trial_links_df_row_count_matches_trial_count_sum():
     links = build_resolved_drug_trial_links_df(resolved)
     assert len(links) == resolved["trial_count"].sum()
     assert links["nct_id"].nunique() == len(links)
+
+
+# ------------------------------------------------------------
+# build_drug_date_rollup() — earliest start / latest primary completion
+# per canonical drug, across ALL contributing trials
+# ------------------------------------------------------------
+
+def test_build_drug_date_rollup_basic():
+    links = pd.DataFrame([
+        {"display_name": "AR1001", "nct_id": "NCT001"},
+        {"display_name": "AR1001", "nct_id": "NCT002"},
+        {"display_name": "SAR110894", "nct_id": "NCT003"},
+    ])
+    trials = pd.DataFrame([
+        {"nct_id": "NCT001", "start_date_parsed": pd.Timestamp("2020-01-01"), "primary_completion_date_parsed": pd.Timestamp("2023-06-01")},
+        {"nct_id": "NCT002", "start_date_parsed": pd.Timestamp("2019-03-01"), "primary_completion_date_parsed": pd.Timestamp("2026-12-01")},
+        {"nct_id": "NCT003", "start_date_parsed": pd.Timestamp("2022-05-01"), "primary_completion_date_parsed": pd.Timestamp("2024-01-01")},
+    ])
+    result = build_drug_date_rollup(links, trials).set_index("display_name")
+    # AR1001: earliest of the two starts, latest of the two completions —
+    # never just whichever trial happens to be listed first
+    assert result.loc["AR1001", "earliest_start_date"] == pd.Timestamp("2019-03-01")
+    assert result.loc["AR1001", "latest_primary_completion_date"] == pd.Timestamp("2026-12-01")
+    assert result.loc["SAR110894", "earliest_start_date"] == pd.Timestamp("2022-05-01")
+
+
+def test_build_drug_date_rollup_missing_dates_become_nat_not_fabricated():
+    links = pd.DataFrame([{"display_name": "DrugX", "nct_id": "NCT001"}])
+    trials = pd.DataFrame([
+        {"nct_id": "NCT001", "start_date_parsed": pd.NaT, "primary_completion_date_parsed": pd.NaT},
+    ])
+    result = build_drug_date_rollup(links, trials).set_index("display_name")
+    assert pd.isna(result.loc["DrugX", "earliest_start_date"])
+    assert pd.isna(result.loc["DrugX", "latest_primary_completion_date"])
+
+
+def test_build_drug_date_rollup_empty_links_returns_empty_with_columns():
+    result = build_drug_date_rollup(pd.DataFrame(columns=["display_name", "nct_id"]), pd.DataFrame())
+    assert len(result) == 0
+    assert list(result.columns) == ["display_name", "earliest_start_date", "latest_primary_completion_date"]
 
 
 # ------------------------------------------------------------
@@ -1742,6 +1844,11 @@ ALL_TESTS = [
     test_rollup_diagnostic_only_trial_produces_no_drug_row,
     test_rollup_device_only_trial_produces_no_drug_row,
     test_rollup_ar1001_confirmed_trial_produces_one_row,
+    test_rollup_drug_with_only_na_phase_trial_does_not_crash,
+    test_rollup_drug_with_only_phase4_trial_does_not_crash,
+    test_rollup_drug_with_only_early_phase1_trial_does_not_crash,
+    test_rollup_combined_dual_phase_values_do_not_crash,
+    test_rollup_phase4_outranks_na_for_the_same_drug,
     test_rollup_wujia_unverified_trial_produces_one_row,
     test_rollup_same_drug_across_two_trials_collapses_to_one_row,
     test_rollup_case_variant_duplicate_names_collapse,
@@ -1754,6 +1861,9 @@ ALL_TESTS = [
     test_build_resolved_drug_trial_links_df_explodes_nct_ids,
     test_build_resolved_drug_trial_links_df_handles_blank_nct_ids,
     test_build_resolved_drug_trial_links_df_row_count_matches_trial_count_sum,
+    test_build_drug_date_rollup_basic,
+    test_build_drug_date_rollup_missing_dates_become_nat_not_fabricated,
+    test_build_drug_date_rollup_empty_links_returns_empty_with_columns,
     test_scope_dietary_supplement_investigational_excluded_from_therapeutic,
     test_scope_dietary_supplement_curcumin_c3_complex_excluded,
     test_scope_behavioral_excluded_from_therapeutic,

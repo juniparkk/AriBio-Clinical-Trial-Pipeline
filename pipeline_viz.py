@@ -28,6 +28,7 @@ from drug_classification import (
     build_unresolved_trials_dataframe,
     build_target_phase_counts,
     build_resolved_drug_trial_links_df,
+    build_drug_date_rollup,
     load_scope_overrides,
     build_scope_audit_dataframe,
     THERAPEUTIC_SCOPE,
@@ -43,6 +44,7 @@ from scientific_classification import (
     build_classification_conflicts_dataframe,
     classify_pipeline_quadrant,
 )
+from competitive_intelligence import compute_relevance_score
 
 # ============================================================
 # AriBio brand colors + shade helpers — defined up front (rather than
@@ -130,29 +132,66 @@ column_map = {
     "Conditions": "conditions",
     "conditions": "conditions",
     "Start Date": "start_date",
-    "primaryCompletionDate": "start_date",
+    "startDate": "start_date",
+    "Primary Completion Date": "primary_completion_date",
+    "primaryCompletionDate": "primary_completion_date",
+    "Completion Date": "completion_date",
+    "completionDate": "completion_date",
 }
 
 df = df.rename(columns={k: v for k, v in column_map.items() if k in df.columns})
 
-# Keep only Phase 1, 2, and 3 trials
-# CT.gov writes phases like "PHASE1", "PHASE2", "PHASE3", or "PHASE1|PHASE2"
-def extract_highest_phase(phase_str):
+# ct.gov's own export mixes date granularity — "2016-11" (month only)
+# alongside "2025-11-20" (full date) — pd.to_datetime handles both,
+# defaulting a month-only value to that month's 1st. errors="coerce"
+# turns anything unparseable (or blank) into NaT rather than raising,
+# since ~1-3% of trials are missing one of these fields.
+def parse_ct_date(value):
+    if pd.isna(value) or not str(value).strip():
+        return pd.NaT
+    return pd.to_datetime(str(value).strip(), errors="coerce")
+
+
+df["start_date_parsed"] = df["start_date"].apply(parse_ct_date) if "start_date" in df.columns else pd.NaT
+df["primary_completion_date_parsed"] = (
+    df["primary_completion_date"].apply(parse_ct_date) if "primary_completion_date" in df.columns else pd.NaT
+)
+
+# Every trial is kept, regardless of phase — including NA (no phase
+# assigned, e.g. observational/expanded-access records), Phase 4
+# (post-marketing), Early Phase 1 (aka Phase 0), and the combined
+# dual-phase designations ct.gov itself uses (PHASE1|PHASE2, PHASE2|PHASE3).
+# This is an EXACT map against ct.gov's own phase enum, not a substring
+# search — a substring check on "1" would previously have wrongly
+# folded EARLY_PHASE1 into plain "Phase 1" (EARLY_PHASE1 contains the
+# character "1"), which is a real, different trial-design designation.
+PHASE_LABELS = {
+    "NA": "NA",
+    "EARLY_PHASE1": "Early Phase 1",
+    "PHASE1": "Phase 1",
+    "PHASE1|PHASE2": "Phase 1/Phase 2",
+    "PHASE2": "Phase 2",
+    "PHASE2|PHASE3": "Phase 2/Phase 3",
+    "PHASE3": "Phase 3",
+    "PHASE4": "Phase 4",
+}
+# clinical-progression order, ascending — every chart/pill list that
+# enumerates phases explicitly (heatmap x-axis, sidebar filter) uses
+# this, so a new/unrecognized ct.gov phase value can't silently vanish
+# from those (it still gets a "NA" fallback below, which IS in this list)
+PHASE_ORDER = ["NA", "Early Phase 1", "Phase 1", "Phase 1/Phase 2", "Phase 2", "Phase 2/Phase 3", "Phase 3", "Phase 4"]
+
+
+def clean_phase(phase_str):
     if pd.isna(phase_str):
-        return None
-    phase_str = str(phase_str).upper()
-    if "3" in phase_str:
-        return "Phase 3"
-    elif "2" in phase_str:
-        return "Phase 2"
-    elif "1" in phase_str:
-        return "Phase 1"
-    return None
+        return "NA"
+    key = str(phase_str).strip().upper()
+    return PHASE_LABELS.get(key, "NA")  # any future/unrecognized ct.gov phase value degrades to NA, never dropped
 
-df["phase_clean"] = df["phase"].apply(extract_highest_phase)
-df = df[df["phase_clean"].notna()].copy()
 
-print(f"=== AFTER FILTERING TO PHASE 1/2/3: {len(df)} trials ===")
+df["phase_clean"] = df["phase"].apply(clean_phase)
+
+print(f"=== ALL PHASES INCLUDED: {len(df)} trials ===")
 print(df["phase_clean"].value_counts())
 print()
 
@@ -650,6 +689,64 @@ def _sponsor_display(sponsor_field):
 resolved_drugs_df["sponsor_display"] = resolved_drugs_df["sponsor"].apply(_sponsor_display)
 
 # ============================================================
+# STEP 3.72: DRUG-LEVEL DATE ROLLUP
+# earliest_start_date / latest_primary_completion_date per canonical
+# drug, across ALL of its contributing trials (not just whichever trial
+# happens to be its highest-phase one) — computed here, before
+# therapeutic_drugs_df is sliced off below, so both resolved_drugs_df
+# and therapeutic_drugs_df carry it.
+# ============================================================
+_links_for_dates = build_resolved_drug_trial_links_df(resolved_drugs_df)
+_date_rollup_df = build_drug_date_rollup(_links_for_dates, df)
+resolved_drugs_df = resolved_drugs_df.merge(_date_rollup_df, on="display_name", how="left")
+
+# "%b %Y" (e.g. "Nov 2026"), never day-level — ct.gov's own data mixes
+# month-only and full-date granularity (see parse_ct_date above), and
+# showing a specific day would imply false precision for the month-only
+# rows. "TBD" (not "—") for a drug with no parseable date at all, since
+# that's genuinely "not yet determined" from this data, not just blank.
+resolved_drugs_df["start_date_display"] = resolved_drugs_df["earliest_start_date"].dt.strftime("%b %Y").fillna("TBD")
+resolved_drugs_df["primary_completion_date_display"] = (
+    resolved_drugs_df["latest_primary_completion_date"].dt.strftime("%b %Y").fillna("TBD")
+)
+
+# ============================================================
+# STEP 3.73: ARIBIO RELEVANCE SCORE (competitive intelligence)
+# A deterministic, rule-based similarity score (0-100) between every
+# resolved drug's already-computed profile and AR1001's — NOT an AI/LLM
+# output (see competitive_intelligence.py's module docstring for why
+# that distinction matters). Every point is tied to a plain-language
+# reason, so it's fully auditable in the drug detail panel/comparator.
+# ============================================================
+_ar1001_rows = resolved_drugs_df[resolved_drugs_df["display_name"] == "AR1001"]
+if _ar1001_rows.empty:
+    _ar1001_rows = resolved_drugs_df[resolved_drugs_df["is_aribio"]]
+
+if not _ar1001_rows.empty:
+    _ar1001_row = _ar1001_rows.iloc[0]
+    _ar1001_target_pathways = _ar1001_row["target_pathways_list"]
+    _ar1001_modality = _ar1001_row["modality"]
+    _ar1001_purpose_class = _ar1001_row["therapeutic_purpose_class"]
+    _ar1001_phase = _ar1001_row["phase_reached"]
+
+    _relevance_results = [
+        compute_relevance_score(
+            r["target_pathways_list"], r["modality"], r["therapeutic_purpose_class"], r["phase_reached"],
+            _ar1001_target_pathways, _ar1001_modality, _ar1001_purpose_class, _ar1001_phase,
+        )
+        for _, r in resolved_drugs_df.iterrows()
+    ]
+    resolved_drugs_df["aribio_relevance_score"] = [s for s, _ in _relevance_results]
+    resolved_drugs_df["aribio_relevance_reasons"] = ["; ".join(rs) if rs else "No shared profile with AR1001" for _, rs in _relevance_results]
+else:
+    # AR1001 itself absent from this trials.csv pull (shouldn't happen
+    # for the AD pipeline dataset this dashboard is built for, but stay
+    # honest rather than crash if it ever is) — score everything 0/absent
+    # rather than silently comparing against a made-up reference.
+    resolved_drugs_df["aribio_relevance_score"] = 0
+    resolved_drugs_df["aribio_relevance_reasons"] = "AR1001 not found in this dataset"
+
+# ============================================================
 # PHASE 1A: therapeutic_drugs_df — the DEFAULT dashboard population.
 # resolved_drugs_df (above) stays the one drug-level source of truth and
 # keeps every scope Phase 1A didn't outright exclude (Therapeutic Drug,
@@ -712,9 +809,8 @@ print(f"non-therapeutic records (placebo/diagnostic/procedure/device/behavioral/
 print(f"unresolved records (uncertain): {_unresolved_record_count}")
 print(f"  [check: therapeutic + non-therapeutic + unresolved == raw intervention records? "
       f"{_therapeutic_record_count + _non_therapeutic_record_count + _unresolved_record_count == len(interventions_df)}]")
-print(f"Phase 1 drugs: {int((resolved_drugs_df['phase_reached'] == 'Phase 1').sum())}")
-print(f"Phase 2 drugs: {int((resolved_drugs_df['phase_reached'] == 'Phase 2').sum())}")
-print(f"Phase 3 drugs: {int((resolved_drugs_df['phase_reached'] == 'Phase 3').sum())}")
+for _phase_label in PHASE_ORDER:
+    print(f"{_phase_label} drugs: {int((resolved_drugs_df['phase_reached'] == _phase_label).sum())}")
 print("sum by target/pathway (resolved drugs):")
 print(resolved_drugs_df["target"].value_counts().to_string())
 print("sum by drug type (resolved drugs):")
@@ -768,10 +864,18 @@ print()
 # the file, right after the imports — STEP 3.7 needs them too)
 # ============================================================
 
+# Blue ramp ordered by clinical progression (darkest = furthest along),
+# matching PHASE_ORDER — NA is the one true non-phase value and gets a
+# neutral gray instead of implying it's "before Phase 1" on the ramp.
 PHASE_COLORS = {
-    "Phase 3": darken(ARIBIO_BLUE, 0.35),
-    "Phase 2": ARIBIO_BLUE,
-    "Phase 1": lighten(ARIBIO_BLUE, 0.45),
+    "Phase 4":         darken(ARIBIO_BLUE, 0.45),
+    "Phase 3":         darken(ARIBIO_BLUE, 0.35),
+    "Phase 2/Phase 3": darken(ARIBIO_BLUE, 0.15),
+    "Phase 2":         ARIBIO_BLUE,
+    "Phase 1/Phase 2": lighten(ARIBIO_BLUE, 0.25),
+    "Phase 1":         lighten(ARIBIO_BLUE, 0.45),
+    "Early Phase 1":   lighten(ARIBIO_BLUE, 0.65),
+    "NA":              "#9e9e9e",
 }
 
 # The one deliberately-distinct categorical palette left — pathway is
@@ -906,7 +1010,7 @@ def readable_text_color(hex_color):
     return "#1a1a1a" if luminance > 0.55 else "#ffffff"
 
 
-PHASES_ASC = ["Phase 1", "Phase 2", "Phase 3"]
+PHASES_ASC = PHASE_ORDER  # NA, Early Phase 1, Phase 1, Phase 1/Phase 2, Phase 2, Phase 2/Phase 3, Phase 3, Phase 4
 
 # --- Target × Phase heatmap (magnitude → one hue light-to-dark, not the
 # categorical target colors — a sequential ramp is the correct encoding for
@@ -975,14 +1079,15 @@ TABLE_COLUMNS = [
     # (which changes the visible row set) reshuffles column widths on
     # every click. Fixed layout + explicit widths means columns are set
     # once and never move again regardless of what's filtered.
-    ("display_name", "Drug", 21),
-    ("sponsor", "Sponsor", 19),
+    ("display_name", "Drug", 19),
+    ("sponsor", "Sponsor", 17),
     ("phase_reached", "Highest Phase", 10),
-    ("status_summary", "Status", 10),
-    ("target_display", "Target / Pathway", 13),
-    ("drug_type", "Drug Type", 12),
-    ("trial_count", "Trial Count", 8),
-    ("max_enrollment", "Enrollment", 7),
+    ("status_summary", "Status", 9),
+    ("target_display", "Target / Pathway", 12),
+    ("drug_type", "Drug Type", 11),
+    ("trial_count", "Trial Count", 7),
+    ("max_enrollment", "Enrollment", 6),
+    ("aribio_relevance_score", "AR1001 Relevance", 9),
     # Verification/Confidence/Review Status columns removed from the main
     # table per request — still available per-row via the details toggle
     # (the underlying data columns are kept in table_df below for that).
@@ -1012,6 +1117,8 @@ table_df = resolved_drugs_df[[
     "scientific_classification_reason", "scientific_manual_review_required",
     "therapeutic_purpose_class", "therapeutic_purpose_category", "cadro",
     "modality", "drug_type_source", "drug_type_inferred",
+    "start_date_display", "primary_completion_date_display",
+    "aribio_relevance_score", "aribio_relevance_reasons",
 ]].copy()
 table_records = json.loads(table_df.to_json(orient="records"))
 
@@ -1089,26 +1196,50 @@ REVIEW_COLORS = {
 # request — VERIFICATION_COLORS/CONFIDENCE_COLORS/REVIEW_COLORS are
 # still defined above and still used by the row-detail panel's pills.
 PILL_GROUPS = [
-    ("phase", "Phase", ["Phase 1", "Phase 2", "Phase 3"], PHASE_COLORS),
+    ("phase", "Phase", PHASE_ORDER, PHASE_COLORS),
     ("drugType", "Drug Type", list(DRUG_TYPE_COLORS.keys()), DRUG_TYPE_COLORS),
     ("target", "Target", [t for t in TARGET_COLORS if t not in ("Other", "Unknown")], TARGET_COLORS),
     ("status", "Status", [s for s in STATUS_COLORS if s != "Other"], STATUS_COLORS),
 ]
 
+# Shortened DISPLAY text only — data-value (what filtering/sorting
+# actually keys off) always stays the full canonical string, and the
+# full name is still shown via the button's title="" tooltip. This
+# exists purely so Phase (8 values) and Drug Type (4 long values) fit a
+# compact 2-column grid without wrapping to 2-3 lines per pill; the
+# group's own title (e.g. "DRUG TYPE") already supplies the context a
+# shortened label like "Biologic" needs to stay unambiguous.
+_PILL_SHORT_LABELS = {
+    "Early Phase 1": "Early Ph 1",
+    "Phase 1/Phase 2": "Ph 1/2",
+    "Phase 2/Phase 3": "Ph 2/3",
+    "Disease-Targeted Biologic": "Biologic",
+    "Disease-Targeted Small Molecule": "Small Molecule",
+    "Cognition Enhancer": "Cognition Enh.",
+    "Neuropsychiatric Symptom Tx": "Neuropsychiatric",
+}
+
+
 def render_pill_group(field, title, values, colors):
     # Target is the one group that keeps its full color coding (a
-    # colored dot per value); every other group is plain monochrome
-    # text — a single shared --pill-color (brand blue) used only for
-    # the active/selected state, no per-value hue and no dot at all.
+    # colored dot per value) AND a single, full-label column — it's the
+    # one dimension worth telling apart at a glance, per the existing
+    # design. Phase/Drug Type/Status are plain monochrome text in a
+    # tight 2-column grid — a single shared --pill-color (brand blue)
+    # used only for the active/selected state, no per-value hue.
     show_dot = field == "target"
     dot_class = " filter-pill--dot" if show_dot else ""
+    layout_class = " filter-pills--single" if field == "target" else ""
     pills = "".join(
-        f'<button class="filter-pill{dot_class}" data-field="{field}" data-value="{v}" '
+        f'<button class="filter-pill{dot_class}" data-field="{field}" data-value="{v}" title="{v}" '
         + (f'style="--pill-color:{colors.get(v, "#999")}" ' if show_dot else "")
-        + f'onclick="togglePill(this)">{v}</button>'
+        + f'onclick="togglePill(this)">{_PILL_SHORT_LABELS.get(v, v)}</button>'
         for v in values
     )
-    return f'<div class="filter-group"><div class="filter-group-title">{title.upper()}</div><div class="filter-pills">{pills}</div></div>'
+    return (
+        f'<div class="filter-group"><div class="filter-group-title">{title.upper()}</div>'
+        f'<div class="filter-pills{layout_class}">{pills}</div></div>'
+    )
 
 pill_groups_html = "".join(render_pill_group(f, t, v, c) for f, t, v, c in PILL_GROUPS)
 
@@ -1118,6 +1249,13 @@ status_colors_js = json.dumps(STATUS_COLORS)
 type_colors_js = json.dumps(DRUG_TYPE_COLORS)
 verification_colors_js = json.dumps(VERIFICATION_COLORS)
 confidence_colors_js = json.dumps(CONFIDENCE_COLORS)
+
+# AriBio-relevance-score color thresholds — same blue ramp as everything
+# else on this dashboard, not a separate red/yellow/green "traffic
+# light" palette.
+RELEVANCE_HIGH_COLOR = darken(ARIBIO_BLUE, 0.30)
+RELEVANCE_MID_COLOR = ARIBIO_BLUE
+RELEVANCE_LOW_COLOR = "#9e9e9e"
 records_js = json.dumps(table_records)
 table_column_count = len(TABLE_COLUMNS)
 
@@ -1191,47 +1329,72 @@ html_template = f"""
   }}
   .sidebar-header {{
     display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-    padding: 14px 16px; background: {ARIBIO_BLUE_SUBTLE}; border-bottom: 1px solid {SURFACE_BORDER};
+    padding: 11px 14px; background: {ARIBIO_BLUE_SUBTLE}; border-bottom: 1px solid {SURFACE_BORDER};
   }}
   .sidebar-title {{
-    display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700;
+    display: flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 700;
     color: {ARIBIO_BLUE}; text-transform: uppercase; letter-spacing: 0.05em;
   }}
   .sidebar-title svg {{ color: {ARIBIO_BLUE}; flex-shrink: 0; }}
-  .filter-groups {{ flex: 1 1 auto; overflow-y: auto; padding: 6px 16px 16px; display: flex; flex-direction: column; }}
-  .filter-group {{ padding: 14px 0; }}
-  .filter-group:first-child {{ padding-top: 12px; }}
+  /* overflow-y stays auto as a fallback for genuinely short viewports —
+     the sizing below is tuned to fit all 4 groups without scrolling on
+     ordinary laptop/desktop viewport heights, not to physically prevent
+     scrolling from ever being possible. */
+  .filter-groups {{ flex: 1 1 auto; overflow-y: auto; padding: 4px 14px 12px; display: flex; flex-direction: column; }}
+  .filter-group {{ padding: 9px 0; }}
+  .filter-group:first-child {{ padding-top: 8px; }}
   .filter-group + .filter-group {{ border-top: 1px solid {SURFACE_BORDER}; }}
-  .filter-group-title {{ font-size: 10.5px; letter-spacing: 0.06em; color: #9aa0ab; margin-bottom: 8px; font-weight: 600; }}
-  .filter-pills {{ display: flex; flex-direction: column; gap: 1px; }}
+  .filter-group-title {{ font-size: 10px; letter-spacing: 0.06em; color: #9aa0ab; margin-bottom: 5px; font-weight: 600; }}
+  /* 2-column grid is what makes Phase (8 values) and Status/Drug Type
+     fit without scrolling — Target keeps its own single-column legend
+     (see .filter-pills--single) since it's the one group meant to be
+     scanned as a color-coded list, not a dense grid. */
+  .filter-pills {{ display: grid; grid-template-columns: 1fr 1fr; gap: 0 4px; }}
+  .filter-pills--single {{ display: flex; flex-direction: column; gap: 0; }}
   @media (max-width: 960px) {{
     .sidebar {{
       position: static; width: auto; height: auto; box-shadow: {CARD_SHADOW};
       border-radius: {CARD_RADIUS}; margin: 0 24px 20px;
     }}
     .page-content {{ margin-left: 0; }}
-    .filter-pills {{ flex-direction: row; flex-wrap: wrap; }}
+    .filter-pills {{ grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }}
   }}
-  /* Clean list style, not a bubble/badge: plain text, bigger for
-     readability. No color-coding except the Target group (the one
-     dimension worth telling apart at a glance) — those pills get the
-     .filter-pill--dot modifier and a small colored dot; every other
-     group is plain monochrome text. Active state reads like a selected
-     nav item: a colored left accent bar + soft tinted background,
-     rather than a filled pill. */
+  /* Clean list style, not a bubble/badge: plain text. No color-coding
+     except the Target group (the one dimension worth telling apart at
+     a glance) — those pills get the .filter-pill--dot modifier and a
+     small colored dot; every other group is plain monochrome text.
+     Active state reads like a selected nav item: a colored left accent
+     bar + soft tinted background, rather than a filled pill. */
   .filter-pill {{
-    --pill-color: {ARIBIO_BLUE}; display: flex; align-items: center; gap: 8px;
-    background: none; border: none; border-left: 3px solid transparent; border-radius: 0 6px 6px 0;
-    font-size: 14.5px; color: #444; padding: 6px 8px 6px 9px; width: 100%; text-align: left;
-    cursor: pointer; font-family: inherit;
-    transition: background-color 0.15s ease, border-left-color 0.15s ease, color 0.15s ease;
+    --pill-color: {ARIBIO_BLUE}; display: flex; align-items: center; gap: 7px;
+    background: none; border: none; border-radius: 5px;
+    font-size: 12.5px; color: #444; padding: 4px 8px; width: 100%; text-align: left;
+    cursor: pointer; font-family: inherit; line-height: 1.3;
+    overflow-wrap: break-word; white-space: normal;
+    transition: background-color 0.15s ease, color 0.15s ease,
+                box-shadow 0.15s ease, transform 0.1s ease;
   }}
   .filter-pill--dot::before {{
-    content: ""; width: 8px; height: 8px; min-width: 8px; border-radius: 50%; background: var(--pill-color);
+    content: ""; width: 7px; height: 7px; min-width: 7px; border-radius: 50%; background: var(--pill-color);
+    transition: box-shadow 0.15s ease;
   }}
-  .filter-pill:hover {{ background: rgba(0,0,0,0.045); }}
+  .filter-pill:hover {{ background: color-mix(in srgb, var(--pill-color) 7%, white); }}
+  .filter-pill:active {{ transform: scale(0.97); }}
+  /* Active/selected state: a soft tint of the pill's OWN accent color
+     (color-mix, not a flat gray) plus a matching inset ring — reads as
+     a real "selected chip," and for Target specifically the highlight
+     is literally that pathway's color, not one generic active-blue for
+     everything. No left accent bar — the tint + ring alone carry the
+     "selected" signal. Falls back gracefully to the old flat-gray look
+     on any browser without color-mix() support (Safari <16.4 etc.). */
   .filter-pill.active {{
-    color: var(--pill-color); font-weight: 700; background: rgba(0,0,0,0.045); border-left-color: var(--pill-color);
+    color: var(--pill-color); font-weight: 700;
+    background: color-mix(in srgb, var(--pill-color) 13%, white);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pill-color) 30%, transparent);
+  }}
+  .filter-pill.active:hover {{ background: color-mix(in srgb, var(--pill-color) 19%, white); }}
+  .filter-pill.active.filter-pill--dot::before {{
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--pill-color) 22%, transparent);
   }}
   #clear-filter {{
     font-size: 12px; font-weight: 600; color: {ARIBIO_ACCENT}; background: none; border: none;
@@ -1344,7 +1507,59 @@ html_template = f"""
   .detail-panel ul {{ margin: 0; padding-left: 16px; }}
   .sponsor-cell {{ cursor: help; }}
 
-  .glance-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 8px; }}
+  .compare-btn {{
+    background: none; border: none; cursor: pointer; font-size: 12px; color: #999;
+    padding: 1px 3px; border-radius: 4px; font-family: inherit; vertical-align: middle;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }}
+  .compare-btn:hover {{ color: {ARIBIO_BLUE}; background: color-mix(in srgb, {ARIBIO_BLUE} 8%, white); }}
+
+  /* Drug Comparator modal — AR1001 vs. a selected drug, side by side,
+     using only fields this pipeline actually resolves with real
+     evidence (Mechanism of Action, Modality, Target Pathway(s), Phase,
+     Sponsor, Status) — no invented Route/Biomarker/Population rows. */
+  #comparator-overlay {{
+    display: none; position: fixed; inset: 0; background: rgba(20, 30, 45, 0.45);
+    z-index: 100; align-items: center; justify-content: center; padding: 24px;
+    animation: overlayIn 0.15s ease;
+  }}
+  #comparator-overlay.visible {{ display: flex; }}
+  @keyframes overlayIn {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
+  #comparator-card {{
+    background: white; border-radius: {CARD_RADIUS}; box-shadow: {ELEVATED_SHADOW};
+    max-width: 640px; width: 100%; max-height: 84vh; overflow-y: auto;
+    animation: comparatorIn 0.18s ease;
+  }}
+  @keyframes comparatorIn {{
+    from {{ opacity: 0; transform: translateY(8px) scale(0.98); }}
+    to {{ opacity: 1; transform: translateY(0) scale(1); }}
+  }}
+  #comparator-header {{
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid {SURFACE_BORDER}; position: sticky; top: 0;
+    background: white; border-radius: {CARD_RADIUS} {CARD_RADIUS} 0 0;
+  }}
+  #comparator-header h3 {{ margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }}
+  #comparator-close {{
+    background: none; border: none; cursor: pointer; font-size: 20px; line-height: 1; color: #999;
+    padding: 4px 6px; border-radius: 6px; font-family: inherit;
+  }}
+  #comparator-close:hover {{ color: #1a1a1a; background: {SURFACE_TINT}; }}
+  #comparator-relevance {{
+    margin: 16px 20px 0; padding: 12px 14px; border-radius: {CARD_RADIUS};
+    background: {SURFACE_TINT}; font-size: 13px;
+  }}
+  #comparator-relevance .score {{ font-size: 20px; font-weight: 700; }}
+  #comparator-relevance ul {{ margin: 6px 0 0; padding-left: 18px; color: #555; }}
+  table#comparator-table {{ width: 100%; border-collapse: collapse; margin: 16px 20px 20px; width: calc(100% - 40px); }}
+  table#comparator-table th {{
+    text-align: left; font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; color: #999;
+    padding: 8px; border-bottom: 1px solid {SURFACE_BORDER};
+  }}
+  table#comparator-table td {{ padding: 10px 8px; border-bottom: 1px solid #f2f2f2; font-size: 13.5px; vertical-align: top; }}
+  table#comparator-table td:first-child {{ color: #999; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }}
+
+  .glance-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 8px; align-items: start; }}
   .glance-panel {{ background: white; border-radius: {CARD_RADIUS}; padding: 18px; box-shadow: {CARD_SHADOW}; }}
   .glance-panel-title {{ font-size: 15px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 4px; }}
   /* wraps the Plotly pies so "Trial Composition" lives in a white card
@@ -1460,6 +1675,20 @@ html_template = f"""
   </main>
 </div>
 
+<div id="comparator-overlay" onclick="if (event.target === this) closeComparator();">
+  <div id="comparator-card">
+    <div id="comparator-header">
+      <h3 id="comparator-title">Drug Comparator</h3>
+      <button id="comparator-close" onclick="closeComparator()" title="Close">&times;</button>
+    </div>
+    <div id="comparator-relevance"></div>
+    <table id="comparator-table">
+      <thead><tr><th>Feature</th><th>AR1001</th><th id="comparator-other-header">Competitor</th></tr></thead>
+      <tbody id="comparator-body"></tbody>
+    </table>
+  </div>
+</div>
+
 <script id="drug-data" type="application/json">{records_js}</script>
 <script>
   const ALL_ROWS = JSON.parse(document.getElementById('drug-data').textContent);
@@ -1523,6 +1752,15 @@ html_template = f"""
     return `<span class="pill" style="color:${{c}}">${{text || 'Unknown'}}</span>`;
   }}
 
+  // rule-based score thresholds (see competitive_intelligence.py) — NOT
+  // a red/yellow/green traffic light, the same brand blue ramp as
+  // everything else on this dashboard.
+  function relevanceColor(score) {{
+    if (score >= 65) return '{RELEVANCE_HIGH_COLOR}';
+    if (score >= 35) return '{RELEVANCE_MID_COLOR}';
+    return '{RELEVANCE_LOW_COLOR}';
+  }}
+
   function anyFiltersActive() {{
     return Object.values(filters).some(s => s.size > 0);
   }}
@@ -1561,6 +1799,8 @@ html_template = f"""
       <div><strong>Unverified trials</strong>${{r.unverified_trial_count}}</div>
       <div><strong>Notes</strong>${{escapeHtml(r.classification_reason || '—')}}</div>
       <div><strong>Scope reason</strong>${{escapeHtml(r.scope_reason || '—')}}</div>
+      <div><strong>Start date</strong>${{escapeHtml(r.start_date_display || 'TBD')}}</div>
+      <div><strong>Primary completion</strong>${{escapeHtml(r.primary_completion_date_display || 'TBD')}}</div>
       <div><strong>Modality</strong>${{escapeHtml(r.modality || '—')}}</div>
       <div><strong>Drug type category${{r.drug_type_inferred ? ' (inferred)' : ' (NIH-sourced)'}}</strong>${{escapeHtml(r.drug_type || '—')}}</div>
       <div><strong>Target pathway(s)</strong>${{escapeHtml(r.target_pathways || '—')}}</div>
@@ -1625,6 +1865,10 @@ html_template = f"""
       const enrollment = r.max_enrollment ? Math.round(r.max_enrollment).toLocaleString() : '—';
       const isExpanded = expandedRows.has(r.display_name);
       const toggle = `<button class="details-toggle" data-drug-key="${{escapeHtml(r.display_name)}}" title="Show details"><span class="caret${{isExpanded ? ' expanded' : ''}}">\\u25b8</span></button>`;
+      const relevanceCell = r.display_name === 'AR1001'
+        ? '<span style="color:#999;font-size:11.5px;">Reference</span>'
+        : `<span style="color:${{relevanceColor(r.aribio_relevance_score)}};font-weight:700;">${{r.aribio_relevance_score}}</span>
+           <button class="compare-btn" onclick="event.stopPropagation(); openComparator('${{escapeHtml(r.display_name)}}')" title="Compare to AR1001">&#8646;</button>`;
       const mainRow = `<tr class="${{classes.join(' ')}}">
         <td>${{toggle}} ${{star}}<a href="${{r.study_url}}" target="_blank" rel="noopener">${{r.display_name}}</a></td>
         <td class="sponsor-cell" title="${{escapeHtml(r.sponsor || '')}}">${{r.sponsor_display || ''}}</td>
@@ -1634,6 +1878,7 @@ html_template = f"""
         <td>${{pill(r.drug_type, TYPE_COLORS)}}</td>
         <td>${{r.trial_count}}</td>
         <td>${{enrollment}}</td>
+        <td>${{relevanceCell}}</td>
       </tr>`;
       return isExpanded ? mainRow + renderDetailRow(r) : mainRow;
     }}).join('');
@@ -1747,6 +1992,53 @@ html_template = f"""
     document.getElementById('table-wrap').scrollIntoView({{ behavior: 'smooth', block: 'start' }});
   }}
 
+  // --- Drug Comparator: AR1001 vs. a selected drug, side by side.
+  // Only fields this pipeline actually resolves with real evidence are
+  // shown (Mechanism of Action, Modality, Target Pathway(s), Phase,
+  // Sponsor, Status) — no Route/Biomarker/Population rows, since this
+  // dataset doesn't track those and inventing values for them would be
+  // worse than not showing them at all.
+  const COMPARATOR_FIELDS = [
+    ['Mechanism of action', r => r.mechanism_of_action || 'Not reported'],
+    ['Modality', r => r.modality || 'Unknown'],
+    ['Target pathway(s)', r => r.target_pathways || 'Other'],
+    ['Phase', r => r.phase_reached],
+    ['Sponsor', r => r.sponsor_display || r.sponsor || 'Unknown'],
+    ['Status', r => r.status_summary],
+  ];
+
+  function openComparator(displayName) {{
+    const other = ALL_ROWS.find(r => r.display_name === displayName);
+    const reference = ALL_ROWS.find(r => r.display_name === 'AR1001');
+    if (!other || !reference) return;
+
+    document.getElementById('comparator-other-header').textContent = other.display_name;
+
+    document.getElementById('comparator-body').innerHTML = COMPARATOR_FIELDS.map(([label, get]) =>
+      `<tr><td>${{escapeHtml(label)}}</td><td>${{escapeHtml(get(reference))}}</td><td>${{escapeHtml(get(other))}}</td></tr>`
+    ).join('');
+
+    const score = other.aribio_relevance_score;
+    const reasonsList = (other.aribio_relevance_reasons || '').split('; ').filter(Boolean);
+    document.getElementById('comparator-relevance').innerHTML = `
+      <div>Relevance to AR1001: <span class="score" style="color:${{relevanceColor(score)}}">${{score}}/100</span></div>
+      ${{reasonsList.length
+        ? `<ul>${{reasonsList.map(x => `<li>${{escapeHtml(x)}}</li>`).join('')}}</ul>`
+        : '<div style="color:#999;margin-top:4px;">No shared profile with AR1001 on the dimensions this pipeline tracks.</div>'}}
+      <div style="color:#999;font-size:11px;margin-top:6px;">Rule-based score, not AI-generated — see competitive_intelligence.py.</div>
+    `;
+
+    document.getElementById('comparator-overlay').classList.add('visible');
+  }}
+
+  function closeComparator() {{
+    document.getElementById('comparator-overlay').classList.remove('visible');
+  }}
+
+  document.addEventListener('keydown', (e) => {{
+    if (e.key === 'Escape') closeComparator();
+  }});
+
   // The topbar now spans the full page width (it's a sibling of the
   // sidebar, not nested inside it), so the floating sidebar needs to
   // start below it rather than at the very top of the viewport. This
@@ -1832,6 +2124,8 @@ drug_review_cols = [
     "evidence_used", "scientific_manual_review_required",
     "therapeutic_purpose_class", "therapeutic_purpose_category", "cadro",
     "modality", "drug_type_source", "drug_type_inferred",
+    "start_date_display", "primary_completion_date_display",
+    "aribio_relevance_score", "aribio_relevance_reasons",
 ]
 resolved_drugs_df[drug_review_cols].sort_values(["phase_reached", "display_name"], ascending=[False, True]).to_csv(
     "pipeline_drugs.csv", index=False

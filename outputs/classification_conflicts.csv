@@ -39,12 +39,17 @@ canonical_drug_name,previous_modality,new_modality,previous_target,new_target_pa
 [18F] PBR111,Small Molecule,Small Molecule,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
 18F-PF974,Small Molecule,Small Molecule,Amyloid,Neuroprotection,structured_ct_gov_evidence,medium,target corrected: 'Amyloid' -> 'Neuroprotection',True
 [18F]RO-948,Small Molecule,Small Molecule,Tau,Tau,structured_ct_gov_evidence,medium,no change from legacy classification,False
+2-hour period of hypoxia,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 2-hydroxybenzylamine acetate,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 250mg rilapladib,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 300 mg [C14] CT1812,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 3APS,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 3TC,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+5 Sessions of Split-belt Treadmill-based Locomotor Adaptation,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 8M2D,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+A 12-week health promotion course,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+A digital self-help self-compassion app intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+A mix of natural treatments and medications,Non-Drug/Behavioral,Other,Metabolism,Metabolism,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 AAB-001,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AAB-003 (PF-05236812),Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AADvac1,Biologic,Biologic,Tau,Tau,nih_reference,high,no change from legacy classification,False
@@ -67,23 +72,37 @@ AC-OLE-01-VA,Small Molecule,Small Molecule,Metabolism,,structured_ct_gov_evidenc
 ACC-001,Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ACC-001 (vanutide cridificar),Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ACD856,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Acetyl-L-Carnitine,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Acetylcholinesterase Inhibitors,Device,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Small Molecule',True
 Acitretin,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Acoramidis,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Acoramidis (AG10),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ACP-204,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,nih_reference,medium,no change from legacy classification,False
+Actigraphy and video recording signal,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 active: AFFITOPE AD02,Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Active Comparison Group: Healthy Actions And Lifestyles To Avoid Dementia (HALT-AD),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Active group,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Active transcutaneous vagus nerve stimulation respiratory-gated non-painful electrical stimulation of the auricle for 10 minute sessions,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Active Treatment- CT1812,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Activlink Phone Application,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
 ACU193,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
-Acupuncture,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Acupuncture,Small Molecule,Other,Symptomatic,,structured_ct_gov_evidence,medium,modality corrected: 'Small Molecule' -> 'Other' | target corrected: 'Symptomatic' -> '',True
 AD-35,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+AD Risk factors balance,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 AD04,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AD16,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Adapted physical activity,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Adapted Tango Dance,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 ADAS-Cog evaluation,Non-Drug/Behavioral,Other,Inflammation,Inflammation,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 ADENOSINE TRIPHOSPHATE,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Administer Leqemi,Small Molecule,Small Molecule,Amyloid,,structured_ct_gov_evidence,medium,target corrected: 'Amyloid' -> '',True
 adMSC,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+ADRD Care Delivery Protocol,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Aducanumab,Biologic,Biologic,Amyloid,Amyloid,official_pipeline_reference,high,no change from legacy classification,False
 Aducanumab (BIIB037),Biologic,Biologic,Amyloid,Amyloid,known_compound_exact_match,high,no change from legacy classification,False
 "Aducanumab (recombinant, fully human anti-Aβ IgG1 mAb)",Biologic,Biologic,Amyloid,Amyloid,known_compound_exact_match,high,no change from legacy classification,False
+Advance Care Planning,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Aerobic exercises,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 AFFITOPE AD02,Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Aftobetin-HCl,Device,Small Molecule,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Small Molecule',True
 AG10,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -103,8 +122,10 @@ Allopregnanolone (intravenous ),Small Molecule,Small Molecule,Neuroprotection,Ne
 ALN-5288,Small Molecule,Biologic,Other,Tau,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Other' -> 'Tau',True
 ALN-APP,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Alpha-Linolenic Acid,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Alternative Website Control,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 ALZ-101,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ALZ-801,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Alzhamyd,Non-Drug/Behavioral,Other,Amyloid,Amyloid,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Alzheimer Disease (AD),Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ALZN002 (autologous DCs pulsed with E22W mutant peptide).,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ALZT-OP1 (cromolyn and ibuprofen) ALZT-OP1a (cromolyn) and ALZT-OP1b (ibuprofen),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -112,22 +133,32 @@ AMDX-2011P,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,mediu
 Amniotic and Umbilical Cord Tissue Procedure,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AMX0035,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AN-1792 also known as AIP-001,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Analysis of sleep disturbance,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Anatabloc(R),Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ANAVEX2-73,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
+AndroGel (Solvay Pharmaceuticals),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 "Angiotensin II receptor blocker (ARB, losartan) and calcium channel blocker (CCB, amlodipine)",Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 anle138b,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Anodal tDCS,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 anti-Abeta,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+"""Antillanisée"" Mini Mental State Examination (MMSEa)",Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 APH-1105,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 APNmAb005,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Application ARTH-e,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Approximately 100 million cells allogeneic hMSC,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AQW051,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AR1001,Small Molecule,Small Molecule,Neuroprotection,Amyloid; Tau; Neuroprotection,curated_override,high,no change from legacy classification,False
+Aricept,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Aripiprazole,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Aripiprazole (BMS-337039),Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Arm 1 Education Session,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+"Arm A , Arm B, Arm C, & Arm D",Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 ARO-MAPT-SC,Small Molecule,Small Molecule,Tau,Tau,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AS-S603,Small Molecule,Small Molecule,Other,,nih_reference,high,no change from legacy classification,False
 ASN51,Small Molecule,Small Molecule,Tau,Tau,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ASP0777,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
+Assessment of drive abilities,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Astaxanthin,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Astragalus Membranaceus Root,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AstroStem,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Atabecestat,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -136,6 +167,10 @@ Atomoxetine,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medi
 atomoxetine hydrochloride,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Atorvastatin,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Atorvastatin calcium,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Atropine,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
+Attention Control (AtCon),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Augmented reality technological assistance for the movements of people with Alzheimer's disease or MCI in a controlled environment.,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Augmented Waitlist Control,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 AV-1959D,Biologic,Biologic,Amyloid,Amyloid,nih_reference,high,no change from legacy classification,False
 AV-1959R (Abeta vaccine),Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Avagacestat,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -157,18 +192,33 @@ Bacillus of Calmette and Guerin (BCG),Biologic,Biologic,Amyloid,Amyloid,structur
 Bapineuzumab,Biologic,Biologic,Amyloid,Amyloid,known_compound_exact_match,high,no change from legacy classification,False
 Bapineuzumab (AAB-001),Biologic,Biologic,Amyloid,Amyloid,known_compound_exact_match,high,no change from legacy classification,False
 Baricitinib,Small Molecule,Small Molecule,Other,Inflammation,nih_reference,medium,target corrected: 'Other' -> 'Inflammation',True
+Baseline assessments,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+Basic Skill Building,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 BAY1006578,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 BCG vaccine,Biologic,Biologic,Other,Inflammation,nih_reference,medium,target corrected: 'Other' -> 'Inflammation',True
+Beetroot juice,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Begacestat,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Benfotiamine,Small Molecule,Small Molecule,Other,Metabolism,nih_reference,medium,target corrected: 'Other' -> 'Metabolism',True
 Bepranemab,Biologic,Biologic,Tau,Tau,known_compound_exact_match,high,no change from legacy classification,False
+Best medical treatment for Alzheimer's disease,Device,Small Molecule,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Small Molecule',True
+beta blockers,Device,Small Molecule,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Small Molecule',True
+Betaquik MCT supplement,Dietary Supplement,Dietary Supplement,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Bexarotene,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 BEY2153,Small Molecule,Small Molecule,Other,,nih_reference,high,no change from legacy classification,False
+Bgaze Attention Task,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+BGaze therapy Alzheimer,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 BI 409306,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 bifeprunox,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 BIIB076,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 BIIB092,Small Molecule,Biologic,Tau,Tau,known_compound_exact_match,high,modality corrected: 'Small Molecule' -> 'Biologic',True
+Biodanza program,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Biological/Vaccine: Bacillus Calmette-Guerin (BCG),Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+biopsies of colon,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Black raspberry,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Blood ponction,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Blood punction,Biologic,Biologic,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Blood sampling,Biologic,Biologic,Amyloid,,structured_ct_gov_evidence,medium,target corrected: 'Amyloid' -> '',True
+blood withdrawal,Non-Drug/Behavioral,Other,Tau,Tau,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 BMS-241027,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 BMS-708163,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 BMS-708163 (Gamma-Secretase Inhibitor),Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -181,58 +231,103 @@ BnH-015B,Small Molecule,Small Molecule,Other,Symptomatic,nih_reference,medium,ta
 BPDO-1603,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 BPN14770,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 BR4002,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Brain Health Assessment,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Brain Health Program,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+brain imaging examination,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+brain polypeptide,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Brexpiprazole,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 "Brexpiprazole, OPC-34712",Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Brief psychoeducational intervention,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Brief psychoeducational messages,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Brivaracetam,Small Molecule,Small Molecule,Other,Symptomatic,nih_reference,medium,target corrected: 'Other' -> 'Symptomatic',True
 Bromocriptine Mesilate,Small Molecule,Small Molecule,Amyloid,Amyloid; Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Bryostatin,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Bryostatin 1,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Bryostatin for,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Bulletproof Brain Octane,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Bumetanide,Small Molecule,Small Molecule,Other,,nih_reference,high,no change from legacy classification,False
 buntanetap/posiphen,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 [C-11]PBR28,Small Molecule,Small Molecule,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
 C: MK-3134,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 CAD106,Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Caffeine,Small Molecule,Small Molecule,Other,Symptomatic,nih_reference,medium,target corrected: 'Other' -> 'Symptomatic',True
+California Cognitive Assessment Battery,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Canakinumab,Biologic,Biologic,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Candesartan,Small Molecule,Biologic,Other,Inflammation,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Other' -> 'Inflammation',True
 Cannabidiol,Small Molecule,Small Molecule,Other,Neuropsychiatric,nih_reference,medium,target corrected: 'Other' -> 'Neuropsychiatric',True
 Cannabis,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+caprylidene,Dietary Supplement,Dietary Supplement,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Carvedilol,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CB-AC-02,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CBD,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CBTi with Application,Other,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Celecoxib,Small Molecule,Small Molecule,Inflammation,Inflammation,nih_reference,high,no change from legacy classification,False
 Centella asiatica product,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CERE-110: Adeno-Associated Virus Delivery of NGF,Cell/Gene Therapy,Cell/Gene Therapy,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CERE-110: Adeno-Associated Virus Surgery,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Cerebrolysin,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Cerebrolysin + donepezil,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Cerefolin NAC (a medical food),Non-Drug/Behavioral,Other,Inflammation,Inflammation,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 CHF 5074,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CHF5074,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Choline,Small Molecule,Small Molecule,Other,Metabolism,nih_reference,medium,target corrected: 'Other' -> 'Metabolism',True
+Choline Alfoscerate,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Cholinergic antagonist,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Cholinesterase Inhibitor,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+"cholinesterase inhibitors (CI) (donepezil, galantamine or rivastigmine)",Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Chromium Chloride,Dietary Supplement,Dietary Supplement,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Cilostazol,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Circadin,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Circle Dance Program (CircleCare),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 citalopram,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Citicoline supplement,Dietary Supplement,Dietary Supplement,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Closed loop acoustic stimulation,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 CM383,Biologic,Biologic,Other,Amyloid,nih_reference,medium,target corrected: 'Other' -> 'Amyloid',True
 CMS121,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CNP520,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Coaching plus routine care,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Coconut Oil Beverage,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Coenzyme Q10,Dietary Supplement,Dietary Supplement,Neuroprotection,Neuroprotection; Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Cognitive Behavioral Approach-Based Psychoeducation,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Cognitive impairment of multiple sclerosis,Non-Drug/Behavioral,Other,Amyloid,Amyloid; Tau,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Cognitive Stimulation (CS),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Cognitive stress tests during gait task,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+"Collect peripheral blood, and if the patient consents, also collect cerebrospinal fluid.",Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Collection of nasal secretion,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+CoMPAS+ MNCDs Program - Quality improvement program targeting the care transitions of patients living with a major neurocognitive disorder and their caregivers,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Complex Rhythmic Movement Sequences (CRMS) Sessions,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Computer assisted ambulatory electroencephalogram,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Computerized games,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Continuous positive airway pressure (CPAP),Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Continuous positive airway pressure device,Non-Drug/Behavioral,Other,Amyloid,Amyloid; Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Contraloid,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Contraloid acetate,Small Molecule,Small Molecule,Other,Amyloid,nih_reference,medium,target corrected: 'Other' -> 'Amyloid',True
+control,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+Control arm,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Control Condition (No Radiotherapy),Non-Drug/Behavioral,Other,Inflammation,Inflammation,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Control group,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+Control with delayed intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 COR388,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CORT108297,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 COT,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CPC-201,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CpG1018,Small Molecule,Biologic,Other,Inflammation,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Other' -> 'Inflammation',True
+CR1 impact,Non-Drug/Behavioral,Other,Inflammation,Inflammation,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Creatine Monohydrate,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Crenezumab,Biologic,Biologic,Amyloid,Amyloid,known_compound_exact_match,high,no change from legacy classification,False
 CS6253 for,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CT1812,Small Molecule,Small Molecule,Amyloid,Neuroprotection,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: target_pathways: NIH=['Neuroprotection'] vs existing=['Amyloid'] | target corrected: 'Amyloid' -> 'Neuroprotection',True
 CTS21166 (ZPQ-21166),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Curcumin,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Curcumin C3 Complex,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Curcumin Formulation,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CX516,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CX516 (Ampalex),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CY6463,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+cycloastragenol,Dietary Supplement,Dietary Supplement,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Cyclophosphamate,Small Molecule,Small Molecule,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Cytology and Immunohistochemistry,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+d-ribose,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 D797,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 Dabigatran,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 DAOI-B,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -244,11 +339,21 @@ Daridorexant,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,nih
 Dasatinib + Quercetin,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 DatSCAN,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 DCB-AD1,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Decision aid,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Deep brain stimulation,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Deferiprone,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Dementia Caregivers' Link to Assistance and Resources (DECLARE),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Dementia Education,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Deprescribing of target anticholinergics,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+depression app for care partners of persons with dementia,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Detection of cytof in peripheral PBMC,Biologic,Biologic,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 Dexmedetomidine,Small Molecule,Small Molecule,Other,Neuropsychiatric,nih_reference,medium,target corrected: 'Other' -> 'Neuropsychiatric',True
 DHA,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 DHA (Docosahexaenoic Acid),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 DHP1401,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
+Diagnostic decision aid s-decided,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Digital and Interactive Reminiscence,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Dim-light control condition,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
 Dimebon,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Dimebon + Dextromethorphan,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Dimebon for administration,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -268,9 +373,13 @@ Donepezil,Small Molecule,Small Molecule,Symptomatic,Symptomatic,nih_reference,me
 Donepezil (Aricept),Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Donepezil Dihydroxynaphthalate for,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Donepezil drug treatment,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Donepezil HCL,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Donepezil hydrochloride,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Donepezil Hydrochloride (Aricept),Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Donepezil hydrochloride or carpalatine bitartrate,Device,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Small Molecule',True
 Donepezil patch,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Donepezil TDS,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+donezepil (Aricept),Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Dronabinol,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Dronabinol (Marinol®),Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 DSPE-DOTA-Gd Liposomal,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -278,6 +387,11 @@ E2020,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_ev
 E2212,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 E2609,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 E2814,Small Molecule,Biologic,Tau,Tau,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic',True
+Ebicomb,Other,Other,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Ebixa,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
+Ecological Environmental therapy,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Educational Materials,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Educational Materials - Patient & Clinician,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 EGb 761® (Tanakan®),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 EGb761®,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 EHT 0202 etazolate,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -289,25 +403,39 @@ ELND005,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence
 ELND005 (scyllo-inositol),Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Elontril,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Elpipodect,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Emotion Reporting Control Condition,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 empagliflozin (Jardiance),Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Emraclidine,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Emtriva,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ENA713,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
+Enhanced Usual Primary Care (EU-PC),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+EPAX 1050TG,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Epigallocatechin-3-gallate (EGCG),Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Epigallocatechin-Gallate,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Erinacine A-enriched Hericium Erinaceus Mycelia,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 es-citalopram,Small Molecule,Small Molecule,Symptomatic,Neuropsychiatric,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> 'Neuropsychiatric',True
-Escitalopram,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,nih_reference,medium,no change from legacy classification,False
+escitalopram,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,nih_reference,medium,no change from legacy classification,False
+Escitalopram (Lexapro),Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Escitalopram Oxalate,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 estrogen,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Etanercept,Biologic,Biologic,Inflammation,Inflammation,known_compound_exact_match,high,no change from legacy classification,False
 etanercept and repeated contrast ultrasound,Other,Biologic,Inflammation,Inflammation,known_compound_exact_match,high,modality corrected: 'Other' -> 'Biologic',True
 etanercept given by perispinal administration,Small Molecule,Biologic,Inflammation,Inflammation,known_compound_exact_match,high,modality corrected: 'Small Molecule' -> 'Biologic',True
+EVOO-phenolics dietary supplement,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 EVP-0962,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 EVP-6124,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 EX039,Small Molecule,Small Molecule,Other,Neuroprotection,nih_reference,medium,target corrected: 'Other' -> 'Neuroprotection',True
 Exendin-4 SC,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Exergaming on Dividat Senso,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Exosomes derived from umbilical cord mesenchymal stem cell for intranasal drop,Cell/Gene Therapy,Cell/Gene Therapy,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Experimental 1,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 Experimental: ALZ-801,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Experimental Bapineuzumab,Biologic,Biologic,Amyloid,Amyloid,known_compound_exact_match,high,no change from legacy classification,False
+Experimental Group,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Experimental meal,Non-Drug/Behavioral,Other,Inflammation,Inflammation,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Extra virgin olive oil,Dietary Supplement,Dietary Supplement,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Eye movements will be recorded using video-oculography techniques based on both the corneal reflection principle and an infra-red light beam,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Eye-Tracking / Neuropsychological evaluations,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 F-18,Small Molecule,Small Molecule,Tau,Tau,structured_ct_gov_evidence,medium,no change from legacy classification,False
 F-18 FEDAA1106 (BAY85-8101),Small Molecule,Small Molecule,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
 [F-18]Flornaptitril,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -315,30 +443,44 @@ F-18 PMPBB3,Small Molecule,Small Molecule,Amyloid,Tau,structured_ct_gov_evidence
 [F-18]W372,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 F18-3F4AP,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 F18 Flutametamol,Small Molecule,Small Molecule,Amyloid,,structured_ct_gov_evidence,medium,target corrected: 'Amyloid' -> '',True
+[F18]RO-948,Non-Drug/Behavioral,Other,Tau,Tau,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Fall Prevention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Fasting-Mimicking Diet ProlonADTM,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Fasudil,Small Molecule,Small Molecule,Other,,nih_reference,high,no change from legacy classification,False
 Fecal Microbiota Transplant,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Filgrastim,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Fisetin,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 FK962,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Flexibility Control,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Flos gossypii flavonoids,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Fluoroethylnormemantine (FENM),Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Flyer,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+FMD1 (LNT22-017-1),Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Formoterol A,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Fx-1006A,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 G-CSF; filgrastim,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
-galantamine,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Gabapentin Enacarbil,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Gait analysis via vicon- and app-system,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Galantamine,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Galantamine and Donepezil,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Galantamine HBr,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Galantamine hydrobromide,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Galantamine (Reminyl®),Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Galcanezumab,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Gam-COVID-Vac,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Gantenerumab,Biologic,Biologic,Amyloid,Amyloid,nih_reference,high,no change from legacy classification,False
 GB-5001,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 GC021109,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Gemfibrozil,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Genetic-Tailored AntiThrombotic Strategy,Cell/Gene Therapy,Cell/Gene Therapy,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+genetically encoded engineered proteins,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Genistein,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Getting Off App,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Ginkgo biloba,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Ginkgo biloba dispersible,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
+Ginkgo Biloba Extract,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Ginkgo Biloba Extract 761,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+GPR Intervention Research group,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Grape Powder,Dietary Supplement,Dietary Supplement,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 "grape seed polyphenolic extract, resveratrol",Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 GRF6019,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -355,10 +497,23 @@ Guanfacine,Small Molecule,Small Molecule,Other,Symptomatic,nih_reference,medium,
 Gut-X-001,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 GV-971,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 GV1001,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
+H2 gas inhalation,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Haloperidol-Haloperidol,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 HB-adMSCs,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+HD-tDCS,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Healhty controls,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Health App Recommendation Tool (HART),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Health Education,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Healthy aging interventions,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Heavy Cream,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+HellenCare,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Herbal medicine,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 HF0220,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+HIGH and LOW meal ingestion,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 high CBD/low THC sublingual,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 hMSC,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Home Safety and Education Program,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Home safety guide,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 HPP854,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 HT-4253,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 HTL0009936,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -371,8 +526,10 @@ Human Umbilical Cord Blood Derived-Mesenchymal Stem Cells,Cell/Gene Therapy,Cell
 Human Umbilical Cord Derived MSC,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Huperzine A,Small Molecule,Small Molecule,Symptomatic,Symptomatic,nih_reference,medium,no change from legacy classification,False
 Hydralazine hydrochloride,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+hydrocodone/APAP,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Hydroxypropyl Beta Cyclodextrin,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 I123MNI388/I123MNI390,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+IADL administration by phone,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 IBC-Ab002,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Ibuprofen,Small Molecule,Small Molecule,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
 icosapent ethyl (IPE),Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -383,19 +540,36 @@ Idazoxan,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,
 IFN-alpha2A,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 IGC AD1,Small Molecule,Small Molecule,Other,Neuropsychiatric,nih_reference,medium,target corrected: 'Other' -> 'Neuropsychiatric',True
 IGC-AD1-Active,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Implementation of elleFA smartphone application,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+in Memento-VASCOD,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+INCENTIVE VISITING A GARDEN : ENRICHED OR CONVENTIONAL SENSORY GARDEN,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 indomethacin,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Indoor Cycling (IC),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Information booklet receipt,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+information package,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+INFOSA-DEM,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Infusion of AD-SVF via IV and Intranasal,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 INM-176,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
+inpatient geriatric consultation team,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Insulin,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Insulin Aspart,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Insulin glulisine,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Insulin (Humulin® R U-100),Device,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Small Molecule',True
+Insulin LISPRO,Small Molecule,Small Molecule,Amyloid,Amyloid; Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
+INTACT Program,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Interactive digital platform,Device,Other,Metabolism,Metabolism,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
 Interferon beta-1a,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Interleukin-2,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Interval strength training,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Intervention of the social worker,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Intervention tested (CAREPATH),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Intravenous Immunoglobulin,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Intravenous infusion of mononuclear cells from umbilical cord blood,Cell/Gene Therapy,Cell/Gene Therapy,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 Investigational drug,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ION269,Small Molecule,Biologic,Other,Amyloid,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Other' -> 'Amyloid',True
 IONIS MAPTRx,Small Molecule,Small Molecule,Tau,Tau,structured_ct_gov_evidence,medium,no change from legacy classification,False
+iPad,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Isle of TEND Intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Isotretinoin,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ITI-007,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ITI-1284,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,nih_reference,medium,no change from legacy classification,False
@@ -407,12 +581,22 @@ JNJ-40346527,Small Molecule,Small Molecule,Inflammation,Inflammation,structured_
 JNJ-54861911,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 JNJ-63733657,Small Molecule,Biologic,Tau,Tau,known_compound_exact_match,high,modality corrected: 'Small Molecule' -> 'Biologic',True
 JNJ-64042056,Small Molecule,Biologic,Other,Tau,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Other' -> 'Tau',True
+Juice Plus+,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Just-In-Time Adaptive Interventions (JITAIs),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 KarXT,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,nih_reference,medium,no change from legacy classification,False
 KDS2010,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Ketogenic diet,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Ketogenic medium chain triglyceride drink (MCT drink),Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Ketogenic Supplement,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Ketone Ester drink,Dietary Supplement,Dietary Supplement,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 KHK6640,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+KneeApp,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+L. lactis CKDB001,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 L-Serine,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ladostigil hemitartrate,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Lanabecestat,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Laughter Therapy,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+LEADing Dementia End-of-Life Planning Conversations,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Lecanemab,Biologic,Biologic,Amyloid,Amyloid,nih_reference,high,no change from legacy classification,False
 Lecozotan,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 lecozotan SR,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -420,12 +604,19 @@ lecozotan SR (SRA-333),Small Molecule,Small Molecule,Symptomatic,Symptomatic,str
 Lemborexant,Small Molecule,Small Molecule,Neuropsychiatric,Symptomatic,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: target_pathways: NIH=['Symptomatic'] vs existing=['Neuropsychiatric'] | target corrected: 'Neuropsychiatric' -> 'Symptomatic',True
 Lenalidomide,Small Molecule,Small Molecule,Other,Inflammation,nih_reference,medium,target corrected: 'Other' -> 'Inflammation',True
 Leronlimab,Biologic,Biologic,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
+LeSCoD scale,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+LETSGO follow-up,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Leucettinib-21,Small Molecule,Small Molecule,Other,Tau,nih_reference,medium,target corrected: 'Other' -> 'Tau',True
 Leuprolide acetate,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 levetiracetam,Small Molecule,Small Molecule,Other,Symptomatic,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: target_pathways: NIH=['Symptomatic'] vs existing=['Neuropsychiatric'] | target corrected: 'Other' -> 'Symptomatic',True
 Levetiracetam (LEV),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Levodopa,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 LHP588,Small Molecule,Small Molecule,Other,,nih_reference,high,no change from legacy classification,False
 Lidocaine / Prilocaine Topical Cream,Device,Small Molecule,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Small Molecule',True
+Life story questionnaire,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Lifestyle recommendations,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Light Therapy System (LTS): Active setting,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Lipid drink,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Lipoic acid and fish oil concentrate,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Lipoic Acid plus Omega-3 Fatty Acids,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Liraglutide,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -437,12 +628,14 @@ LMTM,Small Molecule,Small Molecule,Tau,Tau,structured_ct_gov_evidence,medium,no 
 LNK-754,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Longeveron Mesenchymal Stem Cells,Cell/Gene Therapy,Cell/Gene Therapy,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Longevinex brand resveratrol supplement,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Longitudinal follow-up,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 lorazepam,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 LPS,Small Molecule,Small Molecule,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Lu AE58054,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 Lu AF20513,Biologic,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,modality corrected: 'Biologic' -> 'Small Molecule',True
 Lu AF87908,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 lutein/zeaxanthin,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Luxtherapy,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 LX1001,Biologic,Biologic,Amyloid,Amyloid,nih_reference,high,no change from legacy classification,False
 LY03017,Small Molecule,Small Molecule,Other,Neuropsychiatric,nih_reference,medium,target corrected: 'Other' -> 'Neuropsychiatric',True
 LY03020,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -460,27 +653,39 @@ LY450139,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidenc
 LY450139 dihydrate,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 LY451395,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 LYN-057,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
+lyophilized blueberry supplement,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 MABT5102A,Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Magnesium sulfate,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Magtein,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Management of metabolic and vascular risk factors,Non-Drug/Behavioral,Other,Metabolism,Metabolism,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Management of Modifiable Vascular and Behavioral Risk Factors,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
 MAR,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Masitinib,Small Molecule,Small Molecule,Other,Inflammation,nih_reference,medium,target corrected: 'Other' -> 'Inflammation',True
 Masitinib (4.5),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 masitinib (AB1010),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Measurement of serum level of anti-dementia drug,Small Molecule,Other,Symptomatic,,structured_ct_gov_evidence,medium,modality corrected: 'Small Molecule' -> 'Other' | target corrected: 'Symptomatic' -> '',True
+Medical Cannabis,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+MedicijnWijs,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Mediterranean Diet,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Meganatural-Az Grapeseed Extract,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
-Melatonin,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Melatonin,Small Molecule,Dietary Supplement,Other,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Small Molecule' -> 'Dietary Supplement' | target corrected: 'Other' -> 'Neuropsychiatric',True
 MEM 1003,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 MEM 3454,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 memantine,Small Molecule,Small Molecule,Symptomatic,Symptomatic,nih_reference,high,no change from legacy classification,False
 memantine HCl,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Memantine Hydrochloride,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 metformin,Small Molecule,Small Molecule,Metabolism,Metabolism,nih_reference,high,no change from legacy classification,False
-Methylphenidate,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,nih_reference,medium,no change from legacy classification,False
+Methylphenidate,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,nih_reference,low,"NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: target_pathways: NIH=['Neuropsychiatric'] vs existing=['Metabolism', 'Neuropsychiatric']",True
 Methylphenidate (MPH),Device,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Small Molecule',True
 Mevidalen,Small Molecule,Small Molecule,Other,Symptomatic,nih_reference,medium,target corrected: 'Other' -> 'Symptomatic',True
 MIB-626,Small Molecule,Small Molecule,Metabolism,Amyloid,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: target_pathways: NIH=['Amyloid'] vs existing=['Metabolism'] | target corrected: 'Metabolism' -> 'Amyloid',True
+MicRNAs battery,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Mifepristone,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Minocycline,Small Molecule,Small Molecule,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Mirtazapine,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+MitoQ,Dietary Supplement,Dietary Supplement,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Mivelsiran,Small Molecule,Biologic,Other,Amyloid,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Other' -> 'Amyloid',True
+Mixed functional foods supplementation,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 MK-0249,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 MK-1167,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 MK-1708,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -499,20 +704,37 @@ MLC901,Small Molecule,Small Molecule,Other,,nih_reference,high,no change from le
 MMFS-205-SR,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 MNI-513-01,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Mobilan (M-VM3),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Mobile app,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Mobile application,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Modafinil,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Montelukast,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Montelukast buccal film,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Morus nigra concentrate,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 MP-101,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 MPC-7869,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 MSDC-0160,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 MT-4666,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Multi-sensory supportive care,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Multicomponent Intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Multidimensional fragility index questionnaire RAI-Home Care,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Multidimensional stimulation group therapy,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Multidisciplinary Approach Group,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+MultiDisciplinary Team Meetings (MDTM),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+multimodal intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Music Balance Board,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+MUSIC CARE,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Music intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Music therapy,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 MW150,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+My PATI ( Person Assisted Touchscreen Interface),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+MyCog,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 N-hydroxy-N'-phenyl-octanediamide (Vorinostat),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Nabilone,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,nih_reference,medium,no change from legacy classification,False
 NanoLithium® NP03,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Naproxen,Small Molecule,Small Molecule,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Naproxen Sodium (Aleve),Small Molecule,Small Molecule,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
 natural product combination-1 (NPC1),Other,Other,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Nature Connections Intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 NDX-1017,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NE3107,Small Molecule,Small Molecule,Inflammation,Inflammation; Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Nefiracetam,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -522,11 +744,17 @@ Neramexane,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,mediu
 Nerve Growth Factor,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Neural Stem Cell-Derived Exosomes,Cell/Gene Therapy,Cell/Gene Therapy,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NeuroEPO,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Neuroimaging,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 neuropsychologic assessment,Non-Drug/Behavioral,Other,Amyloid,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other' | target corrected: 'Amyloid' -> '',True
+neuropsychological assessment,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Neuropsychological test battery,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+Neuropsychology tests,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+NeuroQ,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NewGam 10% IVIG,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NGP 555,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Niacin,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NIC5-15,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Nicoderm Patch,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 Nicotinamide,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Nicotinamide riboside,Small Molecule,Small Molecule,Metabolism,Metabolism,nih_reference,high,no change from legacy classification,False
 Nicotinamide Riboside (NR),Dietary Supplement,Dietary Supplement,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -538,6 +766,8 @@ NIO752,Small Molecule,Biologic,Tau,Tau,nih_reference,low,NIH and existing (offic
 NirsCure with Lecanemab,Biologic,Biologic,Amyloid,Amyloid,known_compound_exact_match,high,no change from legacy classification,False
 NMRA-323511,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NNI-362,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+No research related technology based social interactions,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+No treatment,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Novasoy,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NP001,Small Molecule,Small Molecule,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NP031112,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -547,41 +777,74 @@ NS 2330 (Tesofensine),Small Molecule,Small Molecule,Other,,structured_ct_gov_evi
 NSA-789,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NSC001,Small Molecule,Small Molecule,Other,Symptomatic,nih_reference,medium,target corrected: 'Other' -> 'Symptomatic',True
 NTRX-07,Small Molecule,Small Molecule,Inflammation,Symptomatic,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: target_pathways: NIH=['Symptomatic'] vs existing=['Inflammation'] | target corrected: 'Inflammation' -> 'Symptomatic',True
+Nuedexta (20/10),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Nutriceutical formulation,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Nutritional Supplement,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Nutritional supplementation,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+NVP-NK4146,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NX210c,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Obicetrapib,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+observational,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 octagam 10%,Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Octohydroaminoacridine Succinate,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 oculomotor measurements,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+OHS-interRAI,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Olfactory test,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 OLX-07010 Active,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+omega-3 polyunsaturated fatty acids ( EPA+DHA),Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Omega 3 PUFA,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Omega-3 treatment,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 ONO-2020,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,nih_reference,medium,no change from legacy classification,False
 ONO-2506PO,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Ophthalmological examination & Questionnaire,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 ORM-12741,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Our Memory Care Wishes,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Oxaloacetate (OAA),Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 P-tau217 Test,Non-Drug/Behavioral,Other,Tau,Tau,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Palliative Care Consultation,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Panax Ginseng,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+"Pandora-2 app with low levels of personalization, interaction, monitoring and feedback",Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Passive Digital Marker for screening for ADRD,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+PATH-Care,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Patient Education,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Patient's answer with non pharmacological therapeutic,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Patients- dose titration,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PAZ-417,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PBT2,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+PC-DATA tool,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Pepinemab,Biologic,Biologic,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Personalized diet,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Personalized music,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Personalized Music Intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Personalized tDCS,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Personalized Transcranial Direct Current Stimulation (tDCS),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+PET/CT with RO958 (experimental),Non-Drug/Behavioral,Other,Amyloid,Amyloid; Tau,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 PF-03654746,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PF-04360365,Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PF-04447943,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PF-04494700,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PF-05212377,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PF-05212377 (SAM-760),Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Pharmaceutical care and psychosocial support,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Pharmacological Intervention,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Pharmacotherapy Management,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Phase-locked auditory stimulation (PLAS),Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Phenserine,Small Molecule,Small Molecule,Symptomatic,,nih_reference,high,target corrected: 'Symptomatic' -> '',True
+Physical training,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Physiological Insulin Intervention,Non-Drug/Behavioral,Other,Metabolism,Metabolism,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Pimavanserin,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Pimavanserin tartrate,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 pioglitazone,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Piromelatine,Small Molecule,Small Molecule,Other,Symptomatic,nih_reference,medium,target corrected: 'Other' -> 'Symptomatic',True
+Plasma,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Plasma exchenge,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Plasma p-tau217 and neurofilament light chain results,Non-Drug/Behavioral,Other,Tau,Tau,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 PM012,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PMN310,Small Molecule,Biologic,Other,Amyloid,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Other' -> 'Amyloid',True
 PMPBB3,Small Molecule,Small Molecule,Amyloid,Amyloid; Tau,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Polyamine,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Polyphenol Supplement,Dietary Supplement,Dietary Supplement,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
+PorchLight,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Posiphen,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Posiphen® tartrate,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PPI-1019 (APAN),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -589,50 +852,81 @@ PQ912,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,m
 Pramlintide challenge test,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Prazosin,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Prednisone,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Pregnant+ app for smartphone,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+PREHABILITATION,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+PREPARED Trial Intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Preprocessed thawed donor FMT,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PRI-002,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PrimeC,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PrimePro™/ PrimeMSK™,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+PRJ212,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Probiotic,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Probiotic Blend,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Probiotic K10,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Probiotic supplemented intervention,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Probucol,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Progenitor Stem Cell Culture,Cell/Gene Therapy,Cell/Gene Therapy,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Proleukin,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Protollin,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Protologic and LAnguage adaptation rehabilitation,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Provider Educational Intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 PRX-03140,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 Psilocybin,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,nih_reference,medium,no change from legacy classification,False
+Psychoeducational intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Psychostimulant,Device,Small Molecule,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Small Molecule',True
+ptau217,Non-Drug/Behavioral,Other,Tau,Tau,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 PTI-125,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PXT00864,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 PYM50028,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 QLH2405,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Questionnaire and Physical Exam,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Questionnary and IRM,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+quetiapine,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 R-pramipexole,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 radioligand [11C]AZD2184,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Radiopharmaceuticals,Small Molecule,Small Molecule,Tau,Tau,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Raloxifene,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Ramelteon,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Ramipril,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Rapamune,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Rapamycin,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Rapid Visual Information Processing (RVIP) test,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Rasagiline,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 RB-ADSC,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+ReBuilder,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Recognized pharmacological treatments for AD.,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Recombinant COVID-19 vaccine (adenovirus type 5 vector) for Inhalation (Ad5-nCoV-IH),Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Recombinant Human Serum Albumin,Small Molecule,Biologic,Other,,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic',True
 Recombinant Novel Coronavirus Vaccine (Adenovirus Type 5 Vector),Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Recombinant zoster vaccine,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Recording of smartphone usage data,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+RecoveryFun system,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Regular Insulin,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Relational Research Recruitment and Engagement Intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 REM0046127,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Remember Stuff: A Dyadic-focused Technology to Support Persons with Alzheimer's Disease in the Community,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+REMINDER intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Reminiscence therapy,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Reminyl retard,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Remote activity monitoring system,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Remote Ambient Sensor System,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Remternetug,Small Molecule,Biologic,Amyloid,Amyloid,nih_reference,high,modality corrected: 'Small Molecule' -> 'Biologic',True
 Resveratrol,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 "Resveratrol, Quercetin, and Curcumin (RQC)",Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 "Resveratrol with Glucose, and Malate",Dietary Supplement,Dietary Supplement,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Retinal fundus photography,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Revusiran (ALN-TTRSC),Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Rey figure test,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 RGN1016,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Rifaximin 550 milligrams (MG),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Rifaximin SSD,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Riluzole,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
-risperidone,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+"Risperdal,reminyl",Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Risperidone,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Rivastigmine,Small Molecule,Small Molecule,Symptomatic,Symptomatic,nih_reference,medium,no change from legacy classification,False
-Rivastigmine patch,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Rivastigmine 5 and 10 cm^2 patch,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+"Rivastigmine, memantine",Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+rivastigmine patch,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 RO4602522,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 RO5313534,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 RO7105705,Small Molecule,Biologic,Tau,Tau,known_compound_exact_match,high,modality corrected: 'Small Molecule' -> 'Biologic',True
@@ -642,16 +936,19 @@ RO7812653,Small Molecule,Biologic,Other,,nih_reference,low,NIH and existing (off
 Rosiglitazone,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Rotigotine,Small Molecule,Small Molecule,Symptomatic,Symptomatic,nih_reference,medium,no change from legacy classification,False
 Rotigotine patch,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Routine Treatment,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 RP902,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 RPh201,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 "RPh201, botanical drug product",Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 RSG,Small Molecule,Small Molecule,Metabolism,,structured_ct_gov_evidence,medium,target corrected: 'Metabolism' -> '',True
+rtfMRI neurofeedback training,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
 RVT-101,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 S-equol,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 S47445,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 sabirnetug,Small Molecule,Biologic,Other,Amyloid,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Other' -> 'Amyloid',True
 SAGE-718,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Sagramostim,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Saliva samples,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Salsalate,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Salvia officinalis (sage),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 SAM-315,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -664,7 +961,12 @@ saracatinib,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medi
 Sargramostim,Small Molecule,Biologic,Inflammation,Inflammation,nih_reference,high,modality corrected: 'Small Molecule' -> 'Biologic',True
 Sargramostim GZ402664,Small Molecule,Biologic,Amyloid,Inflammation,known_compound_exact_match,high,modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Amyloid' -> 'Inflammation',True
 SB-742457,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
+SCANN,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 SCI -110,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Scopolamine,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Screening Only,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+SCV09,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Self-administered online CBT plus therapist check in,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Seltorexant,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 semagacestat,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Semagludtide,Small Molecule,Small Molecule,Metabolism,,structured_ct_gov_evidence,medium,target corrected: 'Metabolism' -> '',True
@@ -673,28 +975,46 @@ Semaglutide Plus IL-2,Small Molecule,Small Molecule,Metabolism,Metabolism,struct
 Semaglutide (Rybelsus®),Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Semorinemab,Biologic,Biologic,Tau,Tau,known_compound_exact_match,high,no change from legacy classification,False
 Senicapoc,Small Molecule,Small Molecule,Other,Inflammation,nih_reference,medium,target corrected: 'Other' -> 'Inflammation',True
+serious games use,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Sertraline (Zoloft),Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 SGS742,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 SHR-1707,Small Molecule,Biologic,Amyloid,Amyloid,nih_reference,high,modality corrected: 'Small Molecule' -> 'Biologic',True
+Silkworm pupa powder,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Simufilam,Small Molecule,Small Molecule,Amyloid,Amyloid,official_pipeline_reference,high,no change from legacy classification,False
 Simvastatin,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Siponimod,Small Molecule,Small Molecule,Other,Inflammation,nih_reference,medium,target corrected: 'Other' -> 'Inflammation',True
 Sirolimus,Small Molecule,Small Molecule,Other,,nih_reference,high,no change from legacy classification,False
 SK-PC-B70M,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+SLAB51,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 smart soup,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 SNK01,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 SNP318 (A),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Social Activity,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Sodium oligo-mannurarate,Small Molecule,Small Molecule,Amyloid,,structured_ct_gov_evidence,medium,target corrected: 'Amyloid' -> '',True
+Sodium Oligomannate,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Sodium Oligomannate (GV-971),Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Sodium Oxybate,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Sodium Pentaborate Pentahydrate,Small Molecule,Small Molecule,Other,,nih_reference,high,no change from legacy classification,False
 Solanezumab,Biologic,Biologic,Amyloid,Amyloid,nih_reference,high,no change from legacy classification,False
+SPARK Cognitive Status Indicator (software support data collected via EEG),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Spermidine Supplementation,Dietary Supplement,Dietary Supplement,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 SPG302,Small Molecule,Small Molecule,Tau,Neuroprotection,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: target_pathways: NIH=['Neuroprotection'] vs existing=['Tau'] | target corrected: 'Tau' -> 'Neuroprotection',True
+spinal fluid collection,Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Spironolactone,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 SR57667B,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 SRA-333,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 SRA-444,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 SSR180711C,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 ST101,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 STA-1,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
+Standard care,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+standard cares,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+Standard of Care medication for early Alzheimer's Disease,Device,Small Molecule,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Small Molecule',True
+Standardized education,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Stem Cell Therapy - Experimental,Cell/Gene Therapy,Cell/Gene Therapy,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Stories in the Moment Dance Program - Online,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Study Supplement,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+sulforaphane,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Sustiva Pill,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 SUVN-502,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 Suvorexant,Small Molecule,Small Molecule,Neuropsychiatric,Symptomatic,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: target_pathways: NIH=['Symptomatic'] vs existing=['Neuropsychiatric'] | target corrected: 'Neuropsychiatric' -> 'Symptomatic',True
@@ -704,27 +1024,56 @@ T3D-959,Small Molecule,Small Molecule,Metabolism,Metabolism,nih_reference,high,n
 Tacrolimus,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 tadalafil,Small Molecule,Small Molecule,Neuroprotection,Symptomatic,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: target_pathways: NIH=['Symptomatic'] vs existing=['Neuroprotection'] | target corrected: 'Neuroprotection' -> 'Symptomatic',True
 Tafamidis,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Tailored Palliative Care Information,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 TAK-071,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 Talsaclidine,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Tamibarotene,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Tandospirone Citrate,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 Tauroursodeoxycholic Acid and Doxycycline,Small Molecule,Small Molecule,Amyloid,Amyloid; Tau,structured_ct_gov_evidence,medium,no change from legacy classification,False
 TB006,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+TBI-AD/ADRD Caregiver Support Intervention (TACSI),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 TC-5619,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+tDCS,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+tDCS associated with Tcog,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+tDCS + CR,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Telehealth Integrated Primary Care (TIPC),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Telephone support as needed,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Temporal perception tasks,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 TEP,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Test of cognitive ability on computer with CoGNIT software,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 testosterone gel,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 "tetanus toxoid, reduced diphtheria toxoid and acellular pertussis vaccine",Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 TH9507 human growth hormone releasing hormone (GHRH),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Thalidomide,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 THC-free CBD Oil,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+The Canary Application,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+"The Lawton Instrumental Activities of Daily Living score (IADL), and the disability assessment of dementia score (DAD-6",Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+The Progressively Lowered Stress Threshold Model,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+The structured caregiver support program,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+"The system involves a digital table with a tactile and interactive surface, providing several play areas. It simulates a village and offers different types of serious cognitive games: semantic memory",Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+The training by Verve System,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+therapeutic education meetings,Device,Other,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+therapy,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 THN 201,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 THN391,Small Molecule,Biologic,Other,Inflammation,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Other' -> 'Inflammation',True
+Thorough Hearing assessment,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 tideglusib,Small Molecule,Small Molecule,Tau,Tau,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Tilavonemab,Biologic,Biologic,Tau,Tau,known_compound_exact_match,high,no change from legacy classification,False
 TML-6,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 TML-6 Granules,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 TPI-287,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Traditional Cognitive Rehabilitation,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+Traditional learning process,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+Traditional paper-based consent,Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+Training and valuation of the treating personnel,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Training in positivity,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Tramiprosate (3APS),Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+transcranial magnetic stimulation,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Transcranial pulse stimulation (TPS),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Trazodone,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Treatment As Usual,Device,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+Treatment as Usual (TAU),Non-Drug/Behavioral,Other,Tau,Tau,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+treatment with donepezil,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Trehalose,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 tributyrin,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Tricaprilin,Small Molecule,Small Molecule,Metabolism,Metabolism,nih_reference,medium,no change from legacy classification,False
@@ -733,35 +1082,58 @@ troriluzole,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medi
 TRx0014,Small Molecule,Small Molecule,Tau,Tau,structured_ct_gov_evidence,medium,no change from legacy classification,False
 TRx0037,Small Molecule,Small Molecule,Tau,Tau,structured_ct_gov_evidence,medium,no change from legacy classification,False
 TRx0237,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Tryptophan,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 TTP4000,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 TW001,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Tylex,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 UB-311,Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 UCB-J,Device,Small Molecule,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Small Molecule',True
 UCMSCs,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+use of PancreasPlus app,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Usual care + selfBACK,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Usual treatment,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 V950,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Valaciclovir,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Valacyclovir,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Valproate,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Valproic Acid,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Varenicline,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+VCHIPS,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Venlafaxine,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Verubecestat,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 VG-3927,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 VGH-AD1,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 VHB937,Biologic,Biologic,Other,Inflammation,nih_reference,medium,target corrected: 'Other' -> 'Inflammation',True
 VI-1121,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Video Intervention Arm,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Virtual darkness,Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Virtual Environment,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Virtual Individual Cognitive Simulation Therapy,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Virtual reality,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Virtual reality / Memory assessment,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Vitamin D,Small Molecule,Biologic,Symptomatic,Inflammation,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Symptomatic' -> 'Inflammation',True
 Vitamin E,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
+Volunteer visits,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 VP4896,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 VT301,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 VX-745,Small Molecule,Small Molecule,Amyloid,Amyloid; Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
 VY7523,Small Molecule,Biologic,Other,Tau,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Other' -> 'Tau',True
+Walking,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Washout (2 wks),Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
+Water Immersion Heat Therapy,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Web-based pain management support tool,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Wei Li Bai,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Wismemo,Dietary Supplement,Dietary Supplement,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+"Within the scope of the research, caregivers will be given face-to-face training in 2 sessions, 15 days apart.",Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Word List Learning Intervention (WordLLI),Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
 Wujia Yizhi granules,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 xaliproden (SR57746A),Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Xanamem,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 XBD173,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 XPro1595,Small Molecule,Biologic,Inflammation,Inflammation,nih_reference,high,modality corrected: 'Small Molecule' -> 'Biologic',True
-XTR006,Non-Drug/Behavioral,Small Molecule,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Small Molecule',True
+XTR006,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Yizhi Baduanjin (Eight Pieces of Brocades for Mental Health Promotion),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Zagotenemab,Biologic,Biologic,Tau,Tau,known_compound_exact_match,high,no change from legacy classification,False
+Zolpidem CR,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+ZT-1,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
+Zunveyl®,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False

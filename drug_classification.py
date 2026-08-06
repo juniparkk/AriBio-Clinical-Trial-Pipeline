@@ -1188,7 +1188,19 @@ def resolve_developed_drug(classified_interventions):
 
 _CONFIDENCE_RANK = {"high": 3, "medium": 2, "low": 1}
 _DRUG_ROLLUP_STATUS_PRIORITY = ["FDA Approved", "Recruiting", "Active", "Completed", "Discontinued", "Unknown", "Other"]
-_DRUG_ROLLUP_PHASE_RANK = {"Phase 3": 3, "Phase 2": 2, "Phase 1": 1}
+# Every phase_clean value pipeline_viz.py's clean_phase() can produce
+# must have a rank here — trials.csv carries far more than just Phase
+# 1/2/3 (NA, Early Phase 1, Phase 4, and the combined Phase 1/Phase 2 /
+# Phase 2/Phase 3 designations ct.gov itself uses), and every one of
+# them is now a real contributor to a drug's rollup, not filtered out
+# upstream. A phase_clean value missing from this dict would make
+# g["phase_rank"] NaN for every one of that drug's rows, and if ALL of a
+# drug's trials shared that value, .max() would be NaN too — leaving
+# top_rows empty and raising an IndexError on the very next line.
+_DRUG_ROLLUP_PHASE_RANK = {
+    "Phase 4": 8, "Phase 3": 7, "Phase 2/Phase 3": 6, "Phase 2": 5,
+    "Phase 1/Phase 2": 4, "Phase 1": 3, "Early Phase 1": 2, "NA": 1,
+}
 
 
 def _mode_or_first(series):
@@ -1465,6 +1477,40 @@ def build_resolved_drug_trial_links_df(resolved_drugs_df):
             if nct_id:
                 rows.append({"display_name": r["display_name"], "nct_id": nct_id})
     return pd.DataFrame(rows, columns=["display_name", "nct_id"])
+
+
+def build_drug_date_rollup(resolved_drug_trial_links_df, trials_df):
+    """
+    One row per canonical drug: earliest_start_date (min across every
+    contributing trial) and latest_primary_completion_date (max across
+    every contributing trial) — the real date span this drug has been
+    in clinical development on ClinicalTrials.gov, derived from its
+    OWN contributing trials via resolved_drug_trial_links_df (never a
+    single trial's dates alone, since a drug's earliest/most-recent
+    activity often isn't on whichever trial happens to be its
+    highest-phase one).
+
+    Expects trials_df to carry nct_id, start_date_parsed, and
+    primary_completion_date_parsed — already-parsed pandas Timestamps
+    (NaT for missing/unparseable raw dates), computed once from ct.gov's
+    raw "Start Date"/"Primary Completion Date" text before this is called.
+
+    A drug with no contributing trial carrying a parseable date on
+    either field gets NaT for that field here — never a fabricated date.
+    """
+    columns = ["display_name", "earliest_start_date", "latest_primary_completion_date"]
+    if resolved_drug_trial_links_df.empty:
+        return pd.DataFrame(columns=columns)
+
+    dates_by_nct = trials_df.drop_duplicates(subset="nct_id").set_index("nct_id")[
+        ["start_date_parsed", "primary_completion_date_parsed"]
+    ]
+    merged = resolved_drug_trial_links_df.join(dates_by_nct, on="nct_id")
+    result = merged.groupby("display_name", as_index=False).agg(
+        earliest_start_date=("start_date_parsed", "min"),
+        latest_primary_completion_date=("primary_completion_date_parsed", "max"),
+    )
+    return result[columns]
 
 
 # ============================================================

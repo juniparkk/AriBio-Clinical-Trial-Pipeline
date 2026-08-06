@@ -232,7 +232,7 @@ def test_kpi_phase_counts_computed_from_resolved_drugs_df():
 
 
 TARGET_ORDER = ["Amyloid", "Tau", "Inflammation", "Neuroprotection", "Metabolism", "Symptomatic", "Neuropsychiatric"]
-PHASES_ASC = ["Phase 1", "Phase 2", "Phase 3"]
+PHASES_ASC = ["NA", "Early Phase 1", "Phase 1", "Phase 1/Phase 2", "Phase 2", "Phase 2/Phase 3", "Phase 3", "Phase 4"]
 
 
 def test_heatmap_all_tab_reconciles_to_resolved_drug_counts():
