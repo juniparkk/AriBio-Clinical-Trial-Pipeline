@@ -31,6 +31,16 @@ from drug_classification import (
     load_scope_overrides,
     build_scope_audit_dataframe,
     THERAPEUTIC_SCOPE,
+    normalize_text,
+)
+from nih_reference import parse_nih_dataset
+from scientific_classification import (
+    load_drug_classification_overrides,
+    build_nih_name_lookup,
+    build_official_pipeline_classification_lookup,
+    gather_structured_evidence_for_drug,
+    resolve_drug_classification,
+    build_classification_conflicts_dataframe,
 )
 
 # ============================================================
@@ -457,12 +467,6 @@ print()
 
 resolved_drugs_df = build_resolved_drugs_dataframe(df)
 
-# AR1001 mechanistically touches multiple pathways — special case for
-# this dashboard's Target/Pathway column display.
-resolved_drugs_df["target_display"] = resolved_drugs_df.apply(
-    lambda r: "Multi (Amyloid/Tau/Neuroprotection)" if r["is_aribio"] else r["target"], axis=1
-)
-
 resolved_drugs_df["study_url"] = "https://clinicaltrials.gov/study/" + resolved_drugs_df["nct_id"]
 
 # Human-readable labels for the raw internal enum values — the UI must
@@ -502,6 +506,106 @@ _synonyms_by_drug_name = {r["drug_name"]: r["synonyms"] for r in pipeline_record
 resolved_drugs_df["synonyms"] = resolved_drugs_df["display_name"].map(
     lambda name: "; ".join(_synonyms_by_drug_name.get(name, []))
 )
+
+# ============================================================
+# STEP 3.71: SCIENTIFIC CLASSIFICATION RESOLUTION (Phase 2)
+#
+# Replaces guess_drug_type()/guess_target() (STEP 3 above, which still
+# runs and still populates the raw per-TRIAL df["drug_type"]/df["target"]
+# columns used only by pipeline_annotated.csv's legacy audit column —
+# left untouched per this phase's "do not change... change tracking"
+# instruction) as the SOURCE for resolved_drugs_df's drug_type/target:
+# every canonical drug's modality/target_pathways/mechanism_of_action
+# now come from scientific_classification.resolve_drug_classification(),
+# using verified, drug-specific evidence only (curated override -> NIH
+# reference -> official_pipeline.csv -> exact known-compound match ->
+# this drug's OWN structured ct.gov intervention evidence — never the
+# raw, possibly-multi-intervention trial text guess_drug_type() reads).
+#
+# pipeline_scope, drug identity/grouping (build_resolved_drugs_dataframe
+# above), FDA status, company/sponsor fields, and change-tracking are
+# NOT touched by this step — only drug_type/target and the new
+# target_pathways/mechanism_of_action/molecular_targets columns.
+# ============================================================
+
+_drug_classification_overrides = load_drug_classification_overrides(
+    "data/reference/drug_classification_overrides.csv"
+)
+_nih_reference_df = parse_nih_dataset("nih_data.csv")
+_nih_name_lookup = build_nih_name_lookup(_nih_reference_df)
+_official_pipeline_classification_lookup = build_official_pipeline_classification_lookup(pipeline_records)
+
+_previous_drug_type = resolved_drugs_df["drug_type"].copy()
+_previous_target = resolved_drugs_df["target"].copy()
+
+_sci_results = []
+for _, _row in resolved_drugs_df.iterrows():
+    _drug_synonyms = _synonyms_by_drug_name.get(_row["display_name"], [])
+    _evidence = gather_structured_evidence_for_drug(interventions_df, normalize_text(_row["display_name"]))
+    _sci_results.append(resolve_drug_classification(
+        _row["display_name"], _drug_synonyms, _evidence,
+        overrides=_drug_classification_overrides, nih_name_lookup=_nih_name_lookup,
+        official_pipeline_lookup=_official_pipeline_classification_lookup,
+    ))
+
+resolved_drugs_df["drug_type"] = [r["modality"] for r in _sci_results]
+resolved_drugs_df["target_pathways_list"] = [r["target_pathways"] for r in _sci_results]
+resolved_drugs_df["target"] = [
+    (r["target_pathways"][0] if r["target_pathways"] else "Other") for r in _sci_results
+]
+resolved_drugs_df["target_pathways"] = ["; ".join(r["target_pathways"]) for r in _sci_results]
+resolved_drugs_df["mechanism_of_action"] = [r["mechanism_of_action"] for r in _sci_results]
+resolved_drugs_df["molecular_targets"] = ["; ".join(r["molecular_targets"]) for r in _sci_results]
+resolved_drugs_df["classification_source"] = [r["classification_source"] for r in _sci_results]
+resolved_drugs_df["classification_method"] = [r["classification_method"] for r in _sci_results]
+resolved_drugs_df["scientific_classification_confidence"] = [r["classification_confidence"] for r in _sci_results]
+resolved_drugs_df["scientific_classification_reason"] = [r["classification_reason"] for r in _sci_results]
+resolved_drugs_df["evidence_used"] = [r["evidence_used"] for r in _sci_results]
+resolved_drugs_df["scientific_manual_review_required"] = [r["manual_review_required"] for r in _sci_results]
+
+# target_display: generalizes the old AR1001-only hardcode to EVERY drug
+# with more than one target_pathway — "do not force one drug into only
+# one pathway" (Phase 2 requirement), now driven by real evidence
+# (including AR1001's own curated override) rather than an is_aribio check.
+resolved_drugs_df["target_display"] = resolved_drugs_df.apply(
+    lambda r: f"Multi ({'/'.join(r['target_pathways_list'])})" if len(r["target_pathways_list"]) > 1 else r["target"],
+    axis=1,
+)
+
+_classification_conflict_records = [
+    {
+        "canonical_drug_name": name,
+        "previous_modality": prev_type,
+        "previous_target": prev_target,
+        "new_modality": r["modality"],
+        "new_target_pathways": r["target_pathways"],
+        "classification_source": r["classification_source"],
+        "classification_confidence": r["classification_confidence"],
+        "classification_reason": r["classification_reason"],
+        "manual_review_required": r["manual_review_required"],
+    }
+    for name, prev_type, prev_target, r in zip(
+        resolved_drugs_df["display_name"], _previous_drug_type, _previous_target, _sci_results
+    )
+]
+classification_conflicts_df = build_classification_conflicts_dataframe(_classification_conflict_records)
+os.makedirs("outputs", exist_ok=True)
+classification_conflicts_df.to_csv("outputs/classification_conflicts.csv", index=False)
+
+print("=== SCIENTIFIC CLASSIFICATION RESOLUTION (Phase 2) ===")
+print(f"{len(_nih_reference_df)} NIH reference rows loaded; {len(_drug_classification_overrides)} curated AriBio override(s)")
+print("classification_source breakdown:")
+print(resolved_drugs_df["classification_source"].value_counts().to_string())
+_drug_type_changed = int((_previous_drug_type != resolved_drugs_df["drug_type"]).sum())
+_target_changed = int((_previous_target != resolved_drugs_df["target"]).sum())
+_multi_target = int((resolved_drugs_df["target_pathways_list"].apply(len) > 1).sum())
+print(f"drug_type corrected: {_drug_type_changed} / {len(resolved_drugs_df)}")
+print(f"target corrected: {_target_changed} / {len(resolved_drugs_df)}")
+print(f"drugs with multiple target_pathways: {_multi_target}")
+print(f"remaining 'Other' target: {int((resolved_drugs_df['target'] == 'Other').sum())}")
+print(f"remaining 'Unknown' modality: {int((resolved_drugs_df['drug_type'] == 'Unknown').sum())}")
+print(f"=== SAVED: outputs/classification_conflicts.csv ({len(classification_conflicts_df)} rows) ===")
+print()
 
 
 def _sponsor_display(sponsor_field):
@@ -875,6 +979,11 @@ table_df = resolved_drugs_df[[
     "confirmed_trial_count", "unverified_trial_count",
     "official_source_url", "classification_reason", "nct_ids",
     "pipeline_scope", "scope_reason", "manual_review_required",
+    # Phase 2 — scientific classification (modality/target_pathways),
+    # for the drug detail panel
+    "target_pathways", "mechanism_of_action", "molecular_targets",
+    "classification_source", "scientific_classification_confidence",
+    "scientific_classification_reason", "scientific_manual_review_required",
 ]].copy()
 table_records = json.loads(table_df.to_json(orient="records"))
 
@@ -1381,6 +1490,10 @@ html_template = f"""
       <div><strong>Unverified trials</strong>${{r.unverified_trial_count}}</div>
       <div><strong>Notes</strong>${{escapeHtml(r.classification_reason || '—')}}</div>
       <div><strong>Scope reason</strong>${{escapeHtml(r.scope_reason || '—')}}</div>
+      <div><strong>Target pathway(s)</strong>${{escapeHtml(r.target_pathways || '—')}}</div>
+      <div><strong>Mechanism of action</strong>${{escapeHtml(r.mechanism_of_action || '—')}}</div>
+      <div><strong>Molecular target(s)</strong>${{escapeHtml(r.molecular_targets || '—')}}</div>
+      <div><strong>Classification source</strong>${{escapeHtml(r.classification_source || '—')}} (${{escapeHtml(r.scientific_classification_confidence || '—')}} confidence)</div>
       <div><strong>Trial IDs</strong>${{escapeHtml(r.nct_ids || '—')}}</div>
     </div></td></tr>`;
   }}
@@ -1614,6 +1727,13 @@ drug_review_cols = [
     "verification_status", "classification_confidence", "needs_manual_review",
     "confirmed_trial_count", "unverified_trial_count",
     "pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required",
+    # Phase 2 — scientific classification (drug_type/target above are
+    # now SOURCED from this resolution; these columns carry the full
+    # provenance for review in Excel)
+    "target_pathways", "mechanism_of_action", "molecular_targets",
+    "classification_source", "classification_method",
+    "scientific_classification_confidence", "scientific_classification_reason",
+    "evidence_used", "scientific_manual_review_required",
 ]
 resolved_drugs_df[drug_review_cols].sort_values(["phase_reached", "display_name"], ascending=[False, True]).to_csv(
     "pipeline_drugs.csv", index=False

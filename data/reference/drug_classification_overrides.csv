@@ -1,0 +1,2 @@
+normalized_drug_name,modality,target_pathways,molecular_targets,mechanism_of_action,reason,source,reviewer,verified_date
+ar1001,Small Molecule,Amyloid; Tau; Neuroprotection,PDE5,Phosphodiesterase 5 (PDE5) inhibitor; improves synaptic plasticity,"migrated from pipeline_viz.py's pre-Phase-2 is_aribio hardcode (""Multi (Amyloid/Tau/Neuroprotection)""); AR1001 Phase 2 data (AAIC 2026) showed effects across pTau181, Abeta42/40 ratio, and ADAS-Cog13 rather than a single pathway",AriBio AAIC 2026 Phase 2 data / dashboard spotlight,Phase 2 migration checkpoint,2026-08-06

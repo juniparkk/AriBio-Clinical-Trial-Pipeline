@@ -187,6 +187,14 @@ def load_official_pipeline(path):
             "company_normalized": normalize_text(company),
             "drug_name_normalized": normalize_text(drug_name),
             "synonyms_normalized": [normalize_text(s) for s in synonyms],
+            # OPTIONAL columns (Phase 2 — scientific_classification.py's
+            # tier-3 "official pipeline reference"): absent from
+            # REQUIRED_PIPELINE_COLUMNS on purpose, so existing
+            # official_pipeline.csv rows/tests without them keep working
+            # unchanged. Blank string when the column doesn't exist or
+            # the cell is empty for this row.
+            "modality": str(row.get("modality", "")).strip() if "modality" in raw_df.columns else "",
+            "target_pathways": str(row.get("target_pathways", "")).strip() if "target_pathways" in raw_df.columns else "",
         })
     return records
 
