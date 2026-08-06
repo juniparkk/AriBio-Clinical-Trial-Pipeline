@@ -182,26 +182,47 @@ def test_unresolved_trials_do_not_enter_the_table():
 # just two different serializations of it).
 # ============================================================
 
+def get_therapeutic_rows():
+    # Phase 1A: TABLE_ROWS is now the BROADER resolved_drugs_df population
+    # (every pipeline_scope except Exclude/Placebo or Comparator, which
+    # never get a row at all — see build_resolved_drugs_dataframe()).
+    # KPI tiles/heatmap/leaderboard/drug-type/target pies all narrow to
+    # THIS subset (pipeline_viz.py's therapeutic_drugs_df) — the table's
+    # DEFAULT view does too (via the JS scope toggle), but the raw JSON
+    # blob itself intentionally keeps the broader set so the "reveal
+    # non-therapeutic records" filter has real data to show.
+    return [r for r in TABLE_ROWS if r.get("pipeline_scope") == "Therapeutic Drug"]
+
+
 def test_kpi_total_drugs_equals_resolved_drugs_df_length():
-    total_drugs = len(TABLE_ROWS)
+    therapeutic_rows = get_therapeutic_rows()
+    total_drugs = len(therapeutic_rows)
     kpi_match = re.search(r'<div class="kpi-value">(\d+)</div>', HTML_SOURCE)
-    assert kpi_match, "could not find the 'Total drugs in trials' KPI value in the HTML"
+    assert kpi_match, "could not find the 'Total therapeutic drugs' KPI value in the HTML"
     assert int(kpi_match.group(1)) == total_drugs
 
-    topbar_match = re.search(r"(\d+) unique drugs", HTML_SOURCE)
-    assert topbar_match, "could not find the topbar's 'N unique drugs' text"
+    topbar_match = re.search(r"(\d+) therapeutic drugs \((\d+) total resolved records\)", HTML_SOURCE)
+    assert topbar_match, "could not find the topbar's 'N therapeutic drugs (M total resolved records)' text"
     assert int(topbar_match.group(1)) == total_drugs
+    assert int(topbar_match.group(2)) == len(TABLE_ROWS)
 
-    assert total_drugs == len(DRUGS_CSV_ROWS), "table row count must also match pipeline_drugs.csv row count"
+    # the table's full JSON payload (broader) must still match
+    # pipeline_drugs.csv row count — both are the SAME resolved_drugs_df,
+    # just two different serializations of it
+    assert len(TABLE_ROWS) == len(DRUGS_CSV_ROWS), "table row count must also match pipeline_drugs.csv row count"
+    # and pipeline_drugs.csv must carry the same Therapeutic Drug subset
+    csv_therapeutic = [r for r in DRUGS_CSV_ROWS if r.get("pipeline_scope") == "Therapeutic Drug"]
+    assert len(csv_therapeutic) == total_drugs
 
 
 def test_kpi_phase_counts_computed_from_resolved_drugs_df():
+    therapeutic_rows = get_therapeutic_rows()
     phase_kpi_matches = re.findall(r'<div class="kpi-value" style="color:[^"]*">(\d+)</div>', HTML_SOURCE)
     assert len(phase_kpi_matches) == 3, "expected exactly 3 colored KPI tiles (Phase 3/2/1 agents)"
     phase3_kpi, phase2_kpi, phase1_kpi = (int(v) for v in phase_kpi_matches)
 
     phase_counts = {"Phase 1": 0, "Phase 2": 0, "Phase 3": 0}
-    for row in TABLE_ROWS:
+    for row in therapeutic_rows:
         if row["phase_reached"] in phase_counts:
             phase_counts[row["phase_reached"]] += 1
 
@@ -215,24 +236,27 @@ PHASES_ASC = ["Phase 1", "Phase 2", "Phase 3"]
 
 
 def test_heatmap_all_tab_reconciles_to_resolved_drug_counts():
+    therapeutic_rows = get_therapeutic_rows()
     traces = extract_plotly_traces(HTML_SOURCE, "heatmapAll")
     assert len(traces) == 1, "expected a single go.Heatmap trace in the 'All' tab"
     z = traces[0]["z"]
 
+    # Phase 1A: the heatmap is built from therapeutic_drugs_df (pipeline_scope
+    # == "Therapeutic Drug" only), not the broader resolved_drugs_df/TABLE_ROWS.
     expected = [
-        [sum(1 for r in TABLE_ROWS if r["target"] == t and r["phase_reached"] == p) for p in PHASES_ASC]
+        [sum(1 for r in therapeutic_rows if r["target"] == t and r["phase_reached"] == p) for p in PHASES_ASC]
         for t in TARGET_ORDER
     ]
     assert z == expected
 
-    # every drug counted in the heatmap must be a real resolved drug —
-    # i.e. the grid total can never exceed len(resolved_drugs_df), and
+    # every drug counted in the heatmap must be a real THERAPEUTIC drug —
+    # i.e. the grid total can never exceed len(therapeutic_rows), and
     # only falls short of it for drugs whose target isn't one of the
     # 7 curated pathway buckets (target "Other"/"Unknown" isn't
     # plotted — a pre-existing, deliberate heatmap scope, not a bug)
     grid_total = sum(sum(row) for row in z)
-    assert grid_total <= len(TABLE_ROWS)
-    eligible = sum(1 for r in TABLE_ROWS if r["target"] in TARGET_ORDER)
+    assert grid_total <= len(therapeutic_rows)
+    eligible = sum(1 for r in therapeutic_rows if r["target"] in TARGET_ORDER)
     assert grid_total == eligible
 
 
@@ -257,32 +281,36 @@ def test_pipeline_table_names_are_subset_of_pipeline_drugs_csv():
 
 
 def test_drug_type_pie_reconciles_with_resolved_drugs_df():
+    therapeutic_rows = get_therapeutic_rows()
     traces = extract_plotly_traces(HTML_SOURCE, "pieDiv")
     drug_type_trace = traces[1]  # trace order: 0=phase, 1=drug_type, 2=target, 3=status
     assert drug_type_trace["name"] == "Drug Type"
 
+    # Phase 1A: narrowed to therapeutic_drugs_df (pipeline_scope ==
+    # "Therapeutic Drug") — this pie must show ONLY real therapeutic drugs.
     expected_counts = {}
-    for row in TABLE_ROWS:
+    for row in therapeutic_rows:
         expected_counts[row["drug_type"]] = expected_counts.get(row["drug_type"], 0) + 1
 
     actual_counts = dict(zip(drug_type_trace["labels"], drug_type_trace["values"]))
     assert actual_counts == expected_counts
-    assert sum(actual_counts.values()) == len(TABLE_ROWS)
+    assert sum(actual_counts.values()) == len(therapeutic_rows)
     assert "drugs" in drug_type_trace["hovertemplate"], "hover text must say 'drugs', not 'trials', now that this pie is drug-level"
 
 
 def test_target_pie_reconciles_with_resolved_drugs_df():
+    therapeutic_rows = get_therapeutic_rows()
     traces = extract_plotly_traces(HTML_SOURCE, "pieDiv")
     target_trace = traces[2]
     assert target_trace["name"] == "Target"
 
     expected_counts = {}
-    for row in TABLE_ROWS:
+    for row in therapeutic_rows:
         expected_counts[row["target"]] = expected_counts.get(row["target"], 0) + 1
 
     actual_counts = dict(zip(target_trace["labels"], target_trace["values"]))
     assert actual_counts == expected_counts
-    assert sum(actual_counts.values()) == len(TABLE_ROWS)
+    assert sum(actual_counts.values()) == len(therapeutic_rows)
     assert "drugs" in target_trace["hovertemplate"]
 
 
@@ -321,12 +349,112 @@ def test_no_dashboard_calculation_references_legacy_drugs_df():
 
 def test_drug_type_and_target_pies_read_resolved_drugs_df_not_raw_df():
     # static-source check: the two lines that feed the drug-type/target
-    # pies must read resolved_drugs_df, not a bare trial-level `df`/
-    # `trials_df` column access
+    # pies must read resolved_drugs_df (directly or via its
+    # Phase-1A-filtered therapeutic_drugs_df derivative) — never a bare
+    # trial-level `df`/`trials_df` column access
     type_line = re.search(r"^type_counts = (.+)$", PIPELINE_VIZ_SOURCE, re.MULTILINE)
     target_line = re.search(r"^target_counts = (.+)$", PIPELINE_VIZ_SOURCE, re.MULTILINE)
-    assert type_line and "resolved_drugs_df" in type_line.group(1)
-    assert target_line and "resolved_drugs_df" in target_line.group(1)
+    assert type_line and "therapeutic_drugs_df" in type_line.group(1)
+    assert target_line and "therapeutic_drugs_df" in target_line.group(1)
+    # therapeutic_drugs_df itself must be defined as a filter over
+    # resolved_drugs_df, not an independent computation
+    therapeutic_def_line = re.search(r"^therapeutic_drugs_df = (.+)$", PIPELINE_VIZ_SOURCE, re.MULTILINE)
+    assert therapeutic_def_line and "resolved_drugs_df" in therapeutic_def_line.group(1)
+
+
+# ============================================================
+# PHASE 1A — intervention-scope gap closure reconciliation tests
+# ============================================================
+
+GAP_AUDIT_CSV_PATH = "outputs/classification_gap_audit.csv"
+INTERVENTIONS_CSV_PATH = "pipeline_interventions.csv"
+
+
+def test_pipeline_scope_field_present_on_every_table_row():
+    assert len(TABLE_ROWS) > 0
+    for row in TABLE_ROWS:
+        assert "pipeline_scope" in row
+        assert "scope_reason" in row
+        assert row["pipeline_scope"] in {
+            "Therapeutic Drug", "Diagnostic Agent", "Non-Drug Intervention",
+            "Supportive Treatment", "Needs Review",
+        }
+
+
+def test_non_therapeutic_scopes_present_in_table_data_for_optional_filter():
+    # the table's JSON payload must carry SOME non-"Therapeutic Drug"
+    # rows in the real dataset, or the "reveal non-therapeutic records"
+    # toggle would have nothing real to reveal
+    non_therapeutic = [r for r in TABLE_ROWS if r["pipeline_scope"] != "Therapeutic Drug"]
+    assert len(non_therapeutic) > 0, "expected at least one non-therapeutic resolved record in the real dataset"
+    assert len(non_therapeutic) == len(TABLE_ROWS) - len(get_therapeutic_rows())
+
+
+def test_placebo_or_comparator_never_in_table_rows():
+    for row in TABLE_ROWS:
+        assert row["pipeline_scope"] != "Placebo or Comparator", \
+            f"Placebo or Comparator must never appear in the table data, even under the optional filter: {row['display_name']!r}"
+
+
+def test_dietary_supplement_confirmed_leakage_examples_excluded_from_therapeutic_view():
+    therapeutic_names = {r["display_name"] for r in get_therapeutic_rows()}
+    # confirmed leakage examples from the Phase 1A audit — must NOT be
+    # in the default therapeutic-drug population, even though they ARE
+    # still present somewhere in the broader resolved_drugs_df/TABLE_ROWS
+    for name in ["lutein/zeaxanthin", "Curcumin C3 Complex"]:
+        matches = [r for r in TABLE_ROWS if r["display_name"] == name]
+        if matches:  # present in this dataset snapshot
+            assert name not in therapeutic_names, f"{name!r} must not be in the default Therapeutic Drug view"
+            assert matches[0]["pipeline_scope"] != "Therapeutic Drug"
+
+
+def test_scope_toggle_control_present_in_html():
+    assert 'id="scope-toggle"' in HTML_SOURCE
+    assert "showNonTherapeutic" in HTML_SOURCE
+    assert "THERAPEUTIC_SCOPE" in HTML_SOURCE
+
+
+def test_gap_audit_csv_exists_with_expected_columns():
+    with open(GAP_AUDIT_CSV_PATH, encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    assert len(rows) > 0
+    expected_columns = {
+        "raw_intervention_name", "normalized_name", "nct_ids", "clinicaltrials_intervention_type",
+        "previous_drug_type", "new_pipeline_scope", "scope_reason", "scope_method",
+        "scope_confidence", "dashboard_eligible", "manual_review_required",
+    }
+    assert expected_columns.issubset(set(rows[0].keys()))
+
+
+def test_gap_audit_csv_flags_confirmed_leakage_examples_as_not_dashboard_eligible():
+    with open(GAP_AUDIT_CSV_PATH, encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    by_name = {r["raw_intervention_name"]: r for r in rows}
+    for name in ["Curcumin C3 Complex", "lutein/zeaxanthin"]:
+        if name in by_name:
+            assert by_name[name]["dashboard_eligible"] == "False"
+            assert by_name[name]["new_pipeline_scope"] != "Therapeutic Drug"
+    for name in ["Blood Test", "Cerebrospinal fluid (CSF) Biomarkers"]:
+        if name in by_name:
+            assert by_name[name]["new_pipeline_scope"] == "Exclude"
+            assert by_name[name]["dashboard_eligible"] == "False"
+
+
+def test_pipeline_interventions_csv_preserves_scope_columns_and_row_count():
+    # traceability requirement: every parsed intervention stays in this
+    # CSV regardless of pipeline_scope — including Exclude/Placebo or
+    # Comparator, which never get a resolved_drugs_df row at all
+    with open(INTERVENTIONS_CSV_PATH, encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    assert len(rows) > 0
+    assert {"pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required"}.issubset(rows[0].keys())
+    scopes_present = {r["pipeline_scope"] for r in rows}
+    assert "Placebo or Comparator" in scopes_present, "placebo/comparator records must still be preserved in pipeline_interventions.csv"
+
+
+def test_pipeline_drugs_csv_carries_pipeline_scope_column():
+    assert "pipeline_scope" in DRUGS_CSV_ROWS[0]
+    assert "scope_reason" in DRUGS_CSV_ROWS[0]
 
 
 ALL_TESTS = [
@@ -350,6 +478,15 @@ ALL_TESTS = [
     test_phase_and_status_pies_remain_trial_level_by_design,
     test_no_dashboard_calculation_references_legacy_drugs_df,
     test_drug_type_and_target_pies_read_resolved_drugs_df_not_raw_df,
+    test_pipeline_scope_field_present_on_every_table_row,
+    test_non_therapeutic_scopes_present_in_table_data_for_optional_filter,
+    test_placebo_or_comparator_never_in_table_rows,
+    test_dietary_supplement_confirmed_leakage_examples_excluded_from_therapeutic_view,
+    test_scope_toggle_control_present_in_html,
+    test_gap_audit_csv_exists_with_expected_columns,
+    test_gap_audit_csv_flags_confirmed_leakage_examples_as_not_dashboard_eligible,
+    test_pipeline_interventions_csv_preserves_scope_columns_and_row_count,
+    test_pipeline_drugs_csv_carries_pipeline_scope_column,
 ]
 
 

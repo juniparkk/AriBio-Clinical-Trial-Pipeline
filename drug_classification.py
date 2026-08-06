@@ -932,7 +932,7 @@ def classify_intervention(intervention_type, intervention_name, sponsor, sibling
 # TRIAL-LEVEL AGGREGATION
 # ============================================================
 
-def build_interventions_dataframe(trials_df, pipeline_records):
+def build_interventions_dataframe(trials_df, pipeline_records, scope_overrides=None):
     """
     Build a long-format DataFrame — one row per (trial, intervention) —
     from a trials DataFrame.
@@ -943,12 +943,18 @@ def build_interventions_dataframe(trials_df, pipeline_records):
     header names).
 
     For every trial, every one of its individual interventions is
-    parsed (parse_interventions) and classified (classify_intervention),
-    with that trial's OTHER interventions passed in as
-    sibling_interventions. Nothing is dropped — every parsed
+    parsed (parse_interventions), classified (classify_intervention),
+    and then scoped (classify_pipeline_scope — Phase 1A's intervention-
+    scope gap closure), with that trial's OTHER interventions passed in
+    as sibling_interventions. Nothing is dropped — every parsed
     intervention becomes exactly one output row, tagged with its
     trial's nct_id/sponsor/title for pipeline_interventions.csv.
+
+    scope_overrides: dict from load_scope_overrides() (or {} / None for
+    "no curated overrides") — passed straight through to
+    classify_pipeline_scope() for every row.
     """
+    scope_overrides = scope_overrides or {}
     rows = []
     for _, trial in trials_df.iterrows():
         nct_id = trial.get("nct_id")
@@ -962,11 +968,16 @@ def build_interventions_dataframe(trials_df, pipeline_records):
             classified = classify_intervention(
                 interv["type"], interv["name"], sponsor, siblings, pipeline_records
             )
+            scoped = classify_pipeline_scope(
+                interv["type"], interv["name"], classified["classification"],
+                classified["verification_status"], overrides=scope_overrides,
+            )
             rows.append({
                 "nct_id": nct_id,
                 "sponsor": sponsor,
                 "title": title,
                 **classified,
+                **scoped,
             })
     return pd.DataFrame(rows)
 
@@ -1053,7 +1064,9 @@ def resolve_developed_drug(classified_interventions):
     sponsor_developed_groups = confirmed_groups + unsourced_groups
 
     def summary(developed_drug, drug_classification, reason, confidence, needs_manual_review,
-                official_pipeline_match=False, official_source_url="", verification_status=""):
+                official_pipeline_match=False, official_source_url="", verification_status="",
+                pipeline_scope="Needs Review", scope_reason="", scope_method="rule_classification",
+                scope_confidence="low", manual_review_required=None):
         return {
             "developed_drug": developed_drug,
             "developed_drug_normalized": normalize_text(developed_drug),
@@ -1064,6 +1077,25 @@ def resolve_developed_drug(classified_interventions):
             "verification_status": verification_status,
             "classification_confidence": confidence,
             "needs_manual_review": needs_manual_review,
+            # Phase 1A: pipeline_scope/scope_* carried forward from the
+            # WINNING intervention row(s) below — resolve_developed_drug()
+            # itself makes no new scope judgment, it just forwards
+            # classify_pipeline_scope()'s per-intervention verdict to the
+            # trial level so build_resolved_drugs_dataframe() can filter on it.
+            "pipeline_scope": pipeline_scope,
+            "scope_reason": scope_reason,
+            "scope_method": scope_method,
+            "scope_confidence": scope_confidence,
+            "manual_review_required": manual_review_required if manual_review_required is not None else needs_manual_review,
+        }
+
+    def scope_fields(r):
+        return {
+            "pipeline_scope": r.get("pipeline_scope", "Needs Review"),
+            "scope_reason": r.get("scope_reason", ""),
+            "scope_method": r.get("scope_method", "rule_classification"),
+            "scope_confidence": r.get("scope_confidence", "low"),
+            "manual_review_required": r.get("manual_review_required", False),
         }
 
     # Rule 4 is checked ahead of rule 3 deliberately (see docstring).
@@ -1073,6 +1105,9 @@ def resolve_developed_drug(classified_interventions):
             names, "sponsor_developed_therapeutic",
             f"multiple sponsor-developed matches found ({names}) — could not resolve to a single drug",
             "low", True, verification_status="multiple_candidates_unresolved",
+            pipeline_scope="Needs Review",
+            scope_reason="multiple distinct sponsor-developed candidates found in one trial — scope not determined at trial level",
+            scope_method="rule_classification", scope_confidence="low", manual_review_required=True,
         )
 
     # Rule 1
@@ -1083,7 +1118,7 @@ def resolve_developed_drug(classified_interventions):
             f"confirmed official pipeline match: {r['matched_pipeline_drug']}",
             "high", False,
             official_pipeline_match=True, official_source_url=r["official_source_url"],
-            verification_status=r["verification_status"],
+            verification_status=r["verification_status"], **scope_fields(r),
         )
 
     # Rule 2
@@ -1094,7 +1129,7 @@ def resolve_developed_drug(classified_interventions):
             f"official pipeline record matched ({r['matched_pipeline_drug']}) but source_url is blank — verify manually",
             "medium", True,
             official_pipeline_match=True, official_source_url=r["official_source_url"],
-            verification_status=r["verification_status"],
+            verification_status=r["verification_status"], **scope_fields(r),
         )
 
     # Rule 3
@@ -1105,7 +1140,7 @@ def resolve_developed_drug(classified_interventions):
         return summary(
             display_name, "investigational_therapeutic_unverified",
             f"sole investigational candidate identified ({display_name}); not yet confirmed via official pipeline",
-            "medium", True, verification_status=r["verification_status"],
+            "medium", True, verification_status=r["verification_status"], **scope_fields(r),
         )
 
     # Rule 5
@@ -1115,6 +1150,9 @@ def resolve_developed_drug(classified_interventions):
             names, "investigational_therapeutic_unverified",
             f"multiple unverified investigational candidates found ({names}) — could not resolve to a single drug",
             "low", True, verification_status="multiple_candidates_unresolved",
+            pipeline_scope="Needs Review",
+            scope_reason="multiple distinct unverified candidates found in one trial — scope not determined at trial level",
+            scope_method="rule_classification", scope_confidence="low", manual_review_required=True,
         )
 
     # Rule 6: no therapeutic candidate in either tier
@@ -1124,11 +1162,15 @@ def resolve_developed_drug(classified_interventions):
             "", "no_therapeutic_candidate",
             "no confirmed or investigational therapeutic candidate found, but this trial has unresolved/uncertain interventions worth a manual look",
             "low", True, verification_status="no_match",
+            pipeline_scope="Needs Review", scope_reason="no therapeutic candidate; trial has unresolved/uncertain interventions",
+            scope_method="rule_classification", scope_confidence="low", manual_review_required=True,
         )
     return summary(
         "", "no_therapeutic_candidate",
         "no drug/biological therapeutic candidate found among this trial's interventions",
         "high", False, verification_status="not_applicable",
+        pipeline_scope="Exclude", scope_reason="no drug/biological therapeutic candidate found among this trial's interventions",
+        scope_method="rule_classification", scope_confidence="high", manual_review_required=False,
     )
 
 
@@ -1157,12 +1199,29 @@ def build_resolved_drugs_dataframe(trials_df):
 
     Only trials classified sponsor_developed_therapeutic or
     investigational_therapeutic_unverified, with a non-blank
-    developed_drug, and NOT flagged multiple_candidates_unresolved,
-    contribute a row. Everything else (placebo/diagnostic/procedure/
-    device/behavioral/comparator/uncertain/no_therapeutic_candidate
-    trials, and trials with unresolved multiple candidates) produces NO
-    drug row here — see build_unresolved_trials_dataframe() for where
-    the ambiguous ones go instead, so they're never silently dropped.
+    developed_drug, NOT flagged multiple_candidates_unresolved, AND whose
+    Phase 1A pipeline_scope is one of RESOLVED_DRUGS_DF_ELIGIBLE_SCOPES
+    (Therapeutic Drug / Diagnostic Agent / Non-Drug Intervention /
+    Supportive Treatment / Needs Review) contribute a row. Everything
+    else (placebo/diagnostic-tracer/procedure/device/behavioral/
+    comparator/uncertain/no_therapeutic_candidate trials, trials with
+    unresolved multiple candidates, AND — Phase 1A — anything whose scope
+    resolved to "Exclude" or "Placebo or Comparator", e.g. a generic
+    "Blood Test"/"CSF Biomarkers" description that classify_intervention()
+    alone would have let through) produces NO drug row here — see
+    build_unresolved_trials_dataframe() for where the drug-identity-
+    ambiguous ones go instead, so nothing is silently dropped from the
+    dataset as a WHOLE (pipeline_annotated.csv / pipeline_interventions.csv
+    still carry every trial/intervention regardless).
+
+    resolved_drugs_df is still the ONE drug-level source of truth for
+    every dashboard component (Phase 0) — Phase 1A does not split it into
+    a second dataframe. Instead every row carries pipeline_scope, and
+    dashboard components that must show ONLY real therapeutic drugs
+    filter resolved_drugs_df down to pipeline_scope == "Therapeutic Drug"
+    themselves (pipeline_viz.py's therapeutic_drugs_df); components that
+    intentionally offer an optional "reveal non-therapeutic records"
+    view read the unfiltered resolved_drugs_df.
 
     Grouped by developed_drug_normalized — NOT by drug + sponsor. This
     preserves the pre-existing dashboard behavior (one row per drug,
@@ -1185,6 +1244,7 @@ def build_resolved_drugs_dataframe(trials_df):
         trials_df["drug_classification"].isin(["sponsor_developed_therapeutic", "investigational_therapeutic_unverified"])
         & trials_df["developed_drug"].fillna("").astype(str).str.strip().ne("")
         & (trials_df["verification_status"] != "multiple_candidates_unresolved")
+        & trials_df["pipeline_scope"].isin(RESOLVED_DRUGS_DF_ELIGIBLE_SCOPES)
     ].copy()
 
     empty_columns = [
@@ -1192,6 +1252,7 @@ def build_resolved_drugs_dataframe(trials_df):
         "sponsor", "trial_count", "max_enrollment", "is_aribio", "verification_status",
         "classification_confidence", "needs_manual_review", "confirmed_trial_count", "unverified_trial_count",
         "official_source_url", "classification_reason", "nct_ids",
+        "pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required",
     ]
     if eligible.empty:
         return pd.DataFrame(columns=empty_columns)
@@ -1250,6 +1311,32 @@ def build_resolved_drugs_dataframe(trials_df):
 
         nct_ids = "; ".join(sorted(set(g["nct_id"].dropna().astype(str))))
 
+        # Phase 1A: pipeline_scope aggregation. In the overwhelming
+        # majority of groups every contributing trial agrees on scope
+        # (it's derived from the same winning intervention type/name) —
+        # when they DON'T agree, this never silently promotes to
+        # "Therapeutic Drug" just because that happens to be one of the
+        # observed scopes; disagreement always routes to "Needs Review"
+        # so a human resolves which trial's evidence is right.
+        scopes_seen = set(g["pipeline_scope"].dropna())
+        scope_disagreement = len(scopes_seen) > 1
+        if scope_disagreement:
+            pipeline_scope = "Needs Review"
+            scope_reason = f"contributing trials disagree on pipeline scope ({'; '.join(sorted(scopes_seen))}) for this canonical drug name"
+            scope_method = "aggregation_conflict"
+            scope_confidence = "low"
+        elif scopes_seen:
+            pipeline_scope = scopes_seen.pop()
+            scope_row = g[g["pipeline_scope"] == pipeline_scope].iloc[0]
+            scope_reason = scope_row.get("scope_reason", "")
+            scope_method = scope_row.get("scope_method", "")
+            scope_confidence = scope_row.get("scope_confidence", "")
+        else:
+            pipeline_scope, scope_reason, scope_method, scope_confidence = "Needs Review", "no scope information available", "rule_classification", "low"
+
+        manual_review_required = bool(g["manual_review_required"].any()) if "manual_review_required" in g.columns else False
+        manual_review_required = manual_review_required or scope_disagreement
+
         return pd.Series({
             "display_name": display_name,
             "phase_reached": top_rows["phase_clean"].iloc[0],
@@ -1269,6 +1356,11 @@ def build_resolved_drugs_dataframe(trials_df):
             "official_source_url": official_source_url,
             "classification_reason": classification_reason,
             "nct_ids": nct_ids,
+            "pipeline_scope": pipeline_scope,
+            "scope_reason": scope_reason,
+            "scope_method": scope_method,
+            "scope_confidence": scope_confidence,
+            "manual_review_required": manual_review_required,
         })
 
     return (
@@ -1365,3 +1457,412 @@ def build_resolved_drug_trial_links_df(resolved_drugs_df):
             if nct_id:
                 rows.append({"display_name": r["display_name"], "nct_id": nct_id})
     return pd.DataFrame(rows, columns=["display_name", "nct_id"])
+
+
+# ============================================================
+# PHASE 1A — INTERVENTION-SCOPE GAP CLOSURE
+#
+# classify_intervention() (above) answers "is this the sponsor's studied
+# candidate, or a placebo/comparator/diagnostic/procedure/device/
+# behavioral distractor?" — but it never checks the ClinicalTrials.gov
+# intervention TYPE against categories that can slip through its
+# therapeutic gate as a "candidate" (DIETARY_SUPPLEMENT, generic
+# DIAGNOSTIC_TEST descriptions like "Blood Test", COMBINATION_PRODUCT,
+# GENETIC). A dietary supplement with no dev-code-shaped name and no
+# other intervention in its trial is, today, the "sole plausible
+# candidate" per classify_intervention's step 6 — and becomes a
+# canonical "drug" in resolved_drugs_df. That's the confirmed leakage
+# this section closes.
+#
+# Deliberately a SEPARATE layer bolted on AFTER classify_intervention()
+# rather than a rewrite of it: classify_intervention() and its 113
+# existing tests stay byte-for-byte the same (it remains the intervention-
+# type/therapeutic-candidate audit trail), and this layer adds the
+# additional "is this actually eligible to be a dashboard drug record"
+# judgment on top, without disturbing what's already verified correct.
+# ============================================================
+
+PIPELINE_SCOPE_LABELS = [
+    "Therapeutic Drug",
+    "Diagnostic Agent",
+    "Non-Drug Intervention",
+    "Supportive Treatment",
+    "Placebo or Comparator",
+    "Exclude",
+    "Needs Review",
+]
+
+# Records with this pipeline_scope are eligible for the DEFAULT
+# ("Therapeutic Drug") dashboard view.
+THERAPEUTIC_SCOPE = "Therapeutic Drug"
+
+# Records with these scopes still get a resolved_drugs_df row (so the
+# dashboard's optional "reveal non-therapeutic records" filter has
+# something real to show) — everything else (Exclude, Placebo or
+# Comparator) never becomes a resolved_drugs_df row at all, per the
+# requirement that placebo/comparator never appear in ordinary OR
+# optional dashboard views, and that generic/junk descriptions never
+# become a canonical "drug" of any kind.
+RESOLVED_DRUGS_DF_ELIGIBLE_SCOPES = [
+    "Therapeutic Drug", "Diagnostic Agent", "Non-Drug Intervention",
+    "Supportive Treatment", "Needs Review",
+]
+
+
+# --- curated override file (data/reference/intervention_scope_overrides.csv) ---
+
+REQUIRED_SCOPE_OVERRIDE_COLUMNS = [
+    "normalized_intervention_name", "pipeline_scope", "canonical_name_override",
+    "reason", "source", "reviewer", "verified_date",
+]
+
+
+def load_scope_overrides(path):
+    """
+    Read data/reference/intervention_scope_overrides.csv into a dict keyed
+    by normalized intervention name, mirroring load_official_pipeline()'s
+    read-only/missing-file-tolerant behavior: a missing file degrades to
+    "no curated overrides available" (returns {}) rather than crashing the
+    pipeline. Raises ValueError if the file exists but is missing a
+    required column — a real data problem, not something to paper over.
+
+    This exists specifically so exceptions to the general type/keyword
+    rules below (e.g. "this one dietary supplement IS a genuine
+    investigational therapeutic program") live in a reviewable CSV a
+    non-engineer can maintain, rather than hardcoded in Python.
+    """
+    try:
+        raw_df = pd.read_csv(path, dtype=str)
+    except FileNotFoundError:
+        return {}
+
+    missing = [c for c in REQUIRED_SCOPE_OVERRIDE_COLUMNS if c not in raw_df.columns]
+    if missing:
+        raise ValueError(f"intervention_scope_overrides.csv at {path!r} is missing required column(s): {missing}")
+
+    raw_df = raw_df.fillna("")
+
+    overrides = {}
+    for _, row in raw_df.iterrows():
+        key = normalize_text(row["normalized_intervention_name"])
+        if not key:
+            continue
+        overrides[key] = {
+            "pipeline_scope": str(row["pipeline_scope"]).strip(),
+            "canonical_name_override": str(row["canonical_name_override"]).strip(),
+            "reason": str(row["reason"]).strip(),
+            "source": str(row["source"]).strip(),
+            "reviewer": str(row["reviewer"]).strip(),
+            "verified_date": str(row["verified_date"]).strip(),
+        }
+    return overrides
+
+
+# --- generic/junk description detection (type-agnostic keyword net) ---
+# These names must NEVER become a canonical drug regardless of which
+# CLASSIFICATION_LABELS bucket classify_intervention() put them in — they
+# describe a procedure/measurement/generic-care-activity, not a product.
+_GENERIC_DIAGNOSTIC_TEST_TOKENS = {"biomarker", "biomarkers", "genotyping", "genotype"}
+_GENERIC_DIAGNOSTIC_TEST_PHRASES = [
+    "blood test", "blood draw", "blood sample", "blood samples", "blood collection",
+    "csf biomarkers", "csf collection", "csf sample", "csf samples",
+    "cerebrospinal fluid biomarkers", "cerebrospinal fluid csf biomarkers",
+    "biomarker analysis", "biomarker collection", "genetic testing", "apoe genotyping",
+]
+
+
+def _is_generic_diagnostic_description(normalized_name):
+    tokens = set(normalized_name.split())
+    if tokens & _GENERIC_DIAGNOSTIC_TEST_TOKENS:
+        return True
+    return any(_contains_phrase(normalized_name, phrase) for phrase in _GENERIC_DIAGNOSTIC_TEST_PHRASES)
+
+
+# CBTi ("Cognitive Behavioral Therapy for insomnia") and similar digital/
+# behavioral-therapy names sometimes arrive with a non-BEHAVIORAL
+# ct.gov type (e.g. OTHER), so classify_intervention()'s type-based
+# behavioral check (itype_upper == "BEHAVIORAL") can miss them — this is
+# a type-agnostic keyword net that catches them by name regardless of
+# the (possibly wrong) source type.
+_GENERIC_NON_DRUG_TOKENS = {"cbti", "cbt"}
+_GENERIC_NON_DRUG_PHRASES = [
+    "cognitive behavioral therapy", "digital therapeutic application", "mobile application",
+]
+
+
+def _is_generic_non_drug_description(normalized_name):
+    tokens = set(normalized_name.split())
+    if tokens & _GENERIC_NON_DRUG_TOKENS:
+        return True
+    return any(_contains_phrase(normalized_name, phrase) for phrase in _GENERIC_NON_DRUG_PHRASES)
+
+
+# --- GENETIC: gene therapy vs. genetic testing/genotyping/biomarker analysis ---
+_GENE_THERAPY_TOKENS = {"aav", "aav2", "aav5", "aav9", "vector", "lentiviral", "lentivirus", "adenoviral", "crispr"}
+_GENE_THERAPY_PHRASES = ["gene therapy", "viral vector", "gene transfer", "gene editing"]
+_GENETIC_TESTING_TOKENS = {"genotyping", "genotype", "sequencing"}
+_GENETIC_TESTING_PHRASES = [
+    "genetic testing", "genetic screening", "genetic counseling", "genetic analysis",
+    "apoe genotyping", "biomarker analysis",
+]
+
+
+def _looks_like_gene_therapy(normalized_name):
+    tokens = set(normalized_name.split())
+    if tokens & _GENE_THERAPY_TOKENS:
+        return True
+    return any(_contains_phrase(normalized_name, phrase) for phrase in _GENE_THERAPY_PHRASES)
+
+
+def _looks_like_genetic_testing(normalized_name):
+    tokens = set(normalized_name.split())
+    if tokens & _GENETIC_TESTING_TOKENS:
+        return True
+    return any(_contains_phrase(normalized_name, phrase) for phrase in _GENETIC_TESTING_PHRASES)
+
+
+def classify_pipeline_scope(intervention_type, name, classification, verification_status="", overrides=None):
+    """
+    Take ONE intervention's already-computed classify_intervention()
+    output (classification, verification_status) plus its original
+    ClinicalTrials.gov type/name, and decide whether it belongs in the
+    dashboard's default therapeutic-drug population, an optional-filter
+    category, or should never surface as a "drug" at all.
+
+    Returns a dict: pipeline_scope (one of PIPELINE_SCOPE_LABELS),
+    scope_reason, scope_method ("curated_override" | "rule_classification"
+    | "rule_type" | "rule_keyword"), scope_confidence ("high"|"medium"|"low"),
+    manual_review_required (bool), canonical_name_override (str, usually "").
+
+    overrides: dict from load_scope_overrides() (or an equivalent dict
+    built directly for tests) — keyed by normalize_text(name). Checked
+    FIRST and wins over every rule below, so a curated correction always
+    takes precedence over the automatic type/keyword rules.
+    """
+    itype_upper = (intervention_type or "").strip().upper()
+    normalized_name = normalize_text(name)
+    candidate_name = normalize_intervention_candidate_name(name)
+    candidate_normalized = normalize_text(candidate_name)
+    overrides = overrides or {}
+
+    def result(scope, reason, method, confidence, manual_review_required=False, canonical_name_override=""):
+        return {
+            "pipeline_scope": scope,
+            "scope_reason": reason,
+            "scope_method": method,
+            "scope_confidence": confidence,
+            "manual_review_required": manual_review_required,
+            "canonical_name_override": canonical_name_override,
+        }
+
+    # Step 0: curated override always wins, whatever the automatic rules
+    # below would otherwise decide — this is how a genuine investigational
+    # program that happens to be typed DIETARY_SUPPLEMENT (or any other
+    # default-excluded type) gets promoted, or a wrongly-slipped-through
+    # name gets corrected, without editing this file's Python.
+    override = overrides.get(candidate_normalized) or overrides.get(normalized_name)
+    if override and override.get("pipeline_scope") in PIPELINE_SCOPE_LABELS:
+        return result(
+            override["pipeline_scope"],
+            override.get("reason") or "curated override (data/reference/intervention_scope_overrides.csv)",
+            "curated_override", "high",
+            manual_review_required=(override["pipeline_scope"] == "Needs Review"),
+            canonical_name_override=override.get("canonical_name_override", ""),
+        )
+
+    # Step 1: classify_intervention()'s existing non-therapeutic labels
+    # map directly — these are ALREADY excluded from developed_drug
+    # resolution (resolve_developed_drug only ever picks a
+    # sponsor_developed_therapeutic/investigational_therapeutic_unverified
+    # winner), so this mapping mainly exists for completeness/auditing
+    # (classification_gap_audit.csv covers every intervention, not just
+    # therapeutic candidates).
+    if classification == "placebo_or_sham":
+        return result("Placebo or Comparator", "placebo/sham/vehicle-control arm", "rule_classification", "high")
+    if classification == "comparator_or_background_therapy":
+        return result(
+            "Placebo or Comparator",
+            "approved background/comparator therapy, not the trial's studied candidate",
+            "rule_classification", "medium",
+        )
+    if classification == "diagnostic_or_imaging_agent":
+        return result("Diagnostic Agent", "matches a curated diagnostic/imaging tracer name", "rule_classification", "high")
+    if classification == "device":
+        return result("Non-Drug Intervention", "intervention type is DEVICE", "rule_type", "high")
+    if classification == "behavioral":
+        return result("Non-Drug Intervention", "behavioral/non-drug activity", "rule_type", "high")
+    if classification == "procedure":
+        # RADIATION is ambiguous by type alone — it can be a diagnostic
+        # imaging exam OR a non-drug therapeutic procedure; PROCEDURE
+        # itself is always non-drug (an exam/collection, not a product).
+        if itype_upper == "RADIATION":
+            if _is_diagnostic_tracer(normalized_name) or "scan" in normalized_name.split() or _contains_phrase(normalized_name, "imaging"):
+                return result("Diagnostic Agent", "RADIATION-type intervention with imaging/scan wording", "rule_keyword", "medium")
+            return result(
+                "Non-Drug Intervention",
+                "RADIATION-type intervention with no imaging evidence in its name — confirm manually",
+                "rule_type", "low", manual_review_required=True,
+            )
+        return result("Non-Drug Intervention", "clinical procedure or imaging exam", "rule_type", "high")
+    if classification == "other":
+        return result(
+            "Non-Drug Intervention",
+            "non-treatment control arm (e.g. no intervention / untreated / usual care), not a product",
+            "rule_classification", "high",
+        )
+
+    # From here, classification is "uncertain", "sponsor_developed_therapeutic",
+    # or "investigational_therapeutic_unverified" — i.e. classify_intervention()
+    # did NOT already rule this out as placebo/diagnostic/procedure/device/
+    # behavioral/comparator/non-treatment-control. Everything below is the
+    # NEW type/keyword gating that step never applied — including for
+    # "uncertain" rows: real data shows generic descriptions like "Blood
+    # Test" or "CSF Biomarkers" often land as "uncertain" (because
+    # classify_intervention()'s multi-candidate-ambiguity rule fires
+    # before it ever gets a chance to look at the ct.gov type), so these
+    # type/keyword checks must run for "uncertain" too, not just the two
+    # therapeutic-candidate labels, or the confirmed leakage would still
+    # only get the generic "Needs Review" fallback instead of the more
+    # specific Exclude/Diagnostic Agent/Non-Drug Intervention verdict the
+    # requirement calls for.
+    # Type-agnostic generic-description net runs FIRST, ahead of the
+    # per-type gates below — a name that plainly reads as "Blood Test" or
+    # "CSF Biomarkers" (regardless of whether ct.gov typed it
+    # DIAGNOSTIC_TEST, COMBINATION_PRODUCT, or something else) is the
+    # single most specific evidence available and must win over any
+    # type-based fallback; same for "CBTi with Application", which needs
+    # to resolve as a non-drug supportive activity even when its ct.gov
+    # type is COMBINATION_PRODUCT rather than BEHAVIORAL.
+    if _is_generic_diagnostic_description(normalized_name):
+        return result(
+            "Exclude",
+            "generic diagnostic/biomarker test description (e.g. Blood Test, CSF Biomarkers) — never a canonical drug name",
+            "rule_keyword", "high",
+        )
+    if _is_generic_non_drug_description(normalized_name):
+        return result(
+            "Non-Drug Intervention",
+            "name describes a non-drug (digital/behavioral) supportive activity, not a pharmaceutical",
+            "rule_keyword", "high",
+        )
+
+    if itype_upper == "DIETARY_SUPPLEMENT":
+        return result(
+            "Supportive Treatment" if classification == "sponsor_developed_therapeutic" else "Non-Drug Intervention",
+            "dietary supplement / nutraceutical — excluded from the default therapeutic view unless curated as a "
+            "genuine investigational program (data/reference/intervention_scope_overrides.csv)",
+            "rule_type", "medium",
+            manual_review_required=(classification == "sponsor_developed_therapeutic"),
+        )
+
+    if itype_upper == "DIAGNOSTIC_TEST":
+        return result(
+            "Diagnostic Agent", "intervention type is DIAGNOSTIC_TEST", "rule_type", "medium", manual_review_required=True,
+        )
+
+    if itype_upper == "COMBINATION_PRODUCT":
+        # Best-effort component check for Phase 1A: if the descriptive
+        # phrase contains a recognized investigational/known compound or
+        # dev-code, the genuine therapeutic component is preserved
+        # (kept eligible) rather than discarded outright — but still
+        # flagged for manual review, since the display name is still the
+        # whole combination phrase, not the isolated component (full
+        # component-level name extraction is out of Phase 1A's scope).
+        if _looks_like_development_code(candidate_name) or any(
+            compound in candidate_normalized for compound in KNOWN_COMPOUND_NAMES
+        ):
+            return result(
+                "Therapeutic Drug",
+                "combination product name contains a recognized investigational/known compound — "
+                "therapeutic component preserved, but the combined name still needs a human check",
+                "rule_keyword", "medium", manual_review_required=True,
+            )
+        return result(
+            "Needs Review",
+            "combination product — components must be inspected individually before treating the whole phrase "
+            "as one canonical drug name",
+            "rule_type", "low", manual_review_required=True,
+        )
+
+    if itype_upper == "GENETIC":
+        if _looks_like_genetic_testing(normalized_name):
+            return result(
+                "Exclude", "genetic testing/genotyping/biomarker analysis, not a gene-therapy product", "rule_keyword", "high",
+            )
+        if _looks_like_gene_therapy(normalized_name):
+            return result(
+                "Therapeutic Drug", "name indicates an actual gene-therapy product (vector/AAV/gene-therapy wording)",
+                "rule_keyword", "medium", manual_review_required=True,
+            )
+        return result(
+            "Needs Review",
+            "GENETIC intervention type with no clear evidence of gene therapy vs. genetic testing/genotyping",
+            "rule_type", "low", manual_review_required=True,
+        )
+
+    if classification == "uncertain":
+        return result(
+            "Needs Review",
+            "classify_intervention() could not resolve a confident therapeutic candidate for this intervention",
+            "rule_classification", "low", manual_review_required=True,
+        )
+
+    # DRUG / BIOLOGICAL (or blank/unrecognized type) survivors — the
+    # existing placebo/imaging/comparator/generic-description exclusions
+    # above already ran, so this really is the therapeutic population.
+    if classification == "sponsor_developed_therapeutic":
+        return result(
+            "Therapeutic Drug",
+            "confirmed or unsourced official sponsor-pipeline match",
+            "rule_classification", "high" if verification_status == "confirmed_official_match" else "medium",
+        )
+    return result(
+        "Therapeutic Drug",
+        "investigational therapeutic candidate; drug/biological intervention type with no disqualifying evidence found",
+        "rule_classification", "medium", manual_review_required=True,
+    )
+
+
+def build_scope_audit_dataframe(interventions_df):
+    """
+    outputs/classification_gap_audit.csv source: one row per DISTINCT
+    (normalized_name, ClinicalTrials.gov intervention type) combination
+    seen anywhere in interventions_df — not one row per raw occurrence —
+    so a name repeated across many trials produces one auditable row with
+    every contributing NCT ID listed, rather than a wall of duplicates.
+
+    Expects interventions_df to already carry classify_intervention()'s
+    columns (normalized_name, original_name, original_type, classification)
+    AND classify_pipeline_scope()'s columns (pipeline_scope, scope_reason,
+    scope_method, scope_confidence, manual_review_required) — i.e. the
+    dataframe build_interventions_dataframe() returns.
+    """
+    columns = [
+        "raw_intervention_name", "normalized_name", "nct_ids",
+        "clinicaltrials_intervention_type", "previous_drug_type",
+        "new_pipeline_scope", "scope_reason", "scope_method",
+        "scope_confidence", "dashboard_eligible", "manual_review_required",
+    ]
+    if interventions_df.empty:
+        return pd.DataFrame(columns=columns)
+
+    def summarize(g):
+        return pd.Series({
+            "raw_intervention_name": g["original_name"].iloc[0],
+            "nct_ids": "; ".join(sorted(set(g["nct_id"].dropna().astype(str)))),
+            "previous_drug_type": g["classification"].iloc[0],
+            "new_pipeline_scope": g["pipeline_scope"].iloc[0],
+            "scope_reason": g["scope_reason"].iloc[0],
+            "scope_method": g["scope_method"].iloc[0],
+            "scope_confidence": g["scope_confidence"].iloc[0],
+            "dashboard_eligible": bool(g["pipeline_scope"].iloc[0] == THERAPEUTIC_SCOPE),
+            "manual_review_required": bool(g["manual_review_required"].any()),
+        })
+
+    grouped = (
+        interventions_df.groupby(["normalized_name", "original_type"], sort=False, dropna=False)
+        .apply(summarize, include_groups=False)
+        .reset_index()
+        .rename(columns={"original_type": "clinicaltrials_intervention_type"})
+    )
+    return grouped[columns]

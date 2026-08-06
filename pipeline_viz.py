@@ -10,6 +10,7 @@
 # ============================================================
 
 import json
+import os
 import re
 from datetime import date
 
@@ -27,6 +28,9 @@ from drug_classification import (
     build_unresolved_trials_dataframe,
     build_target_phase_counts,
     build_resolved_drug_trial_links_df,
+    load_scope_overrides,
+    build_scope_audit_dataframe,
+    THERAPEUTIC_SCOPE,
 )
 
 # ============================================================
@@ -393,12 +397,17 @@ print()
 # ============================================================
 
 pipeline_records = load_official_pipeline("data/official_pipeline.csv")
+scope_overrides = load_scope_overrides("data/reference/intervention_scope_overrides.csv")
 
-interventions_df = build_interventions_dataframe(df, pipeline_records)
+interventions_df = build_interventions_dataframe(df, pipeline_records, scope_overrides)
 
 print("=== PER-INTERVENTION CLASSIFICATION ===")
 print(f"{len(interventions_df)} individual interventions parsed from {len(df)} trials")
 print(interventions_df["classification"].value_counts())
+print()
+print("=== PER-INTERVENTION PIPELINE SCOPE (Phase 1A) ===")
+print(interventions_df["pipeline_scope"].value_counts())
+print(f"{len(scope_overrides)} curated override(s) loaded from data/reference/intervention_scope_overrides.csv")
 print()
 
 _resolved_records = []
@@ -423,6 +432,11 @@ _NEW_COLUMN_DEFAULTS = {
     "verification_status": "not_applicable",
     "classification_confidence": "high",
     "needs_manual_review": False,
+    "pipeline_scope": "Exclude",
+    "scope_reason": "trial has no parsed interventions",
+    "scope_method": "rule_type",
+    "scope_confidence": "high",
+    "manual_review_required": False,
 }
 for _col, _default in _NEW_COLUMN_DEFAULTS.items():
     df[_col] = df[_col].fillna(_default)
@@ -504,9 +518,25 @@ def _sponsor_display(sponsor_field):
 
 resolved_drugs_df["sponsor_display"] = resolved_drugs_df["sponsor"].apply(_sponsor_display)
 
+# ============================================================
+# PHASE 1A: therapeutic_drugs_df — the DEFAULT dashboard population.
+# resolved_drugs_df (above) stays the one drug-level source of truth and
+# keeps every scope Phase 1A didn't outright exclude (Therapeutic Drug,
+# Diagnostic Agent, Non-Drug Intervention, Supportive Treatment, Needs
+# Review), so the dashboard's optional "reveal non-therapeutic records"
+# filter has real data to show. Components that must show ONLY actual
+# therapeutic drugs (KPI tiles, heatmap, Phase 3 leaderboard, drug-type/
+# target pies, and the table's default filter state) read THIS narrower
+# view instead.
+# ============================================================
+therapeutic_drugs_df = resolved_drugs_df[resolved_drugs_df["pipeline_scope"] == THERAPEUTIC_SCOPE].copy()
+
 print("=== RESOLVED DRUG ROLLUP (new table source) ===")
-print(f"{len(resolved_drugs_df)} drug rows")
+print(f"{len(resolved_drugs_df)} total resolved drug rows ({len(therapeutic_drugs_df)} Therapeutic Drug / "
+      f"{len(resolved_drugs_df) - len(therapeutic_drugs_df)} other scope)")
 print(resolved_drugs_df["verification_label"].value_counts())
+print("pipeline_scope breakdown:")
+print(resolved_drugs_df["pipeline_scope"].value_counts())
 print()
 
 # ============================================================
@@ -562,6 +592,45 @@ print(f"[supplementary] resolved_drug_trial_links_df: {len(resolved_drug_trial_l
       f"across {resolved_drug_trial_links_df['nct_id'].nunique()} distinct contributing trials")
 print()
 
+# --- Phase 1A extension: pipeline_scope breakdown, both at the raw
+# intervention level (every parsed intervention, regardless of whether it
+# ever became a developed_drug candidate) and at the resolved-drug level
+# (resolved_drugs_df, which now excludes "Exclude"/"Placebo or Comparator"
+# scope trials entirely — see build_resolved_drugs_dataframe). ---
+_scope_counts = interventions_df["pipeline_scope"].value_counts()
+
+def _scope_count(label):
+    return int(_scope_counts.get(label, 0))
+
+print("=== PHASE 1A — PIPELINE SCOPE RECONCILIATION ===")
+print(f"all resolved drug records (resolved_drugs_df): {len(resolved_drugs_df)}")
+print(f"  therapeutic drugs (pipeline_scope == 'Therapeutic Drug'): {len(therapeutic_drugs_df)}")
+print(f"  diagnostic agents: {int((resolved_drugs_df['pipeline_scope'] == 'Diagnostic Agent').sum())}")
+print(f"  non-drug interventions: {int((resolved_drugs_df['pipeline_scope'] == 'Non-Drug Intervention').sum())}")
+print(f"  supportive treatments: {int((resolved_drugs_df['pipeline_scope'] == 'Supportive Treatment').sum())}")
+print(f"  needs-review records: {int((resolved_drugs_df['pipeline_scope'] == 'Needs Review').sum())}")
+print(f"raw intervention records by pipeline_scope (interventions_df, {len(interventions_df)} total):")
+print(f"  Therapeutic Drug: {_scope_count('Therapeutic Drug')}")
+print(f"  Diagnostic Agent: {_scope_count('Diagnostic Agent')}")
+print(f"  Non-Drug Intervention: {_scope_count('Non-Drug Intervention')}")
+print(f"  Supportive Treatment: {_scope_count('Supportive Treatment')}")
+print(f"  Placebo or Comparator: {_scope_count('Placebo or Comparator')}")
+print(f"  Exclude: {_scope_count('Exclude')}")
+print(f"  Needs Review: {_scope_count('Needs Review')}")
+print("raw intervention records by ClinicalTrials.gov intervention type:")
+print(interventions_df["original_type"].value_counts(dropna=False).to_string())
+print(f"[check: scope counts sum to raw intervention records? "
+      f"{sum(_scope_count(l) for l in ['Therapeutic Drug','Diagnostic Agent','Non-Drug Intervention','Supportive Treatment','Placebo or Comparator','Exclude','Needs Review']) == len(interventions_df)}]")
+print(f"records removed from the default Therapeutic Drug view (resolved_drugs_df rows with pipeline_scope != 'Therapeutic Drug'): "
+      f"{len(resolved_drugs_df) - len(therapeutic_drugs_df)}")
+print()
+
+scope_audit_df = build_scope_audit_dataframe(interventions_df)
+os.makedirs("outputs", exist_ok=True)
+scope_audit_df.to_csv("outputs/classification_gap_audit.csv", index=False)
+print(f"=== SAVED: outputs/classification_gap_audit.csv ({len(scope_audit_df)} distinct intervention name/type records) ===")
+print()
+
 # ============================================================
 # STEP 4: COLORS
 # (brand colors + darken()/lighten() helpers now live near the top of
@@ -612,19 +681,23 @@ STATUS_COLORS = {
 
 # --- Compute counts for pie charts ---
 # Phase 0 data-source consolidation: "By Drug Type" and "By Target
-# Pathway" become genuinely drug-level (resolved_drugs_df) — their
-# titles never said "trial" in the first place, so this actually makes
-# them match what they always claimed to show. "By Phase" and "By
-# Trial Status" stay trial-level (trials_df) deliberately: "how many
-# TRIALS are at each phase/status" is a real, different metric from the
-# KPI tiles' "how many DRUGS have reached each phase" — not an
-# inconsistency to fix, a distinct metric worth keeping. Per
-# requirement to "rename or clarify" rather than force one granularity
-# on every chart, the subplot titles below now say which basis each
-# pie uses.
+# Pathway" become genuinely drug-level — their titles never said "trial"
+# in the first place, so this actually makes them match what they always
+# claimed to show. "By Phase" and "By Trial Status" stay trial-level
+# (trials_df) deliberately: "how many TRIALS are at each phase/status" is
+# a real, different metric from the KPI tiles' "how many DRUGS have
+# reached each phase" — not an inconsistency to fix, a distinct metric
+# worth keeping. Subplot titles below say which basis each pie uses.
+#
+# Phase 1A: "By Drug Type"/"By Target Pathway" further narrow from
+# resolved_drugs_df to therapeutic_drugs_df (pipeline_scope == "Therapeutic
+# Drug" only) — per the requirement that these two pies "must use only
+# Therapeutic Drug records". They are NOT the same population as the
+# table's full JSON payload anymore (that stays the broader
+# resolved_drugs_df so the table's optional filter can reveal the rest).
 phase_counts = trials_df["phase_clean"].value_counts()
-type_counts = resolved_drugs_df["drug_type"].value_counts()
-target_counts = resolved_drugs_df["target"].value_counts()
+type_counts = therapeutic_drugs_df["drug_type"].value_counts()
+target_counts = therapeutic_drugs_df["target"].value_counts()
 status_counts = trials_df["status_clean"].value_counts()
 
 # ============================================================
@@ -633,7 +706,7 @@ status_counts = trials_df["status_clean"].value_counts()
 
 fig = make_subplots(
     rows=2, cols=2,
-    subplot_titles=["By Phase (trials)", "By Drug Type (unique drugs)", "By Target Pathway (unique drugs)", "By Trial Status"],
+    subplot_titles=["By Phase (trials)", "By Drug Type (therapeutic drugs)", "By Target Pathway (therapeutic drugs)", "By Trial Status (trials)"],
     specs=[[{"type": "pie"}, {"type": "pie"}],
            [{"type": "pie"}, {"type": "pie"}]]
 )
@@ -653,7 +726,7 @@ fig.add_trace(go.Pie(
     values=type_counts.values.tolist(),
     marker_colors=[DRUG_TYPE_COLORS.get(t, "#999") for t in type_counts.index],
     name="Drug Type", hole=0.35, textinfo="label+percent",
-    hovertemplate="<b>%{label}</b><br>%{value} drugs<br>%{percent}<extra></extra>"
+    hovertemplate="<b>%{label}</b><br>%{value} therapeutic drugs<br>%{percent}<extra></extra>"
 ), row=1, col=2)
 
 fig.add_trace(go.Pie(
@@ -661,7 +734,7 @@ fig.add_trace(go.Pie(
     values=target_counts.values.tolist(),
     marker_colors=[TARGET_COLORS.get(t, "#999") for t in target_counts.index],
     name="Target", hole=0.35, textinfo="label+percent",
-    hovertemplate="<b>%{label}</b><br>%{value} drugs<br>%{percent}<extra></extra>"
+    hovertemplate="<b>%{label}</b><br>%{value} therapeutic drugs<br>%{percent}<extra></extra>"
 ), row=2, col=1)
 
 fig.add_trace(go.Pie(
@@ -708,9 +781,11 @@ PHASES_ASC = ["Phase 1", "Phase 2", "Phase 3"]
 # --- Target × Phase heatmap (magnitude → one hue light-to-dark, not the
 # categorical target colors — a sequential ramp is the correct encoding for
 # "how many", built from the AriBio blue rather than Plotly's default) ---
-# Phase 0: now built from resolved_drugs_df (was legacy_drugs_df).
-HEATMAP_TABS = [("All", resolved_drugs_df), ("Small Molecule", resolved_drugs_df[resolved_drugs_df["drug_type"] == "Small Molecule"]),
-                 ("Biologic", resolved_drugs_df[resolved_drugs_df["drug_type"] == "Biologic"])]
+# Phase 0: built from resolved_drugs_df (was legacy_drugs_df). Phase 1A:
+# narrowed to therapeutic_drugs_df (pipeline_scope == "Therapeutic Drug"
+# only), per the requirement that the heatmap show only real drugs.
+HEATMAP_TABS = [("All", therapeutic_drugs_df), ("Small Molecule", therapeutic_drugs_df[therapeutic_drugs_df["drug_type"] == "Small Molecule"]),
+                 ("Biologic", therapeutic_drugs_df[therapeutic_drugs_df["drug_type"] == "Biologic"])]
 HEATMAP_COLORSCALE = [[0, "#eef2f8"], [1, ARIBIO_BLUE]]
 
 
@@ -733,14 +808,16 @@ def build_heatmap(sub_df):
 heatmap_figs = {label: build_heatmap(sub) for label, sub in HEATMAP_TABS}
 
 # --- Phase 3 leaderboard: same drug-level data, sorted by target ---
-# Phase 0: now built from resolved_drugs_df (was legacy_drugs_df).
-phase3_df = resolved_drugs_df[resolved_drugs_df["phase_reached"] == "Phase 3"].sort_values(
+# Phase 0: built from resolved_drugs_df (was legacy_drugs_df). Phase 1A:
+# narrowed to therapeutic_drugs_df, per the requirement that the
+# leaderboard show only real drugs.
+phase3_df = therapeutic_drugs_df[therapeutic_drugs_df["phase_reached"] == "Phase 3"].sort_values(
     ["target", "is_aribio", "display_name"], ascending=[True, False, True]
 )
 PHASE3_PREVIEW_N = 8
 
-print("=== PER-DRUG TABLE PREVIEW (resolved_drugs_df, first 30 rows, sorted by phase) ===")
-preview = resolved_drugs_df.sort_values("phase_reached", ascending=False)
+print("=== PER-DRUG TABLE PREVIEW (therapeutic_drugs_df, first 30 rows, sorted by phase) ===")
+preview = therapeutic_drugs_df.sort_values("phase_reached", ascending=False)
 preview_cols = ["display_name", "phase_reached", "drug_type", "target", "status_summary", "is_aribio"]
 print(preview[preview_cols].head(30).to_string(index=False))
 print()
@@ -781,6 +858,13 @@ TABLE_COLUMNS = [
     # (the underlying data columns are kept in table_df below for that).
 ]
 
+# Phase 1A: table_df stays sourced from the BROADER resolved_drugs_df
+# (every scope except Exclude/Placebo or Comparator, which never get a
+# row at all) — not therapeutic_drugs_df — so the browser has the data
+# to power the "reveal non-therapeutic records" toggle below. The JS
+# applies a client-side pipeline_scope === "Therapeutic Drug" filter by
+# default, matching the requirement that the DEFAULT table view show
+# only therapeutic drugs while the data itself preserves the rest.
 table_df = resolved_drugs_df[[
     "display_name", "phase_reached", "drug_type", "target", "target_display",
     "status_summary", "trial_count", "max_enrollment", "sponsor", "sponsor_display",
@@ -790,13 +874,17 @@ table_df = resolved_drugs_df[[
     "needs_manual_review", "review_label",
     "confirmed_trial_count", "unverified_trial_count",
     "official_source_url", "classification_reason", "nct_ids",
+    "pipeline_scope", "scope_reason", "manual_review_required",
 ]].copy()
 table_records = json.loads(table_df.to_json(orient="records"))
 
-total_drugs = len(resolved_drugs_df)
-phase3_agents = int((resolved_drugs_df["phase_reached"] == "Phase 3").sum())
-phase2_agents = int((resolved_drugs_df["phase_reached"] == "Phase 2").sum())
-phase1_agents = int((resolved_drugs_df["phase_reached"] == "Phase 1").sum())
+# KPI tiles: Phase 1A narrows these to therapeutic_drugs_df — "Total
+# drugs" must mean actual therapeutic drugs, not every resolved record.
+total_drugs = len(therapeutic_drugs_df)
+total_resolved_records = len(resolved_drugs_df)
+phase3_agents = int((therapeutic_drugs_df["phase_reached"] == "Phase 3").sum())
+phase2_agents = int((therapeutic_drugs_df["phase_reached"] == "Phase 2").sum())
+phase1_agents = int((therapeutic_drugs_df["phase_reached"] == "Phase 1").sum())
 
 plotlyjs_lib = pyo.get_plotlyjs()  # loaded once at the top of the page; every figure below skips its own copy
 pies_html = pio.to_html(fig, include_plotlyjs=False, full_html=False, div_id="pieDiv")
@@ -1025,6 +1113,10 @@ html_template = f"""
   #controls input[type="text"]:focus {{
     outline: none; border-color: {ARIBIO_BLUE}; box-shadow: 0 0 0 3px {lighten(ARIBIO_BLUE, 0.82)};
   }}
+  #scope-toggle-label {{
+    font-size: 12.5px; color: #444; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;
+  }}
+  #scope-toggle-label input {{ cursor: pointer; }}
   #row-count {{ font-size: 12px; color: #666; margin: 0 0 6px; }}
 
   #table-wrap {{
@@ -1114,7 +1206,7 @@ html_template = f"""
 <header class="topbar">
   <div class="topbar-inner">
     <div class="topbar-title">Alzheimer's Disease Clinical Trial Pipeline</div>
-    <div class="topbar-sub">Source: clinicaltrials.gov &middot; Updated {today_str} &middot; {len(df)} trials analyzed &middot; {total_drugs} unique drugs</div>
+    <div class="topbar-sub">Source: clinicaltrials.gov &middot; Updated {today_str} &middot; {len(df)} trials analyzed &middot; {total_drugs} therapeutic drugs ({total_resolved_records} total resolved records)</div>
   </div>
 </header>
 
@@ -1147,7 +1239,7 @@ html_template = f"""
     </div>
 
     <div class="kpi-row">
-      <div class="kpi-tile"><div class="kpi-value">{total_drugs}</div><div class="kpi-label">Total drugs in trials</div></div>
+      <div class="kpi-tile"><div class="kpi-value">{total_drugs}</div><div class="kpi-label">Total therapeutic drugs</div></div>
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 3']}">{phase3_agents}</div><div class="kpi-label">Phase 3 agents</div></div>
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 2']}">{phase2_agents}</div><div class="kpi-label">Phase 2 agents</div></div>
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 1']}">{phase1_agents}</div><div class="kpi-label">Phase 1 agents</div></div>
@@ -1183,6 +1275,9 @@ html_template = f"""
     <h2 class="section-title">Drug Pipeline Table</h2>
     <div id="controls">
       <input type="text" id="search-box" placeholder="Search by drug, sponsor, target, or verification...">
+      <label id="scope-toggle-label">
+        <input type="checkbox" id="scope-toggle"> Show non-therapeutic / needs-review records
+      </label>
     </div>
     <div id="row-count"></div>
     <div id="table-wrap">
@@ -1216,6 +1311,15 @@ html_template = f"""
     phase: new Set(), drugType: new Set(), target: new Set(), status: new Set(),
   }};
   let searchTerm = '';
+  // Phase 1A: ALL_ROWS carries every resolved_drugs_df record (every
+  // pipeline_scope except "Exclude"/"Placebo or Comparator", which never
+  // get a row at all — see table_df in pipeline_viz.py). The DEFAULT
+  // table view still shows only "Therapeutic Drug" records; checking
+  // the "Show non-therapeutic / needs-review records" box reveals the
+  // rest (Diagnostic Agent / Non-Drug Intervention / Supportive
+  // Treatment / Needs Review).
+  let showNonTherapeutic = false;
+  const THERAPEUTIC_SCOPE = 'Therapeutic Drug';
   // drug display_name -> expanded/collapsed state for the row-detail
   // panel, tracked across re-renders (filter/sort/search all rebuild
   // the table body from scratch, so this can't just live in the DOM)
@@ -1272,9 +1376,11 @@ html_template = f"""
       <div><strong>Sponsors</strong>${{sponsorList}}</div>
       <div><strong>Verification</strong>${{pill(r.verification_label, VERIFICATION_COLORS)}}</div>
       <div><strong>Confidence</strong>${{pill(r.confidence_label, CONFIDENCE_COLORS)}}</div>
+      <div><strong>Pipeline scope</strong>${{escapeHtml(r.pipeline_scope || '—')}}</div>
       <div><strong>Confirmed trials</strong>${{r.confirmed_trial_count}}</div>
       <div><strong>Unverified trials</strong>${{r.unverified_trial_count}}</div>
       <div><strong>Notes</strong>${{escapeHtml(r.classification_reason || '—')}}</div>
+      <div><strong>Scope reason</strong>${{escapeHtml(r.scope_reason || '—')}}</div>
       <div><strong>Trial IDs</strong>${{escapeHtml(r.nct_ids || '—')}}</div>
     </div></td></tr>`;
   }}
@@ -1288,7 +1394,9 @@ html_template = f"""
       return;
     }}
 
-    let rows = ALL_ROWS.filter(r => {{
+    const scopeBase = showNonTherapeutic ? ALL_ROWS : ALL_ROWS.filter(r => r.pipeline_scope === THERAPEUTIC_SCOPE);
+
+    let rows = scopeBase.filter(r => {{
       for (const field in filters) {{
         const set = filters[field];
         if (set.size > 0 && !set.has(r[FIELD_TO_COLUMN[field]])) return false;
@@ -1309,7 +1417,10 @@ html_template = f"""
       return 0;
     }});
 
-    document.getElementById('row-count').textContent = `${{rows.length}} of ${{ALL_ROWS.length}} drugs shown`;
+    const hiddenCount = ALL_ROWS.length - scopeBase.length;
+    const hiddenNote = (!showNonTherapeutic && hiddenCount > 0) ? ` (${{hiddenCount}} non-therapeutic/needs-review record${{hiddenCount === 1 ? '' : 's'}} hidden)` : '';
+    const scopeLabel = showNonTherapeutic ? 'records' : 'therapeutic drugs';
+    document.getElementById('row-count').textContent = `${{rows.length}} of ${{scopeBase.length}} ${{scopeLabel}} shown${{hiddenNote}}`;
 
     if (rows.length === 0) {{
       body.innerHTML = `<tr><td colspan="${{TABLE_COLUMN_COUNT}}" style="text-align:center;color:#999;padding:28px;">No drugs match the current filters.</td></tr>`;
@@ -1366,6 +1477,11 @@ html_template = f"""
 
   document.getElementById('search-box').addEventListener('input', (e) => {{
     searchTerm = e.target.value.toLowerCase();
+    renderTable();
+  }});
+
+  document.getElementById('scope-toggle').addEventListener('change', (e) => {{
+    showNonTherapeutic = e.target.checked;
     renderTable();
   }});
 
@@ -1471,6 +1587,11 @@ review_cols = [
     "developed_drug", "developed_drug_normalized", "drug_classification",
     "classification_reason", "official_pipeline_match", "official_source_url",
     "verification_status", "classification_confidence", "needs_manual_review",
+    # Phase 1A intervention-scope gap closure — the trial-level scope
+    # forwarded from whichever intervention resolve_developed_drug()
+    # picked as this trial's developed_drug (see resolve_developed_drug()'s
+    # scope_fields() helper in drug_classification.py).
+    "pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required",
 ]
 review_cols = [c for c in review_cols if c in df.columns]
 df[review_cols].to_csv("pipeline_annotated.csv", index=False)
@@ -1480,18 +1601,25 @@ print("=== SAVED: pipeline_annotated.csv (per-trial) ===")
 # one drug-level source of truth every other dashboard component now
 # uses (Phase 0 data-source consolidation). This is what removes
 # placebo/diagnostic-tracer/procedure/device/behavioral/non-treatment-
-# control rows from pipeline_drugs.csv.
+# control rows from pipeline_drugs.csv. Phase 1A: still the FULL
+# resolved_drugs_df (every pipeline_scope except Exclude/Placebo or
+# Comparator, which never get a row at all) — not narrowed to
+# therapeutic_drugs_df — so this CSV stays the same "one drug-level
+# source of truth" the dashboard's table/optional-filter reads, with the
+# new pipeline_scope column making it trivial to filter to
+# "Therapeutic Drug" only in Excel.
 drug_review_cols = [
     "display_name", "phase_reached", "drug_type", "target", "status_summary",
     "trial_count", "max_enrollment", "sponsor", "is_aribio",
     "verification_status", "classification_confidence", "needs_manual_review",
     "confirmed_trial_count", "unverified_trial_count",
+    "pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required",
 ]
 resolved_drugs_df[drug_review_cols].sort_values(["phase_reached", "display_name"], ascending=[False, True]).to_csv(
     "pipeline_drugs.csv", index=False
 )
 print("=== SAVED: pipeline_drugs.csv (per-drug rollup, now from developed_drug resolution) ===")
-print(f"{len(resolved_drugs_df)} drug rows "
+print(f"{len(resolved_drugs_df)} drug rows ({len(therapeutic_drugs_df)} Therapeutic Drug scope) "
       f"({int((resolved_drugs_df['confirmed_trial_count'] > 0).sum())} with a confirmed/pipeline-matched trial, "
       f"{int(((resolved_drugs_df['unverified_trial_count'] > 0) & (resolved_drugs_df['confirmed_trial_count'] == 0)).sum())} unverified-only)")
 print("Open in Excel to review and fix any wrong drug_type or target labels")
@@ -1532,6 +1660,11 @@ interventions_output = interventions_df.rename(columns={
     "normalized_name", "classification", "classification_reason", "official_pipeline_match",
     "matched_pipeline_drug", "official_source_url", "verification_status", "confidence",
     "needs_manual_review",
+    # Phase 1A: every intervention's scope verdict, preserved here
+    # regardless of whether it ever became a developed_drug candidate —
+    # this is the traceability record for records that never reach
+    # resolved_drugs_df at all (e.g. Exclude/Placebo or Comparator scope).
+    "pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required",
 ]]
 interventions_output.to_csv("pipeline_interventions.csv", index=False)
 print("=== SAVED: pipeline_interventions.csv (per-intervention detail) ===")

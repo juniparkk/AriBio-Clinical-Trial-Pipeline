@@ -39,6 +39,10 @@ from drug_classification import (
     build_unresolved_trials_dataframe,
     build_target_phase_counts,
     build_resolved_drug_trial_links_df,
+    classify_pipeline_scope,
+    load_scope_overrides,
+    build_scope_audit_dataframe,
+    PIPELINE_SCOPE_LABELS,
 )
 
 PIPELINE_CSV_PATH = os.path.join(os.path.dirname(__file__), "data", "official_pipeline.csv")
@@ -1014,7 +1018,9 @@ def test_integration_multi_trial_dataframe():
 def make_trial_row(nct_id, sponsor, developed_drug, drug_classification, verification_status,
                     classification_confidence, needs_manual_review, phase="Phase 2", status="Recruiting",
                     drug_type="Small Molecule", target="Amyloid", enrollment=100, is_aribio=False,
-                    title="Test Trial", interventions="DRUG: X", classification_reason="test reason"):
+                    title="Test Trial", interventions="DRUG: X", classification_reason="test reason",
+                    pipeline_scope="Therapeutic Drug", scope_reason="test scope reason",
+                    scope_method="rule_classification", scope_confidence="high", manual_review_required=None):
     return {
         "nct_id": nct_id, "sponsor": sponsor, "title": title, "interventions": interventions,
         "phase_clean": phase, "status_clean": status, "drug_type": drug_type, "target": target,
@@ -1026,6 +1032,16 @@ def make_trial_row(nct_id, sponsor, developed_drug, drug_classification, verific
         "verification_status": verification_status,
         "classification_confidence": classification_confidence,
         "needs_manual_review": needs_manual_review,
+        # Phase 1A: defaults to "Therapeutic Drug" so every PRE-EXISTING
+        # test built on this fixture (written before Phase 1A existed)
+        # keeps behaving exactly as before — build_resolved_drugs_dataframe()
+        # now also gates on pipeline_scope, so a row with no scope info at
+        # all would otherwise be silently dropped by that new filter.
+        "pipeline_scope": pipeline_scope,
+        "scope_reason": scope_reason,
+        "scope_method": scope_method,
+        "scope_confidence": scope_confidence,
+        "manual_review_required": manual_review_required if manual_review_required is not None else needs_manual_review,
     }
 
 
@@ -1231,6 +1247,396 @@ def test_build_resolved_drug_trial_links_df_row_count_matches_trial_count_sum():
 
 
 # ------------------------------------------------------------
+# Phase 1A — classify_pipeline_scope() / load_scope_overrides() /
+# build_scope_audit_dataframe()
+#
+# classify_intervention()'s own classification/CLASSIFICATION_LABELS are
+# untouched by Phase 1A (every test above this section still exercises
+# the exact same behavior it always has) — these are the NEW gap-closure
+# layer's tests: confirmed dietary-supplement/generic-diagnostic-test/
+# combination-product/genetic leakage, and the curated-override escape
+# hatch.
+# ------------------------------------------------------------
+
+def test_scope_dietary_supplement_investigational_excluded_from_therapeutic():
+    # confirmed leakage example: "lutein/zeaxanthin"
+    r = classify_pipeline_scope("DIETARY_SUPPLEMENT", "lutein/zeaxanthin", "investigational_therapeutic_unverified", "no_match")
+    assert r["pipeline_scope"] != "Therapeutic Drug"
+    assert r["pipeline_scope"] == "Non-Drug Intervention"
+    assert r["scope_method"] == "rule_type"
+
+
+def test_scope_dietary_supplement_curcumin_c3_complex_excluded():
+    r = classify_pipeline_scope("DIETARY_SUPPLEMENT", "Curcumin C3 Complex", "investigational_therapeutic_unverified", "no_match")
+    assert r["pipeline_scope"] == "Non-Drug Intervention"
+
+
+def test_scope_behavioral_excluded_from_therapeutic():
+    r = classify_pipeline_scope("BEHAVIORAL", "Cognitive Training", "behavioral", "not_applicable")
+    assert r["pipeline_scope"] == "Non-Drug Intervention"
+
+
+def test_scope_device_excluded_from_therapeutic():
+    r = classify_pipeline_scope("DEVICE", "TMS Device", "device", "not_applicable")
+    assert r["pipeline_scope"] == "Non-Drug Intervention"
+
+
+def test_scope_blood_test_is_not_a_drug():
+    # Blood Test/CSF Biomarkers commonly land as classify_intervention()'s
+    # "uncertain" (multi-candidate ambiguity resolves before the ct.gov
+    # type is ever consulted) — the scope layer must still catch them via
+    # its type-agnostic generic-description net, not just via type.
+    for classification in ("uncertain", "investigational_therapeutic_unverified"):
+        r = classify_pipeline_scope("DIAGNOSTIC_TEST", "Blood Test", classification, "no_match")
+        assert r["pipeline_scope"] == "Exclude", f"Blood Test must never be a drug (classification={classification})"
+
+
+def test_scope_csf_biomarkers_is_not_a_drug():
+    for classification in ("uncertain", "investigational_therapeutic_unverified"):
+        r = classify_pipeline_scope("DIAGNOSTIC_TEST", "Cerebrospinal fluid (CSF) Biomarkers", classification, "no_match")
+        assert r["pipeline_scope"] == "Exclude"
+
+
+def test_scope_cbti_with_application_is_not_a_drug():
+    # real trials.csv typed this COMBINATION_PRODUCT even though it's a
+    # digital cognitive-behavioral-therapy program, not a pharmaceutical —
+    # the type-agnostic keyword net must catch it regardless of type.
+    r = classify_pipeline_scope("COMBINATION_PRODUCT", "CBTi with Application", "investigational_therapeutic_unverified", "no_match")
+    assert r["pipeline_scope"] != "Therapeutic Drug"
+    assert r["pipeline_scope"] == "Non-Drug Intervention"
+
+
+def test_scope_generic_diagnostic_description_wins_over_generic_non_drug_net():
+    # a name matching BOTH nets (unlikely in practice, but the priority
+    # must be deterministic) — diagnostic/biomarker phrasing is checked
+    # first, so it always wins
+    r = classify_pipeline_scope("OTHER", "Blood Test", "uncertain", "no_match")
+    assert r["pipeline_scope"] == "Exclude"
+
+
+def test_scope_placebo_is_placebo_or_comparator_not_a_drug():
+    r = classify_pipeline_scope("OTHER", "Placebo", "placebo_or_sham", "not_applicable")
+    assert r["pipeline_scope"] == "Placebo or Comparator"
+    assert r["pipeline_scope"] != "Therapeutic Drug"
+
+
+def test_scope_comparator_background_therapy_is_placebo_or_comparator():
+    r = classify_pipeline_scope("DRUG", "Donepezil", "comparator_or_background_therapy", "no_match")
+    assert r["pipeline_scope"] == "Placebo or Comparator"
+
+
+def test_scope_diagnostic_imaging_agent_is_diagnostic_agent():
+    r = classify_pipeline_scope("DRUG", "Florbetapir F18", "diagnostic_or_imaging_agent", "not_applicable")
+    assert r["pipeline_scope"] == "Diagnostic Agent"
+
+
+def test_scope_radiation_with_imaging_wording_is_diagnostic_agent():
+    r = classify_pipeline_scope("RADIATION", "Amyloid PET scan", "procedure", "not_applicable")
+    assert r["pipeline_scope"] == "Diagnostic Agent"
+
+
+def test_scope_radiation_without_imaging_wording_is_non_drug_and_flagged():
+    r = classify_pipeline_scope("RADIATION", "Radiation therapy", "procedure", "not_applicable")
+    assert r["pipeline_scope"] == "Non-Drug Intervention"
+    assert r["manual_review_required"] is True
+
+
+def test_scope_generic_diagnostic_test_type_still_gets_diagnostic_agent():
+    # a DIAGNOSTIC_TEST-type name that ISN'T generic (e.g. a specific
+    # named test) should be "Diagnostic Agent", not silently excluded
+    r = classify_pipeline_scope("DIAGNOSTIC_TEST", "Retinal fundus photography", "investigational_therapeutic_unverified", "no_match")
+    assert r["pipeline_scope"] == "Diagnostic Agent"
+
+
+def test_scope_combination_product_with_known_compound_stays_therapeutic():
+    # a genuine therapeutic combination retains its therapeutic component
+    r = classify_pipeline_scope("COMBINATION_PRODUCT", "AR1001 plus Donepezil Combination", "investigational_therapeutic_unverified", "no_match")
+    assert r["pipeline_scope"] == "Therapeutic Drug"
+    assert r["manual_review_required"] is True  # combined name still needs a human check
+
+
+def test_scope_combination_product_with_no_recognized_compound_needs_review():
+    r = classify_pipeline_scope("COMBINATION_PRODUCT", "Herbal Formula X Plus Y", "investigational_therapeutic_unverified", "no_match")
+    assert r["pipeline_scope"] == "Needs Review"
+    assert r["manual_review_required"] is True
+
+
+def test_scope_genetic_testing_is_not_classified_as_gene_therapy():
+    r = classify_pipeline_scope("GENETIC", "APOE Genotyping", "investigational_therapeutic_unverified", "no_match")
+    assert r["pipeline_scope"] != "Therapeutic Drug"
+    assert r["pipeline_scope"] == "Exclude"
+    r2 = classify_pipeline_scope("GENETIC", "Genetic Counseling and Testing", "uncertain", "no_match")
+    assert r2["pipeline_scope"] == "Exclude"
+
+
+def test_scope_genetic_gene_therapy_product_detected():
+    r = classify_pipeline_scope("GENETIC", "AAV2-NGF gene therapy vector", "investigational_therapeutic_unverified", "no_match")
+    assert r["pipeline_scope"] == "Therapeutic Drug"
+    assert r["manual_review_required"] is True
+
+
+def test_scope_genetic_ambiguous_type_needs_review():
+    r = classify_pipeline_scope("GENETIC", "Novel Compound XG-14", "investigational_therapeutic_unverified", "no_match")
+    assert r["pipeline_scope"] == "Needs Review"
+
+
+def test_scope_drug_type_candidate_with_no_disqualifying_evidence_stays_therapeutic():
+    r = classify_pipeline_scope("DRUG", "AR1001", "sponsor_developed_therapeutic", "confirmed_official_match")
+    assert r["pipeline_scope"] == "Therapeutic Drug"
+    assert r["scope_confidence"] == "high"
+
+    r2 = classify_pipeline_scope("DRUG", "SAR110894", "investigational_therapeutic_unverified", "no_match")
+    assert r2["pipeline_scope"] == "Therapeutic Drug"
+
+
+def test_scope_uncertain_drug_like_name_with_no_type_evidence_is_needs_review():
+    r = classify_pipeline_scope("DRUG", "Unresolved Candidate X", "uncertain", "no_match")
+    assert r["pipeline_scope"] == "Needs Review"
+    assert r["manual_review_required"] is True
+
+
+def test_scope_curated_override_can_promote_a_record():
+    overrides = {
+        "curcumin c3 complex": {
+            "pipeline_scope": "Therapeutic Drug", "canonical_name_override": "Curcumin C3",
+            "reason": "curated: genuine investigational program per sponsor filing",
+            "source": "test", "reviewer": "test", "verified_date": "2026-01-01",
+        },
+    }
+    r = classify_pipeline_scope("DIETARY_SUPPLEMENT", "Curcumin C3 Complex", "investigational_therapeutic_unverified", "no_match", overrides=overrides)
+    assert r["pipeline_scope"] == "Therapeutic Drug"
+    assert r["scope_method"] == "curated_override"
+    assert r["canonical_name_override"] == "Curcumin C3"
+
+
+def test_scope_curated_override_can_correct_a_record_to_excluded():
+    overrides = {
+        "ar1001": {
+            "pipeline_scope": "Exclude", "canonical_name_override": "",
+            "reason": "curated: turned out to be a mislabeled diagnostic kit name in this dataset",
+            "source": "test", "reviewer": "test", "verified_date": "2026-01-01",
+        },
+    }
+    r = classify_pipeline_scope("DRUG", "AR1001", "sponsor_developed_therapeutic", "confirmed_official_match", overrides=overrides)
+    assert r["pipeline_scope"] == "Exclude"
+    assert r["scope_method"] == "curated_override"
+
+
+def test_scope_all_results_use_a_documented_label():
+    # every branch classify_pipeline_scope() can take must return a value
+    # from PIPELINE_SCOPE_LABELS — never an ad hoc string
+    samples = [
+        ("DRUG", "AR1001", "sponsor_developed_therapeutic", "confirmed_official_match"),
+        ("OTHER", "Placebo", "placebo_or_sham", "not_applicable"),
+        ("DEVICE", "TMS", "device", "not_applicable"),
+        ("BEHAVIORAL", "Exercise", "behavioral", "not_applicable"),
+        ("DIETARY_SUPPLEMENT", "Fish Oil", "investigational_therapeutic_unverified", "no_match"),
+        ("DIAGNOSTIC_TEST", "Blood Test", "uncertain", "no_match"),
+        ("COMBINATION_PRODUCT", "Mystery Combo", "investigational_therapeutic_unverified", "no_match"),
+        ("GENETIC", "Gene Panel", "investigational_therapeutic_unverified", "no_match"),
+        ("PROCEDURE", "MRI", "procedure", "not_applicable"),
+        ("RADIATION", "Radiation therapy", "procedure", "not_applicable"),
+    ]
+    for itype, name, classification, vstatus in samples:
+        r = classify_pipeline_scope(itype, name, classification, vstatus)
+        assert r["pipeline_scope"] in PIPELINE_SCOPE_LABELS, f"unrecognized scope {r['pipeline_scope']!r} for {name!r}"
+
+
+def test_load_scope_overrides_missing_file_returns_empty_dict():
+    assert load_scope_overrides("data/reference/does_not_exist.csv") == {}
+
+
+def test_load_scope_overrides_parses_real_columns(tmp_path=None):
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+        f.write(
+            "normalized_intervention_name,pipeline_scope,canonical_name_override,reason,source,reviewer,verified_date\n"
+            "curcumin c3 complex,Therapeutic Drug,Curcumin C3,test reason,test source,Test Reviewer,2026-01-01\n"
+        )
+        path = f.name
+    overrides = load_scope_overrides(path)
+    os.remove(path)
+    assert "curcumin c3 complex" in overrides
+    entry = overrides["curcumin c3 complex"]
+    assert entry["pipeline_scope"] == "Therapeutic Drug"
+    assert entry["canonical_name_override"] == "Curcumin C3"
+    assert entry["reviewer"] == "Test Reviewer"
+
+
+def test_load_scope_overrides_missing_required_column_raises():
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+        f.write("normalized_intervention_name,pipeline_scope\ncurcumin,Therapeutic Drug\n")
+        path = f.name
+    try:
+        raised = False
+        try:
+            load_scope_overrides(path)
+        except ValueError:
+            raised = True
+        assert raised
+    finally:
+        os.remove(path)
+
+
+def test_the_real_intervention_scope_overrides_csv_loads_without_error():
+    # smoke test against the actual project file (should be a valid,
+    # possibly-empty curated overrides table)
+    path = os.path.join(os.path.dirname(__file__), "data", "reference", "intervention_scope_overrides.csv")
+    overrides = load_scope_overrides(path)
+    assert isinstance(overrides, dict)
+
+
+# --- build_interventions_dataframe() carries pipeline_scope end-to-end ---
+
+def test_build_interventions_dataframe_attaches_pipeline_scope_columns():
+    trials_df = pd.DataFrame([
+        {"nct_id": "NCT100", "sponsor": "AriBio", "title": "AR1001 Phase 3",
+         "interventions": "DRUG: AR1001|OTHER: Placebo|DIETARY_SUPPLEMENT: Fish Oil"},
+    ])
+    interventions_df = build_interventions_dataframe(trials_df, PIPELINE_RECORDS)
+    for col in ["pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required"]:
+        assert col in interventions_df.columns
+    fish_oil_row = interventions_df[interventions_df["original_name"] == "Fish Oil"].iloc[0]
+    assert fish_oil_row["pipeline_scope"] != "Therapeutic Drug"
+
+
+def test_build_interventions_dataframe_applies_scope_overrides():
+    trials_df = pd.DataFrame([
+        {"nct_id": "NCT101", "sponsor": "Some Sponsor", "title": "Supplement study",
+         "interventions": "DIETARY_SUPPLEMENT: Curcumin C3 Complex"},
+    ])
+    overrides = {
+        "curcumin c3 complex": {
+            "pipeline_scope": "Therapeutic Drug", "canonical_name_override": "",
+            "reason": "curated promotion", "source": "test", "reviewer": "test", "verified_date": "2026-01-01",
+        },
+    }
+    interventions_df = build_interventions_dataframe(trials_df, PIPELINE_RECORDS, overrides)
+    assert interventions_df.iloc[0]["pipeline_scope"] == "Therapeutic Drug"
+    assert interventions_df.iloc[0]["scope_method"] == "curated_override"
+
+
+# --- build_resolved_drugs_dataframe() gates on pipeline_scope ---
+
+def test_rollup_excludes_records_whose_scope_is_excluded():
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT200", "Some Sponsor", "Blood Test", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, pipeline_scope="Exclude",
+                        scope_reason="generic diagnostic description"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert len(result) == 0
+
+
+def test_rollup_excludes_records_whose_scope_is_placebo_or_comparator():
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT201", "Some Sponsor", "Donepezil", "sponsor_developed_therapeutic",
+                        "confirmed_official_match", "high", False, pipeline_scope="Placebo or Comparator"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert len(result) == 0
+
+
+def test_rollup_keeps_non_therapeutic_scopes_for_the_optional_dashboard_filter():
+    # Diagnostic Agent / Non-Drug Intervention / Supportive Treatment /
+    # Needs Review MUST still get a resolved_drugs_df row (with their
+    # real scope recorded) so the dashboard's optional "reveal
+    # non-therapeutic records" filter has real data to show — only
+    # Exclude/Placebo or Comparator are dropped entirely.
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT202", "Some Sponsor", "Retinal Fundus Photography", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, pipeline_scope="Diagnostic Agent"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert len(result) == 1
+    assert result.iloc[0]["pipeline_scope"] == "Diagnostic Agent"
+
+
+def test_rollup_default_fixture_rows_stay_therapeutic_drug_scope():
+    # every pre-Phase-1A rollup test uses the make_trial_row() default
+    # (pipeline_scope="Therapeutic Drug") — pin that the resulting row
+    # actually carries it, so a future default change doesn't silently
+    # break those tests' assumptions unnoticed
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT203", "AriBio", "AR1001", "sponsor_developed_therapeutic",
+                        "pipeline_record_match_without_source", "medium", True, phase="Phase 3"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert result.iloc[0]["pipeline_scope"] == "Therapeutic Drug"
+
+
+def test_rollup_scope_disagreement_across_trials_forces_needs_review():
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT204", "Sponsor A", "AmbiguousDrug", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, pipeline_scope="Therapeutic Drug"),
+        make_trial_row("NCT205", "Sponsor A", "AmbiguousDrug", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, pipeline_scope="Diagnostic Agent"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert len(result) == 1
+    assert result.iloc[0]["pipeline_scope"] == "Needs Review"
+    assert bool(result.iloc[0]["manual_review_required"]) is True
+
+
+def test_resolve_developed_drug_carries_scope_from_winning_intervention():
+    trials_df = pd.DataFrame([
+        {"nct_id": "NCT300", "sponsor": "Some Sponsor", "title": "Supplement study",
+         "interventions": "DIETARY_SUPPLEMENT: Curcumin C3 Complex"},
+    ])
+    interventions_df = build_interventions_dataframe(trials_df, PIPELINE_RECORDS)
+    resolved = resolve_developed_drug(interventions_df.to_dict("records"))
+    assert resolved["developed_drug"] == "Curcumin C3 Complex"
+    assert resolved["pipeline_scope"] == "Non-Drug Intervention"
+
+
+# --- build_scope_audit_dataframe() (outputs/classification_gap_audit.csv source) ---
+
+def test_build_scope_audit_dataframe_basic_structure():
+    interventions_df = pd.DataFrame([
+        {"nct_id": "NCT400", "original_name": "Curcumin C3 Complex", "original_type": "DIETARY_SUPPLEMENT",
+         "normalized_name": "curcumin c3 complex", "classification": "investigational_therapeutic_unverified",
+         "pipeline_scope": "Non-Drug Intervention", "scope_reason": "dietary supplement",
+         "scope_method": "rule_type", "scope_confidence": "medium", "manual_review_required": False},
+        {"nct_id": "NCT401", "original_name": "Curcumin C3 Complex", "original_type": "DIETARY_SUPPLEMENT",
+         "normalized_name": "curcumin c3 complex", "classification": "investigational_therapeutic_unverified",
+         "pipeline_scope": "Non-Drug Intervention", "scope_reason": "dietary supplement",
+         "scope_method": "rule_type", "scope_confidence": "medium", "manual_review_required": False},
+        {"nct_id": "NCT402", "original_name": "AR1001", "original_type": "DRUG",
+         "normalized_name": "ar1001", "classification": "sponsor_developed_therapeutic",
+         "pipeline_scope": "Therapeutic Drug", "scope_reason": "confirmed match",
+         "scope_method": "rule_classification", "scope_confidence": "high", "manual_review_required": False},
+    ])
+    audit_df = build_scope_audit_dataframe(interventions_df)
+    # two distinct (normalized_name, type) groups: Curcumin C3 Complex (2 NCTs merged into one row), AR1001
+    assert len(audit_df) == 2
+    curcumin_row = audit_df[audit_df["raw_intervention_name"] == "Curcumin C3 Complex"].iloc[0]
+    assert curcumin_row["nct_ids"] == "NCT400; NCT401"
+    assert curcumin_row["dashboard_eligible"] == False
+    assert curcumin_row["new_pipeline_scope"] == "Non-Drug Intervention"
+    ar1001_row = audit_df[audit_df["raw_intervention_name"] == "AR1001"].iloc[0]
+    assert ar1001_row["dashboard_eligible"] == True
+
+
+def test_build_scope_audit_dataframe_empty_input():
+    audit_df = build_scope_audit_dataframe(pd.DataFrame())
+    assert len(audit_df) == 0
+    assert "dashboard_eligible" in audit_df.columns
+
+
+def test_build_scope_audit_dataframe_dashboard_eligible_matches_therapeutic_scope():
+    interventions_df = pd.DataFrame([
+        {"nct_id": "NCT500", "original_name": "Blood Test", "original_type": "DIAGNOSTIC_TEST",
+         "normalized_name": "blood test", "classification": "uncertain",
+         "pipeline_scope": "Exclude", "scope_reason": "generic test", "scope_method": "rule_keyword",
+         "scope_confidence": "high", "manual_review_required": False},
+    ])
+    audit_df = build_scope_audit_dataframe(interventions_df)
+    assert audit_df.iloc[0]["dashboard_eligible"] == False
+    assert audit_df.iloc[0]["previous_drug_type"] == "uncertain"
+
+
+# ------------------------------------------------------------
 # test runner
 # ------------------------------------------------------------
 
@@ -1348,6 +1754,45 @@ ALL_TESTS = [
     test_build_resolved_drug_trial_links_df_explodes_nct_ids,
     test_build_resolved_drug_trial_links_df_handles_blank_nct_ids,
     test_build_resolved_drug_trial_links_df_row_count_matches_trial_count_sum,
+    test_scope_dietary_supplement_investigational_excluded_from_therapeutic,
+    test_scope_dietary_supplement_curcumin_c3_complex_excluded,
+    test_scope_behavioral_excluded_from_therapeutic,
+    test_scope_device_excluded_from_therapeutic,
+    test_scope_blood_test_is_not_a_drug,
+    test_scope_csf_biomarkers_is_not_a_drug,
+    test_scope_cbti_with_application_is_not_a_drug,
+    test_scope_generic_diagnostic_description_wins_over_generic_non_drug_net,
+    test_scope_placebo_is_placebo_or_comparator_not_a_drug,
+    test_scope_comparator_background_therapy_is_placebo_or_comparator,
+    test_scope_diagnostic_imaging_agent_is_diagnostic_agent,
+    test_scope_radiation_with_imaging_wording_is_diagnostic_agent,
+    test_scope_radiation_without_imaging_wording_is_non_drug_and_flagged,
+    test_scope_generic_diagnostic_test_type_still_gets_diagnostic_agent,
+    test_scope_combination_product_with_known_compound_stays_therapeutic,
+    test_scope_combination_product_with_no_recognized_compound_needs_review,
+    test_scope_genetic_testing_is_not_classified_as_gene_therapy,
+    test_scope_genetic_gene_therapy_product_detected,
+    test_scope_genetic_ambiguous_type_needs_review,
+    test_scope_drug_type_candidate_with_no_disqualifying_evidence_stays_therapeutic,
+    test_scope_uncertain_drug_like_name_with_no_type_evidence_is_needs_review,
+    test_scope_curated_override_can_promote_a_record,
+    test_scope_curated_override_can_correct_a_record_to_excluded,
+    test_scope_all_results_use_a_documented_label,
+    test_load_scope_overrides_missing_file_returns_empty_dict,
+    test_load_scope_overrides_parses_real_columns,
+    test_load_scope_overrides_missing_required_column_raises,
+    test_the_real_intervention_scope_overrides_csv_loads_without_error,
+    test_build_interventions_dataframe_attaches_pipeline_scope_columns,
+    test_build_interventions_dataframe_applies_scope_overrides,
+    test_rollup_excludes_records_whose_scope_is_excluded,
+    test_rollup_excludes_records_whose_scope_is_placebo_or_comparator,
+    test_rollup_keeps_non_therapeutic_scopes_for_the_optional_dashboard_filter,
+    test_rollup_default_fixture_rows_stay_therapeutic_drug_scope,
+    test_rollup_scope_disagreement_across_trials_forces_needs_review,
+    test_resolve_developed_drug_carries_scope_from_winning_intervention,
+    test_build_scope_audit_dataframe_basic_structure,
+    test_build_scope_audit_dataframe_empty_input,
+    test_build_scope_audit_dataframe_dashboard_eligible_matches_therapeutic_scope,
 ]
 
 
