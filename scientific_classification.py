@@ -463,7 +463,8 @@ CLASSIFICATION_SOURCES = [
 
 
 def _result(modality, target_pathways, molecular_targets, mechanism_of_action,
-            source, method, confidence, reason, evidence_used, manual_review_required):
+            source, method, confidence, reason, evidence_used, manual_review_required,
+            therapeutic_purpose_class="", therapeutic_purpose_category="", cadro=""):
     return {
         "modality": modality or "Unknown",
         "target_pathways": target_pathways or [],
@@ -475,7 +476,35 @@ def _result(modality, target_pathways, molecular_targets, mechanism_of_action,
         "classification_reason": reason,
         "evidence_used": "; ".join(evidence_used) if evidence_used else "",
         "manual_review_required": manual_review_required,
+        # NIH-sourced display-only fields (§ "therapeutic purpose"/CADRO
+        # requirement) — supplementary context shown in the drug detail
+        # panel, never used to drive modality/target_pathways themselves
+        # (that stays governed by the tiered resolution above). Blank
+        # whenever no NIH match exists for this drug — never fabricated.
+        "therapeutic_purpose_class": therapeutic_purpose_class or "",
+        "therapeutic_purpose_category": therapeutic_purpose_category or "",
+        "cadro": cadro or "",
     }
+
+
+def _derive_therapeutic_purpose_category(purpose_detail):
+    """
+    NIH's purpose_detail is free-ish text: "small molecule"/"biologic"
+    for DTT rows, or a symptomatic category — often with a parenthetical
+    subtype, e.g. "neuropsychiatric (agitation)" — for STT rows, and
+    occasionally two purposes packed into one cell separated by a
+    newline (see nih_reference.py's profile notes). This takes just the
+    FIRST purpose and strips any parenthetical subtype, title-cased, so
+    "neuropsychiatric (agitation)" -> "Neuropsychiatric", "cognition
+    enhancer" -> "Cognition Enhancer", "small molecule" -> "Small
+    Molecule", "biologic" -> "Biologic" — the four categories that cover
+    the overwhelming majority of NIH's real data, though a few rarer
+    ones (e.g. "other symptoms (seizure)" -> "Other Symptoms") pass
+    through the same way rather than being silently discarded.
+    """
+    first_purpose = (purpose_detail or "").split("\n")[0]
+    without_parenthetical = re.sub(r"\s*\([^)]*\)\s*$", "", first_purpose).strip()
+    return without_parenthetical.title() if without_parenthetical else ""
 
 
 def resolve_drug_classification(display_name, synonyms, structured_evidence,
@@ -499,22 +528,21 @@ def resolve_drug_classification(display_name, synonyms, structured_evidence,
     normalized_name = normalize_text(display_name)
     candidate_normalized = normalized_name  # normalize_text(display_name), full string — substring-matched below
 
-    # --- Tier 1: curated AriBio override — wins outright ---
-    override = overrides.get(normalized_name)
-    if override:
-        return _result(
-            override["modality"], override["target_pathways"], override["molecular_targets"],
-            override["mechanism_of_action"], "curated_override", "tier1_curated_override", "high",
-            override.get("reason") or "curated AriBio override", [f"curated override ({override.get('source', '')})"],
-            manual_review_required=False,
-        )
-
-    # --- Gather tier 2 (NIH) and tiers 3-5 ("existing evidence") independently ---
+    # --- NIH lookup happens FIRST, before any tier decides modality/target,
+    # so its supplementary display-only fields (therapeutic_purpose_class/
+    # _category, cadro) are attached to EVERY return path below —
+    # including tier 1's curated override, which still wins for
+    # modality/target_pathways but shouldn't hide a real NIH cross-reference
+    # (e.g. AR1001 has its own NIH row even though its target_pathways
+    # come from the curated override, not NIH). ---
     nih_row = match_drug_to_nih(display_name, synonyms, nih_name_lookup)
     nih_modality = ""
     nih_targets = []
     nih_mechanism = ""
     nih_evidence_note = ""
+    nih_purpose_class = ""
+    nih_purpose_category = ""
+    nih_cadro = ""
     if nih_row is not None:
         nih_modality_raw = _extract_nih_modality(nih_row["purpose_class"], nih_row["purpose_detail"])
         nih_modality = {"small molecule": "Small Molecule", "biologic": "Biologic"}.get(
@@ -525,6 +553,23 @@ def resolve_drug_classification(display_name, synonyms, structured_evidence,
             nih_targets = [inferred]
         nih_mechanism = nih_row.get("mechanism_of_action", "") or ""
         nih_evidence_note = f"NIH agent={nih_row['canonical_name']!r} CADRO={nih_row['cadro']!r}"
+        nih_purpose_class = nih_row.get("purpose_class", "") or ""
+        nih_purpose_category = _derive_therapeutic_purpose_category(nih_row.get("purpose_detail", ""))
+        nih_cadro = nih_row.get("cadro", "") or ""
+
+    # --- Tier 1: curated AriBio override — wins outright for modality/target ---
+    override = overrides.get(normalized_name)
+    if override:
+        return _result(
+            override["modality"], override["target_pathways"], override["molecular_targets"],
+            override["mechanism_of_action"] or nih_mechanism, "curated_override", "tier1_curated_override", "high",
+            override.get("reason") or "curated AriBio override", [f"curated override ({override.get('source', '')})"],
+            manual_review_required=False,
+            therapeutic_purpose_class=nih_purpose_class, therapeutic_purpose_category=nih_purpose_category,
+            cadro=nih_cadro,
+        )
+
+    # --- Gather tiers 3-5 ("existing evidence") ---
 
     official = official_pipeline_lookup.get(normalized_name)
     known_compound_target = None
@@ -600,11 +645,15 @@ def resolve_drug_classification(display_name, synonyms, structured_evidence,
                 claude_result.get("mechanism_of_action", ""), "claude_inference", "tier6_claude_inference",
                 "low", "Claude-inferred (unverified) — needs human confirmation", evidence_used,
                 manual_review_required=True,
+                therapeutic_purpose_class=nih_purpose_class, therapeutic_purpose_category=nih_purpose_category,
+                cadro=nih_cadro,
             )
         return _result(
-            "Unknown", [], [], "", "needs_review", "tier7_no_evidence_found", "low",
+            "Unknown", [], [], nih_mechanism, "needs_review", "tier7_no_evidence_found", "low",
             "no curated override, NIH match, official-pipeline record, known-compound match, or structured "
             "ct.gov evidence found for this drug", evidence_used, manual_review_required=True,
+            therapeutic_purpose_class=nih_purpose_class, therapeutic_purpose_category=nih_purpose_category,
+            cadro=nih_cadro,
         )
 
     confidences = [c for c in (modality_confidence, target_confidence) if c]
@@ -632,6 +681,8 @@ def resolve_drug_classification(display_name, synonyms, structured_evidence,
         resolved_targets or existing_targets or nih_targets or [],
         molecular_targets, mechanism, source, "tier2_6_resolver", overall_confidence, reason,
         evidence_used, manual_review_required,
+        therapeutic_purpose_class=nih_purpose_class, therapeutic_purpose_category=nih_purpose_category,
+        cadro=nih_cadro,
     )
 
 
@@ -654,6 +705,77 @@ def build_official_pipeline_classification_lookup(pipeline_records):
             "target_pathways": [t.strip() for t in target_pathways_raw.split(";") if t.strip()],
         }
     return lookup
+
+
+# ============================================================
+# PIPELINE QUADRANT — the 4-category "NIH-style" drug_type scheme
+# (Disease-Targeted Biologic / Disease-Targeted Small Molecule /
+# Cognition Enhancer / Neuropsychiatric Symptom Tx), matching the
+# classic published AD-pipeline circular chart's own four quadrants.
+#
+# This REPLACES resolved_drugs_df's drug_type as the dashboard's visible
+# category (pipeline_viz.py) — the underlying, finer-grained modality
+# (Small Molecule/Biologic/Cell-Gene Therapy/Device/Dietary Supplement/
+# Other/Unknown) from resolve_drug_classification() is preserved
+# separately as resolved_drugs_df["modality"], not discarded.
+# ============================================================
+
+PIPELINE_QUADRANTS = [
+    "Disease-Targeted Biologic", "Disease-Targeted Small Molecule",
+    "Cognition Enhancer", "Neuropsychiatric Symptom Tx",
+]
+
+# NIH's own therapeutic_purpose_class/_category, when both are present
+# and land on one of these four combinations, IS the published chart's
+# own categorization for that drug — used directly, never re-derived.
+_NIH_PURPOSE_TO_QUADRANT = {
+    ("DTT", "Small Molecule"): "Disease-Targeted Small Molecule",
+    ("DTT", "Biologic"): "Disease-Targeted Biologic",
+    ("STT", "Cognition Enhancer"): "Cognition Enhancer",
+    ("STT", "Neuropsychiatric"): "Neuropsychiatric Symptom Tx",
+}
+
+
+def classify_pipeline_quadrant(modality, primary_target, therapeutic_purpose_class, therapeutic_purpose_category):
+    """
+    One of PIPELINE_QUADRANTS for EVERY drug, including the ~85% NIH
+    doesn't cover — those are INFERRED from fields this resolver has
+    already established (modality, primary target pathway), never
+    fabricated from nothing. Returns (quadrant, source, was_inferred):
+
+      source == "nih_reference": therapeutic_purpose_class/_category
+          came straight from NIH's own published categorization for
+          this exact drug — was_inferred is False.
+      source starts with "inferred_": derived from this drug's own
+          already-resolved target_pathways/modality — was_inferred is
+          True, so callers can flag these for review rather than
+          implying the same certainty as a real NIH citation.
+
+    Inference logic (only reached when NIH doesn't already answer it):
+      - primary target "Neuropsychiatric" -> Neuropsychiatric Symptom Tx
+      - primary target "Symptomatic" (cholinesterase/NMDA/nicotinic —
+        the classic "cognition enhancer" mechanism bucket) -> Cognition Enhancer
+      - anything else (Amyloid/Tau/Inflammation/Neuroprotection/
+        Metabolism/Other/Unknown target — i.e. disease-targeted, not
+        purely symptomatic) -> split by modality: Biologic or
+        Cell/Gene Therapy (regulated as a biologic) -> Disease-Targeted
+        Biologic; everything else (Small Molecule, and the few
+        structurally-uncategorizable Device/Dietary Supplement/Other/
+        Unknown modality edge cases with no symptomatic target signal
+        either) -> Disease-Targeted Small Molecule, the chart's own
+        largest/default bucket.
+    """
+    direct = _NIH_PURPOSE_TO_QUADRANT.get((therapeutic_purpose_class, therapeutic_purpose_category))
+    if direct:
+        return direct, "nih_reference", False
+
+    if primary_target == "Neuropsychiatric":
+        return "Neuropsychiatric Symptom Tx", "inferred_from_target_pathway", True
+    if primary_target == "Symptomatic":
+        return "Cognition Enhancer", "inferred_from_target_pathway", True
+    if modality in ("Biologic", "Cell/Gene Therapy"):
+        return "Disease-Targeted Biologic", "inferred_from_modality", True
+    return "Disease-Targeted Small Molecule", "inferred_default", True
 
 
 # ============================================================

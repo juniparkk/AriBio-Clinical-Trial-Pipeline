@@ -41,6 +41,7 @@ from scientific_classification import (
     gather_structured_evidence_for_drug,
     resolve_drug_classification,
     build_classification_conflicts_dataframe,
+    classify_pipeline_quadrant,
 )
 
 # ============================================================
@@ -548,7 +549,7 @@ for _, _row in resolved_drugs_df.iterrows():
         official_pipeline_lookup=_official_pipeline_classification_lookup,
     ))
 
-resolved_drugs_df["drug_type"] = [r["modality"] for r in _sci_results]
+resolved_drugs_df["modality"] = [r["modality"] for r in _sci_results]
 resolved_drugs_df["target_pathways_list"] = [r["target_pathways"] for r in _sci_results]
 resolved_drugs_df["target"] = [
     (r["target_pathways"][0] if r["target_pathways"] else "Other") for r in _sci_results
@@ -562,6 +563,32 @@ resolved_drugs_df["scientific_classification_confidence"] = [r["classification_c
 resolved_drugs_df["scientific_classification_reason"] = [r["classification_reason"] for r in _sci_results]
 resolved_drugs_df["evidence_used"] = [r["evidence_used"] for r in _sci_results]
 resolved_drugs_df["scientific_manual_review_required"] = [r["manual_review_required"] for r in _sci_results]
+# NIH-sourced, display-only supplementary fields — blank whenever no NIH
+# match exists for this drug (never fabricated for the drugs NIH doesn't cover).
+resolved_drugs_df["therapeutic_purpose_class"] = [r["therapeutic_purpose_class"] for r in _sci_results]
+resolved_drugs_df["therapeutic_purpose_category"] = [r["therapeutic_purpose_category"] for r in _sci_results]
+resolved_drugs_df["cadro"] = [r["cadro"] for r in _sci_results]
+
+# drug_type is now the 4-category "pipeline quadrant" scheme (Disease-
+# Targeted Biologic / Disease-Targeted Small Molecule / Cognition
+# Enhancer / Neuropsychiatric Symptom Tx), matching the published AD
+# drug-development pipeline chart's own categorization — NIH-sourced
+# where available (~103 drugs), INFERRED from this drug's already-
+# resolved modality/target for the rest, and flagged as such via
+# drug_type_source/drug_type_inferred so an inferred bucket never reads
+# as equally certain as a real NIH citation. The finer-grained modality
+# (Small Molecule/Biologic/Cell-Gene Therapy/etc) is preserved separately
+# above as resolved_drugs_df["modality"], not discarded.
+_quadrant_results = [
+    classify_pipeline_quadrant(
+        r["modality"], (r["target_pathways"][0] if r["target_pathways"] else "Other"),
+        r["therapeutic_purpose_class"], r["therapeutic_purpose_category"],
+    )
+    for r in _sci_results
+]
+resolved_drugs_df["drug_type"] = [q[0] for q in _quadrant_results]
+resolved_drugs_df["drug_type_source"] = [q[1] for q in _quadrant_results]
+resolved_drugs_df["drug_type_inferred"] = [q[2] for q in _quadrant_results]
 
 # target_display: generalizes the old AR1001-only hardcode to EVERY drug
 # with more than one target_pathway — "do not force one drug into only
@@ -762,15 +789,14 @@ TARGET_COLORS = {
     "Unknown":          "#bdbdbd",
 }
 
+# "Drug Type" is the 4-category pipeline-quadrant scheme (see
+# scientific_classification.classify_pipeline_quadrant) — matches the
+# published AD drug-development pipeline chart's own four categories.
 DRUG_TYPE_COLORS = {
-    "Biologic":            darken(ARIBIO_BLUE, 0.30),
-    "Small Molecule":      ARIBIO_BLUE,
-    "Cell/Gene Therapy":   lighten(ARIBIO_BLUE, 0.25),
-    "Dietary Supplement":  lighten(ARIBIO_BLUE, 0.50),
-    "Device":              lighten(ARIBIO_BLUE, 0.65),
-    "Non-Drug/Behavioral": "#9e9e9e",
-    "Unknown":             "#bdbdbd",
-    "Other":               ARIBIO_ACCENT,
+    "Disease-Targeted Biologic":       darken(ARIBIO_BLUE, 0.30),
+    "Disease-Targeted Small Molecule": ARIBIO_BLUE,
+    "Cognition Enhancer":              lighten(ARIBIO_BLUE, 0.25),
+    "Neuropsychiatric Symptom Tx":     lighten(ARIBIO_BLUE, 0.50),
 }
 
 STATUS_COLORS = {
@@ -984,6 +1010,8 @@ table_df = resolved_drugs_df[[
     "target_pathways", "mechanism_of_action", "molecular_targets",
     "classification_source", "scientific_classification_confidence",
     "scientific_classification_reason", "scientific_manual_review_required",
+    "therapeutic_purpose_class", "therapeutic_purpose_category", "cadro",
+    "modality", "drug_type_source", "drug_type_inferred",
 ]].copy()
 table_records = json.loads(table_df.to_json(orient="records"))
 
@@ -1062,7 +1090,7 @@ REVIEW_COLORS = {
 # still defined above and still used by the row-detail panel's pills.
 PILL_GROUPS = [
     ("phase", "Phase", ["Phase 1", "Phase 2", "Phase 3"], PHASE_COLORS),
-    ("drugType", "Drug Type", list(DRUG_TYPE_COLORS.keys())[:3], DRUG_TYPE_COLORS),
+    ("drugType", "Drug Type", list(DRUG_TYPE_COLORS.keys()), DRUG_TYPE_COLORS),
     ("target", "Target", [t for t in TARGET_COLORS if t not in ("Other", "Unknown")], TARGET_COLORS),
     ("status", "Status", [s for s in STATUS_COLORS if s != "Other"], STATUS_COLORS),
 ]
@@ -1130,6 +1158,7 @@ html_template = f"""
   .topbar {{
     background: {ARIBIO_BLUE}; color: white; padding: 20px 96px 20px 24px; margin-bottom: 24px;
     box-shadow: 0 2px 10px rgba(20, 40, 70, 0.16);
+    position: sticky; top: 0; z-index: 30;
   }}
   .topbar-inner {{ margin: 0; }}
   .topbar-title {{ font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }}
@@ -1269,15 +1298,48 @@ html_template = f"""
     font-weight: 700; text-decoration: none !important;
   }}
   tr.aribio-row:hover td {{ background: {ARIBIO_ACCENT_HOVER} !important; }}
-  .pill {{ font-weight: 600; white-space: nowrap; }}  /* plain colored text, not a badge — color set inline per-value in JS */
+  /* plain colored text, not a badge — color set inline per-value in JS.
+     NOT white-space:nowrap: with table-layout:fixed, a nowrap pill
+     longer than its column (e.g. a multi-target "Multi (Amyloid/Tau/
+     Neuroprotection)" label) doesn't get clipped by the cell — it
+     visually overflows into the NEXT column's text instead, since
+     table cells don't clip overflowing children by default. Letting it
+     wrap (the default) keeps long pills inside their own cell/row. */
+  .pill {{ font-weight: 600; overflow-wrap: break-word; }}
 
   .details-toggle {{
     background: none; border: none; cursor: pointer; font-size: 11px; color: #999;
     padding: 0 4px 0 0; font-family: inherit; vertical-align: middle;
   }}
   .details-toggle:hover {{ color: {ARIBIO_BLUE}; }}
+  /* caret rotates smoothly instead of swapping glyphs, so opening/
+     closing a row's detail panel reads as one continuous motion */
+  .details-toggle .caret {{ display: inline-block; transition: transform 0.15s ease; }}
+  .details-toggle .caret.expanded {{ transform: rotate(90deg); }}
   tr.detail-row td {{ background: {SURFACE_TINT}; padding: 14px 20px; border-bottom: 1px solid {SURFACE_BORDER}; }}
-  .detail-panel {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px 22px; font-size: 12.5px; color: #444; }}
+  /* CSS transitions don't run on elements created via innerHTML (they
+     already exist in their end state) — a keyframe animation, in
+     contrast, plays automatically whenever the element is inserted
+     into the DOM, which is what happens every time renderTable()
+     rebuilds the tbody after a toggle. That's what makes the detail
+     panel fade/slide in smoothly instead of just popping into place. */
+  @keyframes detailPanelIn {{
+    from {{ opacity: 0; transform: translateY(-4px); }}
+    to {{ opacity: 1; transform: translateY(0); }}
+  }}
+  /* played on the CLOSING panel before it's removed from the DOM (see
+     the click handler below, which waits for 'animationend' before
+     actually re-rendering the table without this row) — the reverse of
+     detailPanelIn, so opening and closing read as one continuous motion */
+  @keyframes detailPanelOut {{
+    from {{ opacity: 1; transform: translateY(0); }}
+    to {{ opacity: 0; transform: translateY(-4px); }}
+  }}
+  .detail-panel {{
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px 22px;
+    font-size: 12.5px; color: #444; animation: detailPanelIn 0.18s ease;
+  }}
+  .detail-panel.closing {{ animation: detailPanelOut 0.15s ease forwards; }}
   .detail-panel strong {{ display: block; color: #999; font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 3px; }}
   .detail-panel ul {{ margin: 0; padding-left: 16px; }}
   .sponsor-cell {{ cursor: help; }}
@@ -1469,10 +1531,19 @@ html_template = f"""
     document.getElementById('clear-filter').classList.toggle('visible', anyFiltersActive());
   }}
 
+  // mirrors drug_classification.py's normalize_text() — lowercase, and
+  // collapse any run of non-alphanumeric characters to a single space —
+  // so a search for "ACP204" still finds "ACP-204" (same drug, just
+  // hyphen vs. no hyphen), matching how the rest of this project already
+  // treats punctuation/spacing as insignificant everywhere else.
+  function normalizeSearchText(value) {{
+    return String(value == null ? '' : value).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  }}
+
   function matchesSearch(r, term) {{
-    const haystack = [
+    const haystack = normalizeSearchText([
       r.display_name, r.sponsor, r.synonyms, r.verification_label, r.confidence_label, r.target_display,
-    ].filter(Boolean).join(' ').toLowerCase();
+    ].filter(Boolean).join(' '));
     return haystack.includes(term);
   }}
 
@@ -1490,7 +1561,11 @@ html_template = f"""
       <div><strong>Unverified trials</strong>${{r.unverified_trial_count}}</div>
       <div><strong>Notes</strong>${{escapeHtml(r.classification_reason || '—')}}</div>
       <div><strong>Scope reason</strong>${{escapeHtml(r.scope_reason || '—')}}</div>
+      <div><strong>Modality</strong>${{escapeHtml(r.modality || '—')}}</div>
+      <div><strong>Drug type category${{r.drug_type_inferred ? ' (inferred)' : ' (NIH-sourced)'}}</strong>${{escapeHtml(r.drug_type || '—')}}</div>
       <div><strong>Target pathway(s)</strong>${{escapeHtml(r.target_pathways || '—')}}</div>
+      <div><strong>CADRO category</strong>${{escapeHtml(r.cadro || '—')}}</div>
+      <div><strong>Therapeutic purpose</strong>${{escapeHtml([r.therapeutic_purpose_class, r.therapeutic_purpose_category].filter(Boolean).join(' · ') || '—')}}</div>
       <div><strong>Mechanism of action</strong>${{escapeHtml(r.mechanism_of_action || '—')}}</div>
       <div><strong>Molecular target(s)</strong>${{escapeHtml(r.molecular_targets || '—')}}</div>
       <div><strong>Classification source</strong>${{escapeHtml(r.classification_source || '—')}} (${{escapeHtml(r.scientific_classification_confidence || '—')}} confidence)</div>
@@ -1549,7 +1624,7 @@ html_template = f"""
       const star = r.is_aribio ? '\\u2605 ' : '';
       const enrollment = r.max_enrollment ? Math.round(r.max_enrollment).toLocaleString() : '—';
       const isExpanded = expandedRows.has(r.display_name);
-      const toggle = `<button class="details-toggle" data-drug-key="${{escapeHtml(r.display_name)}}" title="Show details">${{isExpanded ? '\\u25be' : '\\u25b8'}}</button>`;
+      const toggle = `<button class="details-toggle" data-drug-key="${{escapeHtml(r.display_name)}}" title="Show details"><span class="caret${{isExpanded ? ' expanded' : ''}}">\\u25b8</span></button>`;
       const mainRow = `<tr class="${{classes.join(' ')}}">
         <td>${{toggle}} ${{star}}<a href="${{r.study_url}}" target="_blank" rel="noopener">${{r.display_name}}</a></td>
         <td class="sponsor-cell" title="${{escapeHtml(r.sponsor || '')}}">${{r.sponsor_display || ''}}</td>
@@ -1589,7 +1664,7 @@ html_template = f"""
   }}
 
   document.getElementById('search-box').addEventListener('input', (e) => {{
-    searchTerm = e.target.value.toLowerCase();
+    searchTerm = normalizeSearchText(e.target.value);
     renderTable();
   }});
 
@@ -1602,7 +1677,28 @@ html_template = f"""
     const btn = e.target.closest('.details-toggle');
     if (!btn) return;
     const key = btn.dataset.drugKey;
-    if (expandedRows.has(key)) expandedRows.delete(key); else expandedRows.add(key);
+
+    if (expandedRows.has(key)) {{
+      // Closing: renderTable() rebuilds the tbody via innerHTML, which
+      // would otherwise delete the detail row INSTANTLY with no chance
+      // to animate — so play the closing keyframe on the row that's
+      // already in the DOM first, and only drop it from expandedRows
+      // (then re-render) once that animation actually finishes.
+      const mainRow = btn.closest('tr');
+      const panel = mainRow && mainRow.nextElementSibling
+        ? mainRow.nextElementSibling.querySelector('.detail-panel') : null;
+      if (panel) {{
+        panel.classList.add('closing');
+        panel.addEventListener('animationend', () => {{
+          expandedRows.delete(key);
+          renderTable();
+        }}, {{ once: true }});
+        return;
+      }}
+      expandedRows.delete(key);
+    }} else {{
+      expandedRows.add(key);
+    }}
     renderTable();
   }});
 
@@ -1734,6 +1830,8 @@ drug_review_cols = [
     "classification_source", "classification_method",
     "scientific_classification_confidence", "scientific_classification_reason",
     "evidence_used", "scientific_manual_review_required",
+    "therapeutic_purpose_class", "therapeutic_purpose_category", "cadro",
+    "modality", "drug_type_source", "drug_type_inferred",
 ]
 resolved_drugs_df[drug_review_cols].sort_values(["phase_reached", "display_name"], ascending=[False, True]).to_csv(
     "pipeline_drugs.csv", index=False

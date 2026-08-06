@@ -30,6 +30,9 @@ from scientific_classification import (
     resolve_drug_classification,
     build_official_pipeline_classification_lookup,
     build_classification_conflicts_dataframe,
+    _derive_therapeutic_purpose_category,
+    classify_pipeline_quadrant,
+    PIPELINE_QUADRANTS,
 )
 from nih_reference import parse_nih_dataset
 from drug_classification import load_official_pipeline
@@ -343,6 +346,141 @@ def test_resolve_confidence_scoring_agree_vs_disagree_vs_single_source():
 
 
 # ------------------------------------------------------------
+# therapeutic_purpose_class/category + CADRO (display-only NIH fields)
+# ------------------------------------------------------------
+
+def test_derive_therapeutic_purpose_category_strips_parenthetical():
+    assert _derive_therapeutic_purpose_category("neuropsychiatric (agitation)") == "Neuropsychiatric"
+    assert _derive_therapeutic_purpose_category("cognition enhancer") == "Cognition Enhancer"
+
+
+def test_derive_therapeutic_purpose_category_dtt_modality_values():
+    assert _derive_therapeutic_purpose_category("small molecule") == "Small Molecule"
+    assert _derive_therapeutic_purpose_category("biologic") == "Biologic"
+
+
+def test_derive_therapeutic_purpose_category_takes_first_of_multiple_purposes():
+    # a few real NIH cells pack two purposes separated by a newline
+    # (see nih_reference.py's profile notes) — only the first is used
+    assert _derive_therapeutic_purpose_category("cognition enhancer\nSTT; neuropsychiatric (agitation)") == "Cognition Enhancer"
+
+
+def test_derive_therapeutic_purpose_category_blank_input():
+    assert _derive_therapeutic_purpose_category("") == ""
+    assert _derive_therapeutic_purpose_category(None) == ""
+
+
+def test_resolve_attaches_nih_purpose_and_cadro_for_normal_nih_match():
+    result = resolve_drug_classification("Baricitinib", [], [], overrides={}, nih_name_lookup=_nih_lookup())
+    assert result["therapeutic_purpose_class"] == "DTT"
+    assert result["therapeutic_purpose_category"] == "Small Molecule"
+    assert result["cadro"] == "Inflammation"
+
+
+def test_resolve_attaches_nih_purpose_and_cadro_even_when_curated_override_wins():
+    # AR1001 has its own real NIH row (DTT; small molecule) even though
+    # its target_pathways come from the curated override, not NIH — the
+    # supplementary NIH cross-reference must still surface
+    overrides = {"ar1001": {
+        "modality": "Small Molecule", "target_pathways": ["Amyloid", "Tau", "Neuroprotection"],
+        "molecular_targets": ["PDE5"], "mechanism_of_action": "PDE5 inhibitor",
+        "reason": "curated", "source": "test",
+    }}
+    result = resolve_drug_classification("AR1001", [], [], overrides=overrides, nih_name_lookup=_nih_lookup())
+    assert result["classification_source"] == "curated_override"
+    assert result["therapeutic_purpose_class"] == "DTT"
+    assert result["therapeutic_purpose_category"] == "Small Molecule"
+    assert result["cadro"] != ""
+
+
+def test_resolve_no_nih_match_leaves_purpose_and_cadro_blank_not_fabricated():
+    result = resolve_drug_classification(
+        "CompletelyUnmatchedDrugXYZ", [], [{"type": "DRUG", "name": "CompletelyUnmatchedDrugXYZ", "title": ""}],
+        overrides={}, nih_name_lookup={},
+    )
+    assert result["therapeutic_purpose_class"] == ""
+    assert result["therapeutic_purpose_category"] == ""
+    assert result["cadro"] == ""
+
+
+# ------------------------------------------------------------
+# classify_pipeline_quadrant() — the 4-category "pipeline chart" drug_type scheme
+# ------------------------------------------------------------
+
+def test_quadrant_uses_nih_purpose_directly_when_it_maps_cleanly():
+    quadrant, source, inferred = classify_pipeline_quadrant("Small Molecule", "Amyloid", "DTT", "Small Molecule")
+    assert quadrant == "Disease-Targeted Small Molecule"
+    assert source == "nih_reference"
+    assert inferred is False
+
+    quadrant, source, inferred = classify_pipeline_quadrant("Biologic", "Amyloid", "DTT", "Biologic")
+    assert quadrant == "Disease-Targeted Biologic"
+    assert inferred is False
+
+    quadrant, source, inferred = classify_pipeline_quadrant("Small Molecule", "Symptomatic", "STT", "Cognition Enhancer")
+    assert quadrant == "Cognition Enhancer"
+    assert inferred is False
+
+    quadrant, source, inferred = classify_pipeline_quadrant("Small Molecule", "Neuropsychiatric", "STT", "Neuropsychiatric")
+    assert quadrant == "Neuropsychiatric Symptom Tx"
+    assert inferred is False
+
+
+def test_quadrant_infers_neuropsychiatric_from_target_when_no_nih_match():
+    quadrant, source, inferred = classify_pipeline_quadrant("Small Molecule", "Neuropsychiatric", "", "")
+    assert quadrant == "Neuropsychiatric Symptom Tx"
+    assert source == "inferred_from_target_pathway"
+    assert inferred is True
+
+
+def test_quadrant_infers_cognition_enhancer_from_symptomatic_target():
+    quadrant, source, inferred = classify_pipeline_quadrant("Small Molecule", "Symptomatic", "", "")
+    assert quadrant == "Cognition Enhancer"
+    assert source == "inferred_from_target_pathway"
+    assert inferred is True
+
+
+def test_quadrant_infers_disease_targeted_biologic_from_modality():
+    quadrant, source, inferred = classify_pipeline_quadrant("Biologic", "Amyloid", "", "")
+    assert quadrant == "Disease-Targeted Biologic"
+    assert source == "inferred_from_modality"
+    assert inferred is True
+
+    # Cell/Gene Therapy is regulated as a biologic — same bucket
+    quadrant, _, _ = classify_pipeline_quadrant("Cell/Gene Therapy", "Amyloid", "", "")
+    assert quadrant == "Disease-Targeted Biologic"
+
+
+def test_quadrant_defaults_to_disease_targeted_small_molecule():
+    quadrant, source, inferred = classify_pipeline_quadrant("Small Molecule", "Amyloid", "", "")
+    assert quadrant == "Disease-Targeted Small Molecule"
+    assert source == "inferred_default"
+    assert inferred is True
+
+    # edge-case modalities with no symptomatic target signal fall through
+    # to the same default rather than being left uncategorized
+    quadrant, _, _ = classify_pipeline_quadrant("Dietary Supplement", "Other", "", "")
+    assert quadrant == "Disease-Targeted Small Molecule"
+    quadrant, _, _ = classify_pipeline_quadrant("Unknown", "Other", "", "")
+    assert quadrant == "Disease-Targeted Small Molecule"
+
+
+def test_quadrant_always_returns_one_of_the_four_canonical_values():
+    samples = [
+        ("Small Molecule", "Amyloid", "DTT", "Small Molecule"),
+        ("Biologic", "Tau", "DTT", "Biologic"),
+        ("Small Molecule", "Symptomatic", "STT", "Cognition Enhancer"),
+        ("Small Molecule", "Neuropsychiatric", "STT", "Neuropsychiatric"),
+        ("Device", "Other", "", ""),
+        ("Cell/Gene Therapy", "Inflammation", "", ""),
+        ("Unknown", "Metabolism", "", ""),
+    ]
+    for modality, target, purpose_class, purpose_category in samples:
+        quadrant, _, _ = classify_pipeline_quadrant(modality, target, purpose_class, purpose_category)
+        assert quadrant in PIPELINE_QUADRANTS
+
+
+# ------------------------------------------------------------
 # build_official_pipeline_classification_lookup() (tier 3)
 # ------------------------------------------------------------
 
@@ -448,6 +586,19 @@ ALL_TESTS = [
     test_resolve_unresolved_drug_falls_through_to_needs_review,
     test_claude_inference_tier_is_a_documented_noop,
     test_resolve_confidence_scoring_agree_vs_disagree_vs_single_source,
+    test_derive_therapeutic_purpose_category_strips_parenthetical,
+    test_derive_therapeutic_purpose_category_dtt_modality_values,
+    test_derive_therapeutic_purpose_category_takes_first_of_multiple_purposes,
+    test_derive_therapeutic_purpose_category_blank_input,
+    test_resolve_attaches_nih_purpose_and_cadro_for_normal_nih_match,
+    test_resolve_attaches_nih_purpose_and_cadro_even_when_curated_override_wins,
+    test_resolve_no_nih_match_leaves_purpose_and_cadro_blank_not_fabricated,
+    test_quadrant_uses_nih_purpose_directly_when_it_maps_cleanly,
+    test_quadrant_infers_neuropsychiatric_from_target_when_no_nih_match,
+    test_quadrant_infers_cognition_enhancer_from_symptomatic_target,
+    test_quadrant_infers_disease_targeted_biologic_from_modality,
+    test_quadrant_defaults_to_disease_targeted_small_molecule,
+    test_quadrant_always_returns_one_of_the_four_canonical_values,
     test_official_pipeline_classification_lookup_reads_real_csv,
     test_official_pipeline_classification_lookup_skips_rows_without_modality_or_target,
     test_conflicts_dataframe_flags_modality_and_target_changes,
