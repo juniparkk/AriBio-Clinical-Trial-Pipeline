@@ -23,9 +23,10 @@ from drug_classification import (
     load_official_pipeline,
     build_interventions_dataframe,
     resolve_developed_drug,
-    normalize_intervention_candidate_name,
     build_resolved_drugs_dataframe,
     build_unresolved_trials_dataframe,
+    build_target_phase_counts,
+    build_resolved_drug_trial_links_df,
 )
 
 # ============================================================
@@ -366,131 +367,29 @@ print(f"=== AR1001 ROWS FOUND: {df['is_aribio'].sum()} ===")
 print()
 
 # ============================================================
-# STEP 3.5: ROLL TRIALS UP INTO ONE ROW PER DRUG
-# trials.csv is one row per *trial* — the same compound often has
-# several (e.g. a Phase 1 PK study, a Phase 2 efficacy study, and a
-# Phase 3 confirmatory study all for "Lecanemab"). The pipeline table
-# should read as "which drugs are in the pipeline and how far have
-# they gotten", not "list every trial", so we collapse to one row
-# per compound: highest phase reached, most-advanced status at that
-# phase, and the full trial count/enrollment for reference.
+# STEP 3.5 REMOVED (Phase 0 data-source consolidation).
+# This used to build `legacy_drugs_df` via primary_intervention_name()
+# (picks the FIRST "DRUG:"/"BIOLOGICAL:" entry in a trial and discards
+# every sibling intervention) → clean_drug_name() → canonical_drug_key()
+# (substring match against KNOWN_COMPOUNDS). It was the sole remaining
+# source for the heatmap and the Phase 3 leaderboard; every other
+# dashboard component (KPI tiles, the visible table, pipeline_drugs.csv)
+# had already migrated to `resolved_drugs_df` in an earlier checkpoint.
+# Per MIGRATION_PLAN.md Phase 0, the heatmap and leaderboard are now
+# migrated too (see STEP 5.5 below), which leaves this entire legacy
+# chain — primary_intervention_name(), canonical_drug_key(),
+# summarize_drug(), mode_or_first(), df["primary_drug_raw"]/
+# ["primary_drug_clean"]/["drug_key"], legacy_drugs_df itself — with NO
+# remaining consumers anywhere in this file (confirmed by grep before
+# removal). Deleted rather than left as dead code.
 # ============================================================
-
-# clean_drug_name's regex logic now lives in drug_classification.py as
-# normalize_intervention_candidate_name() — the new per-intervention
-# classification pipeline (STEP 3.6 below) needs the identical
-# dose/formulation-stripping behavior for its own candidate matching,
-# so rather than maintain two copies of the same regexes, this file
-# just imports the shared implementation under its original name. No
-# behavior change: same patterns, same output.
-clean_drug_name = normalize_intervention_candidate_name
-
-
-def primary_intervention_name(intervention):
-    if pd.isna(intervention):
-        return None
-    for part in str(intervention).split("|"):
-        part = part.strip()
-        if ":" not in part:
-            continue
-        itype, name = part.split(":", 1)
-        itype = itype.strip().upper()
-        name = name.strip()
-        if itype in ("DRUG", "BIOLOGICAL") and "placebo" not in name.lower() and name.lower() != "no intervention":
-            return name
-    return None
-
-
-df["primary_drug_raw"] = df[intervention_col].apply(primary_intervention_name)
-df["primary_drug_clean"] = df["primary_drug_raw"].apply(lambda x: clean_drug_name(x) if isinstance(x, str) else None)
-
-
-def canonical_drug_key(clean_name):
-    # Reuse the KNOWN_COMPOUNDS lookup to merge naming variants of the same
-    # compound — "Bapineuzumab", "Bapineuzumab (AAB-001)", and "Experimental
-    # Bapineuzumab" all contain the dict key "bapineuzumab" and should be one
-    # pipeline row, not three.
-    if not isinstance(clean_name, str) or not clean_name:
-        return None
-    lowered = clean_name.lower()
-    for compound in KNOWN_COMPOUNDS:
-        if compound in lowered:
-            return compound
-    return lowered
-
-
-df["drug_key"] = df["primary_drug_clean"].apply(canonical_drug_key)
-
-PHASE_RANK = {"Phase 3": 3, "Phase 2": 2, "Phase 1": 1}
-STATUS_PRIORITY = ["FDA Approved", "Recruiting", "Active", "Completed", "Discontinued", "Unknown", "Other"]
-
-
-def mode_or_first(series):
-    m = series.mode()
-    return m.iloc[0] if not m.empty else series.iloc[0]
-
-
-def summarize_drug(g):
-    g = g.copy()
-    g["phase_rank"] = g["phase_clean"].map(PHASE_RANK)
-    top_rows = g[g["phase_rank"] == g["phase_rank"].max()]
-    statuses_at_top = top_rows["status_clean"].tolist()
-    status = next((s for s in STATUS_PRIORITY if s in statuses_at_top), statuses_at_top[0])
-    return pd.Series({
-        # shortest clean name wins — "Bapineuzumab" over "Experimental Bapineuzumab"
-        "display_name": min(g["primary_drug_clean"], key=len),
-        "phase_reached": top_rows["phase_clean"].iloc[0],
-        "nct_id": top_rows["nct_id"].iloc[0],
-        "status_summary": status,
-        "drug_type": mode_or_first(g["drug_type"]),
-        "target": mode_or_first(g["target"]),
-        "sponsor": mode_or_first(g["sponsor"]),
-        "trial_count": g["nct_id"].nunique(),
-        "max_enrollment": g["enrollment"].max(),
-        "is_aribio": bool(g["is_aribio"].any()),
-    })
-
-
-# NOTE: renamed from `drugs_df` to `legacy_drugs_df` this checkpoint —
-# this is the OLD primary_intervention_name()/drug_key-based rollup.
-# It's kept, unmodified, for the components not yet migrated onto the
-# new resolved-drug data: the heatmap, the Phase 3 leaderboard, and the
-# KPI/spotlight logic tied to those. The visible drug TABLE below now
-# uses `resolved_drugs_df` instead (built further down, from
-# build_resolved_drugs_dataframe(df)) — see STEP 3.7.
-legacy_drugs_df = (
-    df[df["drug_key"].notna()]
-    .groupby("drug_key")
-    .apply(summarize_drug, include_groups=False)
-    .reset_index(drop=True)
-)
-
-# link each drug to the clinicaltrials.gov page for its highest-phase trial
-# (URL is derived from the NCT ID rather than trusting a "Study URL" column,
-# since ct.gov's URL scheme is stable but that column isn't always present)
-legacy_drugs_df["study_url"] = "https://clinicaltrials.gov/study/" + legacy_drugs_df["nct_id"]
-
-# AR1001 mechanistically touches multiple pathways (PDE5 inhibition affects
-# amyloid, tau, and neuroprotective signaling per the AAIC 2026 Phase 2 data)
-# — the pathway bucket stays "Neuroprotection" for pie/filter consistency,
-# but the table shows the fuller picture for this one row.
-legacy_drugs_df["target_display"] = legacy_drugs_df.apply(
-    lambda r: "Multi (Amyloid/Tau/Neuroprotection)" if r["is_aribio"] else r["target"], axis=1
-)
-
-print("=== PER-DRUG ROLLUP (legacy, still used by heatmap/leaderboard) ===")
-print(f"{len(legacy_drugs_df)} unique drugs from {df['drug_key'].notna().sum()} drug-bearing trials "
-      f"({(~df['drug_key'].notna()).sum()} trials had no drug/biological intervention — excluded from the drug table)")
-print(legacy_drugs_df["phase_reached"].value_counts())
-print()
 
 # ============================================================
 # STEP 3.6: PER-INTERVENTION CLASSIFICATION (the classify_intervention()/
 # resolve_developed_drug()-based pipeline). Produces developed_drug,
 # drug_classification, and related columns on `df`, used below by
-# STEP 3.7 to build resolved_drugs_df — the new source for the visible
-# table and pipeline_drugs.csv. legacy_drugs_df above is untouched by
-# any of this.
+# STEP 3.7 to build resolved_drugs_df — the one drug-level source of
+# truth for every dashboard component (see STEP 3.75/3.8).
 # ============================================================
 
 pipeline_records = load_official_pipeline("data/official_pipeline.csv")
@@ -534,20 +433,18 @@ print(f"{df['needs_manual_review'].sum()} trials flagged needs_manual_review")
 print()
 
 # ============================================================
-# STEP 3.7: RESOLVED DRUG-LEVEL ROLLUP — the NEW table source
-# This is what the visible HTML/JS drug table (and pipeline_drugs.csv)
-# uses now. legacy_drugs_df above is left untouched and still backs the
-# heatmap, the Phase 3 leaderboard, and (for now) the KPI tile counts —
-# wait, KPI tiles are updated below to use resolved_drugs_df instead,
-# specifically so the headline numbers agree with the table beneath
-# them; see the note at STEP 6 where they're computed.
+# STEP 3.7: RESOLVED DRUG-LEVEL ROLLUP — the ONE drug-level source of
+# truth for the whole dashboard as of Phase 0 (data-source
+# consolidation): the visible HTML/JS drug table, pipeline_drugs.csv,
+# the KPI tiles, the heatmap, the Phase 3 leaderboard, and the
+# drug-type/target pies all derive from this dataframe now — no
+# component computes its own separate drug-level rollup anymore.
 # ============================================================
 
 resolved_drugs_df = build_resolved_drugs_dataframe(df)
 
-# AR1001 mechanistically touches multiple pathways — same special case
-# as legacy_drugs_df's target_display, reproduced here for parity in
-# the new table's Target/Pathway column.
+# AR1001 mechanistically touches multiple pathways — special case for
+# this dashboard's Target/Pathway column display.
 resolved_drugs_df["target_display"] = resolved_drugs_df.apply(
     lambda r: "Multi (Amyloid/Tau/Neuroprotection)" if r["is_aribio"] else r["target"], axis=1
 )
@@ -613,6 +510,59 @@ print(resolved_drugs_df["verification_label"].value_counts())
 print()
 
 # ============================================================
+# STEP 3.75: NAMED, GRANULARITY-EXPLICIT DATASETS
+# trials_df: one row per unique NCT ID (trial-level) — an explicit,
+# clearly-named alias for `df` at this point in the pipeline, where it
+# has stabilized (every remaining assignment below adds columns to
+# individual dashboard components, not new/reassigned rows).
+# resolved_drug_trial_links_df: the explicit drug<->trial join table —
+# one row per (canonical drug, contributing trial) pair, rather than an
+# implicit semicolon-joined string every caller has to re-split.
+# ============================================================
+
+trials_df = df
+
+resolved_drug_trial_links_df = build_resolved_drug_trial_links_df(resolved_drugs_df)
+
+# ============================================================
+# STEP 3.8: DATA RECONCILIATION REPORT (temporary, Phase 0 only)
+# One place to see that every number downstream traces back
+# consistently: raw trials -> parsed interventions -> classified
+# (therapeutic / non-therapeutic / unresolved) -> resolved canonical
+# drugs. This exists specifically because Phase 0 just changed which
+# dashboard components read from which dataset — it's the sanity check
+# that consolidating onto resolved_drugs_df didn't silently drop or
+# duplicate anything relative to the old dual-source setup.
+# ============================================================
+
+_therapeutic_labels = ["sponsor_developed_therapeutic", "investigational_therapeutic_unverified"]
+_unresolved_labels = ["uncertain"]
+_intervention_classification_counts = interventions_df["classification"].value_counts()
+_therapeutic_record_count = int(_intervention_classification_counts.reindex(_therapeutic_labels).fillna(0).sum())
+_unresolved_record_count = int(_intervention_classification_counts.reindex(_unresolved_labels).fillna(0).sum())
+_non_therapeutic_record_count = len(interventions_df) - _therapeutic_record_count - _unresolved_record_count
+
+print("=== DATA RECONCILIATION ===")
+print(f"unique raw trials: {trials_df['nct_id'].nunique()}")
+print(f"raw intervention records: {len(interventions_df)}")
+print(f"resolved canonical drugs: {len(resolved_drugs_df)}")
+print(f"therapeutic drugs (intervention-level: sponsor_developed_therapeutic + investigational_therapeutic_unverified): {_therapeutic_record_count}")
+print(f"non-therapeutic records (placebo/diagnostic/procedure/device/behavioral/comparator/other): {_non_therapeutic_record_count}")
+print(f"unresolved records (uncertain): {_unresolved_record_count}")
+print(f"  [check: therapeutic + non-therapeutic + unresolved == raw intervention records? "
+      f"{_therapeutic_record_count + _non_therapeutic_record_count + _unresolved_record_count == len(interventions_df)}]")
+print(f"Phase 1 drugs: {int((resolved_drugs_df['phase_reached'] == 'Phase 1').sum())}")
+print(f"Phase 2 drugs: {int((resolved_drugs_df['phase_reached'] == 'Phase 2').sum())}")
+print(f"Phase 3 drugs: {int((resolved_drugs_df['phase_reached'] == 'Phase 3').sum())}")
+print("sum by target/pathway (resolved drugs):")
+print(resolved_drugs_df["target"].value_counts().to_string())
+print("sum by drug type (resolved drugs):")
+print(resolved_drugs_df["drug_type"].value_counts().to_string())
+print(f"[supplementary] resolved_drug_trial_links_df: {len(resolved_drug_trial_links_df)} drug<->trial links "
+      f"across {resolved_drug_trial_links_df['nct_id'].nunique()} distinct contributing trials")
+print()
+
+# ============================================================
 # STEP 4: COLORS
 # (brand colors + darken()/lighten() helpers now live near the top of
 # the file, right after the imports — STEP 3.7 needs them too)
@@ -661,10 +611,21 @@ STATUS_COLORS = {
 }
 
 # --- Compute counts for pie charts ---
-phase_counts = df["phase_clean"].value_counts()
-type_counts = df["drug_type"].value_counts()
-target_counts = df["target"].value_counts()
-status_counts = df["status_clean"].value_counts()
+# Phase 0 data-source consolidation: "By Drug Type" and "By Target
+# Pathway" become genuinely drug-level (resolved_drugs_df) — their
+# titles never said "trial" in the first place, so this actually makes
+# them match what they always claimed to show. "By Phase" and "By
+# Trial Status" stay trial-level (trials_df) deliberately: "how many
+# TRIALS are at each phase/status" is a real, different metric from the
+# KPI tiles' "how many DRUGS have reached each phase" — not an
+# inconsistency to fix, a distinct metric worth keeping. Per
+# requirement to "rename or clarify" rather than force one granularity
+# on every chart, the subplot titles below now say which basis each
+# pie uses.
+phase_counts = trials_df["phase_clean"].value_counts()
+type_counts = resolved_drugs_df["drug_type"].value_counts()
+target_counts = resolved_drugs_df["target"].value_counts()
+status_counts = trials_df["status_clean"].value_counts()
 
 # ============================================================
 # STEP 5: BUILD THE 4-PIE FIGURE
@@ -672,7 +633,7 @@ status_counts = df["status_clean"].value_counts()
 
 fig = make_subplots(
     rows=2, cols=2,
-    subplot_titles=["By Phase", "By Drug Type", "By Target Pathway", "By Trial Status"],
+    subplot_titles=["By Phase (trials)", "By Drug Type (unique drugs)", "By Target Pathway (unique drugs)", "By Trial Status"],
     specs=[[{"type": "pie"}, {"type": "pie"}],
            [{"type": "pie"}, {"type": "pie"}]]
 )
@@ -692,7 +653,7 @@ fig.add_trace(go.Pie(
     values=type_counts.values.tolist(),
     marker_colors=[DRUG_TYPE_COLORS.get(t, "#999") for t in type_counts.index],
     name="Drug Type", hole=0.35, textinfo="label+percent",
-    hovertemplate="<b>%{label}</b><br>%{value} trials<br>%{percent}<extra></extra>"
+    hovertemplate="<b>%{label}</b><br>%{value} drugs<br>%{percent}<extra></extra>"
 ), row=1, col=2)
 
 fig.add_trace(go.Pie(
@@ -700,7 +661,7 @@ fig.add_trace(go.Pie(
     values=target_counts.values.tolist(),
     marker_colors=[TARGET_COLORS.get(t, "#999") for t in target_counts.index],
     name="Target", hole=0.35, textinfo="label+percent",
-    hovertemplate="<b>%{label}</b><br>%{value} trials<br>%{percent}<extra></extra>"
+    hovertemplate="<b>%{label}</b><br>%{value} drugs<br>%{percent}<extra></extra>"
 ), row=2, col=1)
 
 fig.add_trace(go.Pie(
@@ -747,14 +708,16 @@ PHASES_ASC = ["Phase 1", "Phase 2", "Phase 3"]
 # --- Target × Phase heatmap (magnitude → one hue light-to-dark, not the
 # categorical target colors — a sequential ramp is the correct encoding for
 # "how many", built from the AriBio blue rather than Plotly's default) ---
-HEATMAP_TABS = [("All", legacy_drugs_df), ("Small Molecule", legacy_drugs_df[legacy_drugs_df["drug_type"] == "Small Molecule"]),
-                 ("Biologic", legacy_drugs_df[legacy_drugs_df["drug_type"] == "Biologic"])]
+# Phase 0: now built from resolved_drugs_df (was legacy_drugs_df).
+HEATMAP_TABS = [("All", resolved_drugs_df), ("Small Molecule", resolved_drugs_df[resolved_drugs_df["drug_type"] == "Small Molecule"]),
+                 ("Biologic", resolved_drugs_df[resolved_drugs_df["drug_type"] == "Biologic"])]
 HEATMAP_COLORSCALE = [[0, "#eef2f8"], [1, ARIBIO_BLUE]]
 
 
 def build_heatmap(sub_df):
-    z = [[len(sub_df[(sub_df["target"] == t) & (sub_df["phase_reached"] == p)]) for p in PHASES_ASC]
-         for t in TARGET_ORDER]
+    # count grid extracted into drug_classification.build_target_phase_counts()
+    # so it's unit-testable independent of this Plotly figure
+    z = build_target_phase_counts(sub_df, TARGET_ORDER, PHASES_ASC)
     fig = go.Figure(go.Heatmap(
         z=z, x=PHASES_ASC, y=TARGET_ORDER, colorscale=HEATMAP_COLORSCALE,
         text=z, texttemplate="%{text}", textfont=dict(size=13, color="#1a237e"),
@@ -770,13 +733,14 @@ def build_heatmap(sub_df):
 heatmap_figs = {label: build_heatmap(sub) for label, sub in HEATMAP_TABS}
 
 # --- Phase 3 leaderboard: same drug-level data, sorted by target ---
-phase3_df = legacy_drugs_df[legacy_drugs_df["phase_reached"] == "Phase 3"].sort_values(
+# Phase 0: now built from resolved_drugs_df (was legacy_drugs_df).
+phase3_df = resolved_drugs_df[resolved_drugs_df["phase_reached"] == "Phase 3"].sort_values(
     ["target", "is_aribio", "display_name"], ascending=[True, False, True]
 )
 PHASE3_PREVIEW_N = 8
 
-print("=== PER-DRUG TABLE PREVIEW (legacy, first 30 rows, sorted by phase) ===")
-preview = legacy_drugs_df.sort_values("phase_reached", ascending=False)
+print("=== PER-DRUG TABLE PREVIEW (resolved_drugs_df, first 30 rows, sorted by phase) ===")
+preview = resolved_drugs_df.sort_values("phase_reached", ascending=False)
 preview_cols = ["display_name", "phase_reached", "drug_type", "target", "status_summary", "is_aribio"]
 print(preview[preview_cols].head(30).to_string(index=False))
 print()
@@ -933,8 +897,13 @@ records_js = json.dumps(table_records)
 table_column_count = len(TABLE_COLUMNS)
 
 # pie trace order added above: 0=phase, 1=drug_type, 2=target, 3=status
-# (unaffected by the table migration — pies still read from `df`, not
-# resolved_drugs_df/legacy_drugs_df, so no new entries needed here)
+# (phase/status pies read trials_df; drug_type/target pies read
+# resolved_drugs_df as of Phase 0 — see the pie-counts comment above.
+# The click-to-filter mapping below is unaffected either way: it maps a
+# clicked slice's LABEL text to a table filter, and the table's filter
+# values — Phase 1/2/3, Small Molecule/Biologic/etc, Amyloid/Tau/etc,
+# Recruiting/Completed/etc — are the same vocabulary regardless of
+# which dataset produced the slice.)
 pie_field_map_js = json.dumps(["phase", "drugType", "target", "status"])
 today_str = date.today().isoformat()
 
@@ -1491,11 +1460,14 @@ print()
 # ============================================================
 
 review_cols = [
+    # nct_id/title/phase_clean/status_clean/is_aribio: trial-level fields.
+    # drug_type/target: STEP 3's guess_drug_type()/guess_target() — still
+    # the only drug-type/target classification logic that exists (Phase 0
+    # only consolidated WHICH trials produce a drug row, not how drug_type/
+    # target get computed for them — see MIGRATION_PLAN.md Phase 2).
     "nct_id", "title", "phase_clean", "drug_type", "target", "status_clean", "is_aribio",
-    # new (this checkpoint) — the classify_intervention()-based resolution,
-    # produced ALONGSIDE the existing columns above (which still come from
-    # the older primary_intervention_name()/drug_key path) so the two can
-    # be compared before anything old is removed
+    # classify_intervention()/resolve_developed_drug()-based resolution,
+    # produced alongside the columns above so both can be compared
     "developed_drug", "developed_drug_normalized", "drug_classification",
     "classification_reason", "official_pipeline_match", "official_source_url",
     "verification_status", "classification_confidence", "needs_manual_review",
@@ -1504,14 +1476,11 @@ review_cols = [c for c in review_cols if c in df.columns]
 df[review_cols].to_csv("pipeline_annotated.csv", index=False)
 print("=== SAVED: pipeline_annotated.csv (per-trial) ===")
 
-# pipeline_drugs.csv comes from the NEW classify_intervention()/
-# resolve_developed_drug()-based rollup — resolved_drugs_df, already
-# built above in STEP 3.7 (it's also the visible HTML/JS table's source
-# now). legacy_drugs_df remains untouched and still drives the heatmap
-# and the Phase 3 leaderboard. This is what removes placebo/diagnostic-
-# tracer/procedure/device/behavioral/non-treatment-control rows from
-# pipeline_drugs.csv, replacing the old primary_intervention_name()/
-# drug_key source entirely for this file.
+# pipeline_drugs.csv comes from resolved_drugs_df (STEP 3.7) — the same
+# one drug-level source of truth every other dashboard component now
+# uses (Phase 0 data-source consolidation). This is what removes
+# placebo/diagnostic-tracer/procedure/device/behavioral/non-treatment-
+# control rows from pipeline_drugs.csv.
 drug_review_cols = [
     "display_name", "phase_reached", "drug_type", "target", "status_summary",
     "trial_count", "max_enrollment", "sponsor", "is_aribio",

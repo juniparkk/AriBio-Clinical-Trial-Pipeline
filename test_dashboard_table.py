@@ -18,20 +18,63 @@
 # project.
 # ============================================================
 
+import csv
 import json
 import re
 
+import pandas as pd
+
 HTML_PATH = "pipeline_overview.html"
 UNRESOLVED_CSV_PATH = "pipeline_unresolved_trials.csv"
+DRUGS_CSV_PATH = "pipeline_drugs.csv"
+PIPELINE_VIZ_PATH = "pipeline_viz.py"
 
 with open(HTML_PATH, encoding="utf-8") as f:
     HTML_SOURCE = f.read()
+
+with open(PIPELINE_VIZ_PATH, encoding="utf-8") as f:
+    PIPELINE_VIZ_SOURCE = f.read()
 
 _match = re.search(
     r'<script id="drug-data" type="application/json">(.*?)</script>', HTML_SOURCE, re.DOTALL
 )
 assert _match, "Could not find the drug-data JSON blob in pipeline_overview.html — run pipeline_viz.py first"
 TABLE_ROWS = json.loads(_match.group(1))
+
+DRUGS_CSV_ROWS = list(csv.DictReader(open(DRUGS_CSV_PATH, encoding="utf-8")))
+
+
+def extract_plotly_traces(html, div_id):
+    """
+    Pull the list of trace dicts out of a `Plotly.newPlot("<div_id>", [...traces...], {...layout...})`
+    call embedded in the HTML (this is what plotly.io.to_html() emits).
+    Not a regex-with-.*? match — that breaks on nested brackets inside
+    the trace JSON (e.g. "labels":[...] inside a trace inside the outer
+    traces array) — instead this scans character-by-character, tracking
+    bracket depth and skipping over string literals, to find the exact
+    end of the traces array, then json.loads() just that substring.
+    """
+    marker = f'"{div_id}",'
+    start = html.index(marker) + len(marker)
+    while html[start] in " \t\n":
+        start += 1
+    assert html[start] == "[", f"expected traces array to start with '[' for div {div_id!r}"
+    depth = 0
+    i = start
+    while True:
+        ch = html[i]
+        if ch == '"':
+            i += 1
+            while not (html[i] == '"' and html[i - 1] != "\\"):
+                i += 1
+        elif ch == "[":
+            depth += 1
+        elif ch == "]":
+            depth -= 1
+            if depth == 0:
+                break
+        i += 1
+    return json.loads(html[start:i + 1])
 
 RAW_ENUM_VALUES = {
     "sponsor_developed_therapeutic",
@@ -128,6 +171,164 @@ def test_unresolved_trials_do_not_enter_the_table():
         assert not overlap, f"unresolved trial(s) {overlap} leaked into table row {row['display_name']!r}"
 
 
+# ============================================================
+# PHASE 0 — dashboard data-source consolidation reconciliation tests
+#
+# Every one of these checks that a specific VISIBLE dashboard component
+# (KPI tiles, heatmap, Phase 3 leaderboard, drug-type/target pies)
+# actually agrees with resolved_drugs_df (here represented by
+# TABLE_ROWS, parsed straight from the table's own embedded JSON, and
+# cross-checked against pipeline_drugs.csv — both are resolved_drugs_df,
+# just two different serializations of it).
+# ============================================================
+
+def test_kpi_total_drugs_equals_resolved_drugs_df_length():
+    total_drugs = len(TABLE_ROWS)
+    kpi_match = re.search(r'<div class="kpi-value">(\d+)</div>', HTML_SOURCE)
+    assert kpi_match, "could not find the 'Total drugs in trials' KPI value in the HTML"
+    assert int(kpi_match.group(1)) == total_drugs
+
+    topbar_match = re.search(r"(\d+) unique drugs", HTML_SOURCE)
+    assert topbar_match, "could not find the topbar's 'N unique drugs' text"
+    assert int(topbar_match.group(1)) == total_drugs
+
+    assert total_drugs == len(DRUGS_CSV_ROWS), "table row count must also match pipeline_drugs.csv row count"
+
+
+def test_kpi_phase_counts_computed_from_resolved_drugs_df():
+    phase_kpi_matches = re.findall(r'<div class="kpi-value" style="color:[^"]*">(\d+)</div>', HTML_SOURCE)
+    assert len(phase_kpi_matches) == 3, "expected exactly 3 colored KPI tiles (Phase 3/2/1 agents)"
+    phase3_kpi, phase2_kpi, phase1_kpi = (int(v) for v in phase_kpi_matches)
+
+    phase_counts = {"Phase 1": 0, "Phase 2": 0, "Phase 3": 0}
+    for row in TABLE_ROWS:
+        if row["phase_reached"] in phase_counts:
+            phase_counts[row["phase_reached"]] += 1
+
+    assert phase3_kpi == phase_counts["Phase 3"]
+    assert phase2_kpi == phase_counts["Phase 2"]
+    assert phase1_kpi == phase_counts["Phase 1"]
+
+
+TARGET_ORDER = ["Amyloid", "Tau", "Inflammation", "Neuroprotection", "Metabolism", "Symptomatic", "Neuropsychiatric"]
+PHASES_ASC = ["Phase 1", "Phase 2", "Phase 3"]
+
+
+def test_heatmap_all_tab_reconciles_to_resolved_drug_counts():
+    traces = extract_plotly_traces(HTML_SOURCE, "heatmapAll")
+    assert len(traces) == 1, "expected a single go.Heatmap trace in the 'All' tab"
+    z = traces[0]["z"]
+
+    expected = [
+        [sum(1 for r in TABLE_ROWS if r["target"] == t and r["phase_reached"] == p) for p in PHASES_ASC]
+        for t in TARGET_ORDER
+    ]
+    assert z == expected
+
+    # every drug counted in the heatmap must be a real resolved drug —
+    # i.e. the grid total can never exceed len(resolved_drugs_df), and
+    # only falls short of it for drugs whose target isn't one of the
+    # 7 curated pathway buckets (target "Other"/"Unknown" isn't
+    # plotted — a pre-existing, deliberate heatmap scope, not a bug)
+    grid_total = sum(sum(row) for row in z)
+    assert grid_total <= len(TABLE_ROWS)
+    eligible = sum(1 for r in TABLE_ROWS if r["target"] in TARGET_ORDER)
+    assert grid_total == eligible
+
+
+def test_phase3_leaderboard_names_are_subset_of_resolved_drugs_df():
+    table_match = re.search(r'<table class="phase3-table">(.*?)</table>', HTML_SOURCE, re.DOTALL)
+    assert table_match, "could not find the Phase 3 leaderboard table"
+    leaderboard_names = re.findall(r'<a href="[^"]*"[^>]*>([^<]+)</a>', table_match.group(1))
+    assert len(leaderboard_names) > 0, "expected at least one Phase 3 leaderboard row in the real dataset"
+
+    resolved_names = {row["display_name"] for row in TABLE_ROWS}
+    for name in leaderboard_names:
+        # the leaderboard wraps AriBio's own row in "<name> ★" (a
+        # star suffix added by phase3_row_html) — strip it before comparing
+        clean_name = name.replace(" ★", "").strip()
+        assert clean_name in resolved_names, f"leaderboard name {clean_name!r} not found in resolved_drugs_df"
+
+
+def test_pipeline_table_names_are_subset_of_pipeline_drugs_csv():
+    resolved_names = {row["display_name"] for row in DRUGS_CSV_ROWS}
+    for row in TABLE_ROWS:
+        assert row["display_name"] in resolved_names
+
+
+def test_drug_type_pie_reconciles_with_resolved_drugs_df():
+    traces = extract_plotly_traces(HTML_SOURCE, "pieDiv")
+    drug_type_trace = traces[1]  # trace order: 0=phase, 1=drug_type, 2=target, 3=status
+    assert drug_type_trace["name"] == "Drug Type"
+
+    expected_counts = {}
+    for row in TABLE_ROWS:
+        expected_counts[row["drug_type"]] = expected_counts.get(row["drug_type"], 0) + 1
+
+    actual_counts = dict(zip(drug_type_trace["labels"], drug_type_trace["values"]))
+    assert actual_counts == expected_counts
+    assert sum(actual_counts.values()) == len(TABLE_ROWS)
+    assert "drugs" in drug_type_trace["hovertemplate"], "hover text must say 'drugs', not 'trials', now that this pie is drug-level"
+
+
+def test_target_pie_reconciles_with_resolved_drugs_df():
+    traces = extract_plotly_traces(HTML_SOURCE, "pieDiv")
+    target_trace = traces[2]
+    assert target_trace["name"] == "Target"
+
+    expected_counts = {}
+    for row in TABLE_ROWS:
+        expected_counts[row["target"]] = expected_counts.get(row["target"], 0) + 1
+
+    actual_counts = dict(zip(target_trace["labels"], target_trace["values"]))
+    assert actual_counts == expected_counts
+    assert sum(actual_counts.values()) == len(TABLE_ROWS)
+    assert "drugs" in target_trace["hovertemplate"]
+
+
+def test_phase_and_status_pies_remain_trial_level_by_design():
+    # "By Phase" and "By Trial Status" are DELIBERATELY kept trial-level
+    # (not migrated) — their own titles already say "trials", and they
+    # answer a genuinely different question ("how many TRIALS are at
+    # each phase/status") than the KPI tiles' drug-level counts. This
+    # test pins that design decision so a future change can't silently
+    # make them drug-level (or vice versa) without the test noticing.
+    traces = extract_plotly_traces(HTML_SOURCE, "pieDiv")
+    phase_trace, status_trace = traces[0], traces[3]
+    assert phase_trace["name"] == "Phase"
+    assert status_trace["name"] == "Status"
+    assert sum(phase_trace["values"]) == len(get_trials_csv_rows())
+    assert "trials" in phase_trace["hovertemplate"]
+    assert "trials" in status_trace["hovertemplate"]
+
+
+def get_trials_csv_rows():
+    with open("pipeline_annotated.csv", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+
+def test_no_dashboard_calculation_references_legacy_drugs_df():
+    # legacy_drugs_df, and its whole upstream chain, must have zero
+    # remaining CODE references (comments mentioning the retired name
+    # for historical context are fine and expected — this checks for
+    # actual Python usage: assignment, indexing, or attribute access)
+    assert re.search(r"legacy_drugs_df\s*=", PIPELINE_VIZ_SOURCE) is None
+    assert re.search(r"legacy_drugs_df\[", PIPELINE_VIZ_SOURCE) is None
+    assert re.search(r"legacy_drugs_df\.\w", PIPELINE_VIZ_SOURCE) is None
+    for removed_def in ["def primary_intervention_name", "def canonical_drug_key", "def summarize_drug", "def mode_or_first"]:
+        assert removed_def not in PIPELINE_VIZ_SOURCE, f"{removed_def} should have been removed entirely in Phase 0"
+
+
+def test_drug_type_and_target_pies_read_resolved_drugs_df_not_raw_df():
+    # static-source check: the two lines that feed the drug-type/target
+    # pies must read resolved_drugs_df, not a bare trial-level `df`/
+    # `trials_df` column access
+    type_line = re.search(r"^type_counts = (.+)$", PIPELINE_VIZ_SOURCE, re.MULTILINE)
+    target_line = re.search(r"^target_counts = (.+)$", PIPELINE_VIZ_SOURCE, re.MULTILINE)
+    assert type_line and "resolved_drugs_df" in type_line.group(1)
+    assert target_line and "resolved_drugs_df" in target_line.group(1)
+
+
 ALL_TESTS = [
     test_no_diagnostic_tracer_names_in_table,
     test_no_procedure_only_entries_in_table,
@@ -139,6 +340,16 @@ ALL_TESTS = [
     test_readable_verification_labels_not_raw_enum_values,
     test_multi_sponsor_row_retains_every_sponsor,
     test_unresolved_trials_do_not_enter_the_table,
+    test_kpi_total_drugs_equals_resolved_drugs_df_length,
+    test_kpi_phase_counts_computed_from_resolved_drugs_df,
+    test_heatmap_all_tab_reconciles_to_resolved_drug_counts,
+    test_phase3_leaderboard_names_are_subset_of_resolved_drugs_df,
+    test_pipeline_table_names_are_subset_of_pipeline_drugs_csv,
+    test_drug_type_pie_reconciles_with_resolved_drugs_df,
+    test_target_pie_reconciles_with_resolved_drugs_df,
+    test_phase_and_status_pies_remain_trial_level_by_design,
+    test_no_dashboard_calculation_references_legacy_drugs_df,
+    test_drug_type_and_target_pies_read_resolved_drugs_df_not_raw_df,
 ]
 
 

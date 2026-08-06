@@ -37,6 +37,8 @@ from drug_classification import (
     _contains_phrase,
     build_resolved_drugs_dataframe,
     build_unresolved_trials_dataframe,
+    build_target_phase_counts,
+    build_resolved_drug_trial_links_df,
 )
 
 PIPELINE_CSV_PATH = os.path.join(os.path.dirname(__file__), "data", "official_pipeline.csv")
@@ -1157,6 +1159,78 @@ def test_unresolved_trials_csv_includes_ambiguous_and_uncertain_trials():
 
 
 # ------------------------------------------------------------
+# Phase 0 — build_target_phase_counts() / build_resolved_drug_trial_links_df()
+# (the pure functions that let the heatmap and the drug<->trial join
+# read only from resolved_drugs_df, never legacy_drugs_df or raw df)
+# ------------------------------------------------------------
+
+def test_build_target_phase_counts_basic_crosstab():
+    resolved = pd.DataFrame([
+        {"target": "Amyloid", "phase_reached": "Phase 3"},
+        {"target": "Amyloid", "phase_reached": "Phase 3"},
+        {"target": "Amyloid", "phase_reached": "Phase 1"},
+        {"target": "Tau", "phase_reached": "Phase 2"},
+    ])
+    z = build_target_phase_counts(resolved, targets=["Amyloid", "Tau"], phases=["Phase 1", "Phase 2", "Phase 3"])
+    assert z == [
+        [1, 0, 2],  # Amyloid: 1 in Phase 1, 0 in Phase 2, 2 in Phase 3
+        [0, 1, 0],  # Tau: 0, 1, 0
+    ]
+
+
+def test_build_target_phase_counts_empty_dataframe():
+    resolved = pd.DataFrame(columns=["target", "phase_reached"])
+    z = build_target_phase_counts(resolved, targets=["Amyloid"], phases=["Phase 1"])
+    assert z == [[0]]
+
+
+def test_build_target_phase_counts_sum_equals_eligible_drug_count():
+    # every row's target is in `targets` and phase in `phases` here, so
+    # the full grid must sum to exactly len(resolved) — this is the
+    # "heatmap totals reconcile to resolved drug counts" guarantee
+    resolved = pd.DataFrame([
+        {"target": "Amyloid", "phase_reached": "Phase 1"},
+        {"target": "Amyloid", "phase_reached": "Phase 2"},
+        {"target": "Tau", "phase_reached": "Phase 3"},
+        {"target": "Inflammation", "phase_reached": "Phase 1"},
+    ])
+    targets = ["Amyloid", "Tau", "Inflammation"]
+    phases = ["Phase 1", "Phase 2", "Phase 3"]
+    z = build_target_phase_counts(resolved, targets, phases)
+    assert sum(sum(row) for row in z) == len(resolved)
+
+
+def test_build_resolved_drug_trial_links_df_explodes_nct_ids():
+    resolved = pd.DataFrame([
+        {"display_name": "AR1001", "nct_ids": "NCT001; NCT002"},
+        {"display_name": "SAR110894", "nct_ids": "NCT003"},
+    ])
+    links = build_resolved_drug_trial_links_df(resolved)
+    assert len(links) == 3
+    assert set(links[links["display_name"] == "AR1001"]["nct_id"]) == {"NCT001", "NCT002"}
+    assert set(links[links["display_name"] == "SAR110894"]["nct_id"]) == {"NCT003"}
+
+
+def test_build_resolved_drug_trial_links_df_handles_blank_nct_ids():
+    resolved = pd.DataFrame([{"display_name": "SomeDrug", "nct_ids": ""}])
+    links = build_resolved_drug_trial_links_df(resolved)
+    assert len(links) == 0
+
+
+def test_build_resolved_drug_trial_links_df_row_count_matches_trial_count_sum():
+    # every trial resolves to at most ONE drug (resolve_developed_drug()
+    # never splits a trial across two drugs), so the number of links
+    # must equal the number of DISTINCT trials referenced — never more
+    resolved = pd.DataFrame([
+        {"display_name": "AR1001", "nct_ids": "NCT001; NCT002", "trial_count": 2},
+        {"display_name": "SAR110894", "nct_ids": "NCT003", "trial_count": 1},
+    ])
+    links = build_resolved_drug_trial_links_df(resolved)
+    assert len(links) == resolved["trial_count"].sum()
+    assert links["nct_id"].nunique() == len(links)
+
+
+# ------------------------------------------------------------
 # test runner
 # ------------------------------------------------------------
 
@@ -1268,6 +1342,12 @@ ALL_TESTS = [
     test_rollup_one_confirmed_plus_one_unverified_produces_one_mixed_row,
     test_rollup_multiple_unresolved_candidates_excluded,
     test_unresolved_trials_csv_includes_ambiguous_and_uncertain_trials,
+    test_build_target_phase_counts_basic_crosstab,
+    test_build_target_phase_counts_empty_dataframe,
+    test_build_target_phase_counts_sum_equals_eligible_drug_count,
+    test_build_resolved_drug_trial_links_df_explodes_nct_ids,
+    test_build_resolved_drug_trial_links_df_handles_blank_nct_ids,
+    test_build_resolved_drug_trial_links_df_row_count_matches_trial_count_sum,
 ]
 
 

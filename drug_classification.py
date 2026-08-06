@@ -1314,3 +1314,54 @@ def build_unresolved_trials_dataframe(trials_df):
         "developed_drug", "drug_classification", "classification_reason",
         "classification_confidence", "verification_status", "needs_manual_review",
     ]]
+
+
+# ============================================================
+# PHASE 0 — DASHBOARD DATA-SOURCE CONSOLIDATION
+#
+# These two functions exist so drug-level VISUALIZATIONS never need to
+# recompute a target×phase cross-tab or a drug↔trial join inline — both
+# are pure, unit-testable, and operate ONLY on resolved_drugs_df (the
+# one drug-level source of truth), never on legacy_drugs_df or raw
+# trial data.
+# ============================================================
+
+def build_target_phase_counts(resolved_drugs_df, targets, phases):
+    """
+    Cross-tab of (target, phase_reached) DRUG counts from resolved_drugs_df
+    — the exact grid the target×phase heatmap renders. Extracted as a pure
+    function (rather than left inline inside the Plotly-figure-building
+    code) so it's directly unit-testable independent of the chart it feeds,
+    and so it's unambiguous that the heatmap counts unique drugs, not trials.
+
+    targets/phases are passed in (not hardcoded) so this can be reused for
+    any subset/facet of resolved_drugs_df (e.g. the "Small Molecule only"
+    heatmap tab) with the same target/phase ordering.
+    """
+    return [
+        [len(resolved_drugs_df[(resolved_drugs_df["target"] == t) & (resolved_drugs_df["phase_reached"] == p)]) for p in phases]
+        for t in targets
+    ]
+
+
+def build_resolved_drug_trial_links_df(resolved_drugs_df):
+    """
+    One row per (canonical drug, contributing trial) pair — the explicit
+    join table between resolved_drugs_df (one row per drug) and the
+    trial-level table (one row per NCT ID), built by exploding each drug's
+    semicolon-joined nct_ids column.
+
+    Exists so the drug<->trial many-to-many relationship is a first-class,
+    directly queryable dataset (e.g. "which trials support this drug?",
+    "how many distinct trials feed the drug rollup overall?") instead of
+    an implicit string every caller has to re-split themselves.
+    """
+    rows = []
+    for _, r in resolved_drugs_df.iterrows():
+        nct_id_field = r.get("nct_ids", "")
+        nct_ids = str(nct_id_field).split("; ") if nct_id_field else []
+        for nct_id in nct_ids:
+            nct_id = nct_id.strip()
+            if nct_id:
+                rows.append({"display_name": r["display_name"], "nct_id": nct_id})
+    return pd.DataFrame(rows, columns=["display_name", "nct_id"])
