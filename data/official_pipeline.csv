@@ -1,0 +1,7 @@
+company,drug_name,synonyms,source_url,notes
+AriBio,AR1001,mirodenafil,,Oral PDE5 inhibitor; Phase 3 (POLARIS-AD trial)
+Eisai,Lecanemab,BAN2401;Leqembi,,FDA-approved anti-amyloid antibody; co-developed with Biogen
+Eli Lilly,Donanemab,LY3002813;Kisunla,,FDA-approved anti-amyloid antibody
+Biogen,Aducanumab,BIIB037;Aduhelm,,"Anti-amyloid antibody; accelerated approval 2021, later discontinued"
+Roche,Gantenerumab,RO4909832,,Anti-amyloid antibody; Phase 3 program discontinued 2022
+Cassava Sciences,Simufilam,PTI-125,,Small-molecule filamin A modulator
