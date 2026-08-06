@@ -1,0 +1,831 @@
+record_type,name,phase,sponsor,match_tier,matched_dashboard_name,matched_candidate_text,matched_candidate_kind,dashboard_bucket,pipeline_scope,nct_ids
+nih_record,ACP‐204,Phase 3,ACADIA Pharmaceuticals Inc.; ACADIA Pharmaceuticals Inc.,normalized_exact,ACP-204,ACP‐204,canonical,,,NCT06159673; NCT06194799
+nih_record,AR1001,Phase 3,"AriBio Co., Ltd.",exact_canonical,AR1001,AR1001,canonical,,,NCT05531526
+nih_record,Buntanetap,Phase 3,Annovis Bio Inc.,unmatched,,,,,,NCT06709014
+nih_record,Caffeine,Phase 3,"University Hospital, Lille",exact_canonical,Caffeine,Caffeine,canonical,,,NCT04570085
+nih_record,Donanemab,Phase 3,Eli Lilly and Company; Eli Lilly and Company; Eli Lilly and Company; Eli Lilly and Company; Banner Health,exact_canonical,Donanemab,Donanemab,canonical,,,NCT04437511; NCT05026866; NCT05508789; NCT05738486; NCT06996730
+nih_record,Donepezil,Phase 3,Assistance Publique—Hôpitaux de Paris,exact_canonical,Donepezil,Donepezil,canonical,,,NCT04661280
+nih_record,Escitalopram,Phase 3,JHSPH Center for Clinical Trials,exact_canonical,Escitalopram,Escitalopram,canonical,,,NCT03108846
+nih_record,Etalanetug (E2814) + Lecanemab (BAN2401),Phase 3,Washington University School of Medicine; Washington University School of Medicine,exact_alias,E2814,E2814,alias,,,NCT01760005; NCT05269394
+nih_record,Gantenerumab,Phase 3,Washington University School of Medicine,exact_canonical,Gantenerumab,Gantenerumab,canonical,,,NCT01760005
+nih_record,Gonadorelin,Phase 3,Nelly Pitteloud,unmatched,,,,,,NCT04390646
+nih_record,Guanfacine,Phase 3,Imperial College London,exact_canonical,Guanfacine,Guanfacine,canonical,,,NCT03116126
+nih_record,Huperzine A,Phase 3,"Wanbangde Pharmaceutical Group Co., LTD",exact_canonical,Huperzine A,Huperzine A,canonical,,,NCT07066826
+nih_record,KarXT,Phase 3,Karuna Therapeutics; Karuna Therapeutics; Karuna Therapeutics; Karuna Therapeutics,exact_canonical,KarXT,KarXT,canonical,,,NCT05511363; NCT05980949; NCT06126224; NCT06585787
+nih_record,KarXT + KarX‐EC,Phase 3,Bristol‐Myers Squibb; Bristol‐Myers Squibb; Bristol‐Myers Squibb; Bristol‐Myers Squibb; Bristol‐Myers Squibb; Bristol‐Myers Squibb,exact_alias,KarXT,KarXT,component_canonical,,,NCT06937229; NCT06947941; NCT06976203; NCT06976216; NCT07011732; NCT07011745
+nih_record,Latrepirdine,Phase 3,Bigespas LTD,unmatched,,,,,,NCT07251023
+nih_record,Lecanemab,Phase 3,Washington University School of Medicine; Eisai Inc.; Eisai Inc.; Washington University School of Medicine,exact_canonical,Lecanemab,Lecanemab,canonical,,,NCT01760005; NCT03887455; NCT04468659; NCT06384573
+nih_record,Levetiracetam,Phase 3,Fundació Institut de Recerca de l'Hospital de la Santa Creu i Sant Pau,normalized_exact,levetiracetam,Levetiracetam,canonical,,,NCT07234695
+nih_record,Masitinib,Phase 3,AB Science,exact_canonical,Masitinib,Masitinib,canonical,,,NCT05564169
+nih_record,Masupirdine,Phase 3,Suven Life Sciences Limited,unmatched,,,,,,NCT05397639
+nih_record,Metformin,Phase 3,Columbia University,normalized_exact,metformin,Metformin,canonical,,,NCT04098666
+nih_record,MLC901,Phase 3,Moleac Pte Ltd.,exact_canonical,MLC901,MLC901,canonical,,,NCT07191028
+nih_record,Nabilone,Phase 3,Sunnybrook Health Sciences Centre,exact_canonical,Nabilone,Nabilone,canonical,,,NCT04516057
+nih_record,Nilotinib,Phase 3,"KeifeRx, LLC",fuzzy_suggestion,Nilotinib BE,Nilotinib,canonical,,,NCT05143528
+nih_record,Piromelatine,Phase 3,Neurim Pharmaceuticals Ltd.,exact_canonical,Piromelatine,Piromelatine,canonical,,,NCT05267535
+nih_record,Remternetug,Phase 3,Eli Lilly and Company; Washington University School of Medicine; Washington University School of Medicine; Eli Lilly and Company,exact_canonical,Remternetug,Remternetug,canonical,,,NCT05463731; NCT05552157; NCT06647498; NCT06653153
+nih_record,RG6289,Phase 3,Banner Health,unmatched,,,,,,NCT06996730
+nih_record,RG6289 + donanemab,Phase 3,Banner Health,normalized_exact,Donanemab,donanemab,component_canonical,,,NCT06996730
+nih_record,Rotigotine + rivastigmine,Phase 3,I.R.C.C.S. Fondazione Santa Lucia,exact_alias,Rotigotine,Rotigotine,component_canonical,,,NCT06702124
+nih_record,Semaglutide,Phase 3,Novo Nordisk A/S; Novo Nordisk A/S; Novo Nordisk A/S,exact_canonical,Semaglutide,Semaglutide,canonical,,,NCT04777396; NCT04777409; NCT05891496
+nih_record,Solanezumab,Phase 3,Washington University School of Medicine,exact_canonical,Solanezumab,Solanezumab,canonical,,,NCT01760005
+nih_record,T3D‐959,Phase 3,"T3D Therapeutics, Inc.",normalized_exact,T3D-959,T3D‐959,canonical,,,NCT06964230
+nih_record,Tertomotide,Phase 3,"Samsung Pharmaceutical Co., Ltd.",unmatched,,,,,,NCT05303701
+nih_record,Tricaprilin,Phase 3,Cerecin,exact_canonical,Tricaprilin,Tricaprilin,canonical,,,NCT05809908
+nih_record,Trontinemab,Phase 3,Hoffmann‐La Roche; Hoffmann‐La Roche,exact_canonical,Trontinemab,Trontinemab,canonical,,,NCT07169578; NCT07170150
+nih_record,Valiltramiprosate,Phase 3,Alzheon Inc.,unmatched,,,,,,NCT06304883
+nih_record,Wujia Yizhi,Phase 3,"Sichuan Jishengtang Pharmaceutical Co., Ltd.",unmatched,,,,,,NCT06534723
+nih_record,2‐HOBA,Phase 2,MTI Biotech Inc,unmatched,,,,,,NCT06432166
+nih_record,AADvac1,Phase 2,Paul S. Aisen,exact_canonical,AADvac1,AADvac1,canonical,,,NCT07167966
+nih_record,AADvac1 + AAmAb,Phase 2,Paul S. Aisen,exact_alias,AADvac1,AADvac1,component_canonical,,,NCT07167966
+nih_record,ACI‐24.060,Phase 2,AC Immune SA,unmatched,,,,,,NCT05462106
+nih_record,AL101,Phase 2,GlaxoSmithKline; GlaxoSmithKline,unmatched,,,,,,NCT06079190; NCT07105709
+nih_record,Aldesleukin,Phase 2,Centre Hospitalier St Anne; The Methodist Hospital Research Institute,exact_canonical,Aldesleukin,Aldesleukin,canonical,,,NCT05468073; NCT06096090
+nih_record,Aluminum hydroxide,Phase 2,ADvantage Therapeutics,unmatched,,,,,,NCT07107074
+nih_record,ARO‐MAPT,Phase 2,Arrowhead Pharmaceuticals,unmatched,,,,,,NCT07221344
+nih_record,Astragalus,Phase 2,Fujian Medical University Union Hospital; Fujian Medical University Union Hospital,unmatched,,,,,,NCT05578443; NCT05647473
+nih_record,Baricitinib,Phase 2,Massachusetts General Hospital,exact_canonical,Baricitinib,Baricitinib,canonical,,,NCT05189106
+nih_record,Benfotiamine,Phase 2,Alzheimer's Disease Cooperative Study (ADCS),exact_canonical,Benfotiamine,Benfotiamine,canonical,,,NCT06223360
+nih_record,BEY2153,Phase 2,BeyondBio Inc.,exact_canonical,BEY2153,BEY2153,canonical,,,NCT06885567
+nih_record,BIIB080,Phase 2,Biogen,unmatched,,,,,,NCT05399888
+nih_record,BMS‐986368,Phase 2,Celgene,normalized_exact,BMS-986368,BMS‐986368,canonical,,,NCT06808984
+nih_record,BMS‐986446,Phase 2,Bristol‐Myers Squibb,normalized_exact,BMS-986446,BMS‐986446,canonical,,,NCT06268886
+nih_record,Brexanolone,Phase 2,University of Arizona,unmatched,,,,,,NCT04838301
+nih_record,Brivaracetam,Phase 2,"University of California, Los Angeles",exact_canonical,Brivaracetam,Brivaracetam,canonical,,,NCT05899764
+nih_record,Bumetanide,Phase 2,Stanford University,exact_canonical,Bumetanide,Bumetanide,canonical,,,NCT06052163
+nih_record,Cannabidiol,Phase 2,"University of Colorado, Denver; Sunnybrook Health Sciences Centre",exact_canonical,Cannabidiol,Cannabidiol,canonical,,,NCT05822362; NCT06014424
+nih_record,Ciprofloxacin + Celecoxib,Phase 2,NeuroSense Therapeutics Ltd.,unmatched,,,,,,NCT06185543
+nih_record,Contraloid acetate,Phase 2,PRInnovation GmbH,exact_canonical,Contraloid acetate,Contraloid acetate,canonical,,,NCT06182085
+nih_record,CORT108297,Phase 2,Johns Hopkins University,exact_canonical,CORT108297,CORT108297,canonical,,,NCT04601038
+nih_record,DAOIB + AO,Phase 2,Chang Gung Memorial Hospital,exact_alias,DAOIB,DAOIB,component_canonical,,,NCT06467539
+nih_record,Daridorexant,Phase 2,Douglas Mental Health University Institute,exact_canonical,Daridorexant,Daridorexant,canonical,,,NCT07213349
+nih_record,Dasatinib + Quercetin,Phase 2,Washington University School of Medicine; Mayo Clinic,exact_canonical,Dasatinib + Quercetin,Dasatinib + Quercetin,canonical,,,NCT04685590; NCT04785300
+nih_record,Dexmedetomidine,Phase 2,"Teikoku Pharma USA, Inc.",exact_canonical,Dexmedetomidine,Dexmedetomidine,canonical,,,NCT06052254
+nih_record,Dimethyl fumarate,Phase 2,Medical University of Lodz,normalized_exact,dimethyl fumarate,Dimethyl fumarate,canonical,,,NCT06850597
+nih_record,Edaravone,Phase 2,"Shanghai Auzone Biological Technology Co., Ltd.",unmatched,,,,,,NCT07252440
+nih_record,Emestedastat,Phase 2,Actinogen Medical,unmatched,,,,,,NCT06125951
+nih_record,Enrupatinib,Phase 2,Elixiron Immunotherapeutics (Hong Kong) Ltd.,unmatched,,,,,,NCT06745583
+nih_record,Etalanetug (E2814) + Lecanemab (BAN2401),Phase 2,Eisai Inc.,exact_alias,E2814,E2814,alias,,,NCT06602258
+nih_record,EX039,Phase 2,Excelsior,exact_canonical,EX039,EX039,canonical,,,NCT05413655
+nih_record,Exercised plasma,Phase 2,Norwegian University of Science and Technology,unmatched,,,,,,NCT05068830
+nih_record,Fasudil,Phase 2,Helse Stavanger HF,exact_canonical,Fasudil,Fasudil,canonical,,,NCT06362707
+nih_record,Foralumab,Phase 2,Brigham and Women's Hospital,unmatched,,,,,,NCT06489548
+nih_record,IGC‐AD1,Phase 2,"IGC Pharma, LLC",normalized_exact,IGC AD1,IGC‐AD1,canonical,,,NCT05543681
+nih_record,ITI‐1284,Phase 2,"Intra‐Cellular Therapies, Inc.; Intra‐Cellular Therapies, Inc.",normalized_exact,ITI-1284,ITI‐1284,canonical,,,NCT06540833; NCT06651567
+nih_record,IVL3003,Phase 2,"Inventage Lab., Inc.",exact_canonical,IVL3003,IVL3003,canonical,,,NCT05345509
+nih_record,JNJ‐64042056,Phase 2,"Janssen Pharmaceutica N.V., Belgium",normalized_exact,JNJ-64042056,JNJ‐64042056,canonical,,,NCT06544616
+nih_record,KarXT + KarX‐EC + Lecanemab,Phase 2,Neurology Office of South Florida,exact_alias,KarXT,KarXT,component_canonical,,,NCT07212062
+nih_record,Lemborexant,Phase 2,Washington University School of Medicine,exact_canonical,Lemborexant,Lemborexant,canonical,,,NCT06274528
+nih_record,Lenalidomide,Phase 2,"St. Joseph's Hospital and Medical Center, Phoenix",exact_canonical,Lenalidomide,Lenalidomide,canonical,,,NCT06177028
+nih_record,Leuprolide,Phase 2,Weill Medical College of Cornell University,unmatched,,,,,,NCT03649724
+nih_record,Levetiracetam,Phase 2,Beth Israel Deaconess Medical Center,normalized_exact,levetiracetam,Levetiracetam,canonical,,,NCT03875638
+nih_record,LHP588,Phase 2,"Lighthouse Pharmaceuticals, Inc.",exact_canonical,LHP588,LHP588,canonical,,,NCT06847321
+nih_record,Losartan + Amlodipine,Phase 2,Rong Zhang,unmatched,,,,,,NCT05331144
+nih_record,Memantine,Phase 2,University of Virginia,normalized_exact,memantine,Memantine,canonical,,,NCT05063851
+nih_record,Methylphenidate + iTBS,Phase 2,Sunnybrook Health Sciences Centre,exact_alias,Methylphenidate,Methylphenidate,component_canonical,,,NCT07279740
+nih_record,Mevidalen,Phase 2,Eli Lilly and Company,exact_canonical,Mevidalen,Mevidalen,canonical,,,NCT06538116
+nih_record,MIB‐626,Phase 2,Brigham and Women's Hospital,normalized_exact,MIB-626,MIB‐626,canonical,,,NCT05040321
+nih_record,MK‐1167,Phase 2,Merck Sharp & Dohme LLC,normalized_exact,MK-1167,MK‐1167,canonical,,,NCT06721156
+nih_record,MK‐2214,Phase 2,Merck Sharp & Dohme LLC,normalized_exact,MK-2214,MK‐2214,canonical,,,NCT07033494
+nih_record,ML‐007C‐MA,Phase 2,MapLight Therapeutics,normalized_exact,ML-007C-MA,ML‐007C‐MA,canonical,,,NCT06887192
+nih_record,Nicotinic Acid,Phase 2,Indiana University,unmatched,,,,,,NCT06582706
+nih_record,NSC001,Phase 2,NSC‐Therapeutics,exact_canonical,NSC001,NSC001,canonical,,,NCT06995573
+nih_record,NSC001 + Trospium,Phase 2,NSC‐Therapeutics,exact_alias,NSC001,NSC001,component_canonical,,,NCT06995573
+nih_record,NTRX‐07,Phase 2,"NeuroTherapia, Inc.",normalized_exact,NTRX-07,NTRX‐07,canonical,,,NCT07058688
+nih_record,ONO‐2020,Phase 2,Ono Pharmaceutical Co. Ltd; Ono Pharmaceutical Co. Ltd,normalized_exact,ONO-2020,ONO‐2020,canonical,,,NCT06803823; NCT06881836
+nih_record,Ozanimod,Phase 2,ChenXiaoChun,unmatched,,,,,,NCT06862960
+nih_record,Parthenolide + Ipriflavone,Phase 2,Massachusetts General Hospital,unmatched,,,,,,NCT07236190
+nih_record,Polypill,Phase 2,"Noah Pharmaceuticals, Inc.",unmatched,,,,,,NCT06597058
+nih_record,Posdinemab,Phase 2,"Janssen Research & Development, LLC",unmatched,,,,,,NCT04619420
+nih_record,Rifaximin,Phase 2,Jasmohan Bajaj,unmatched,,,,,,NCT06718686
+nih_record,RO7269162,Phase 2,Hoffmann‐La Roche,exact_canonical,RO7269162,RO7269162,canonical,,,NCT06402838
+nih_record,RQC,Phase 2,Zaparackas and Knepper LTD,unmatched,,,,,,NCT06470061
+nih_record,Sabirnetug,Phase 2,Acumen Pharmaceuticals,normalized_exact,sabirnetug,Sabirnetug,canonical,,,NCT06335173
+nih_record,Sargramostim,Phase 2,"University of Colorado, Denver",exact_canonical,Sargramostim,Sargramostim,canonical,,,NCT04902703
+nih_record,Semaglutide,Phase 2,Rune Skovgaard Rasmussen; Imperial College London,exact_canonical,Semaglutide,Semaglutide,canonical,,,NCT07135245; NCT07200622
+nih_record,Semaglutide + Candesartan + Vitamin D + Calcium,Phase 2,Rune Skovgaard Rasmussen,exact_alias,Semaglutide,Semaglutide,component_canonical,,,NCT07135245
+nih_record,Senicapoc,Phase 2,"University of California, Davis",exact_canonical,Senicapoc,Senicapoc,canonical,,,NCT04804241
+nih_record,SHR‐1707,Phase 2,"Shanghai Hengrui Pharmaceutical Co., Ltd.",normalized_exact,SHR-1707,SHR‐1707,canonical,,,NCT06199037
+nih_record,Siponimod,Phase 2,"St. Joseph's Hospital and Medical Center, Phoenix",exact_canonical,Siponimod,Siponimod,canonical,,,NCT06639282
+nih_record,Sirolimus,Phase 2,The University of Texas Health Science Center at San Antonio,exact_canonical,Sirolimus,Sirolimus,canonical,,,NCT04629495
+nih_record,Sodium pentaborate pentahydrate,Phase 2,Tabriz University of Medical Sciences,normalized_exact,Sodium Pentaborate Pentahydrate,Sodium pentaborate pentahydrate,canonical,,,NCT06840054
+nih_record,SPG302,Phase 2,Spinogenix,exact_canonical,SPG302,SPG302,canonical,,,NCT06427668
+nih_record,Suvorexant,Phase 2,Washington University School of Medicine,exact_canonical,Suvorexant,Suvorexant,canonical,,,NCT04629547
+nih_record,Tadalafil,Phase 2,Imperial College London,normalized_exact,tadalafil,Tadalafil,canonical,,,NCT07172815
+nih_record,Tisolagiline,Phase 2,"NeuroBiogen Co., Ltd",unmatched,,,,,,NCT07027072
+nih_record,Trazodone,Phase 2,Johns Hopkins University,exact_canonical,Trazodone,Trazodone,canonical,,,NCT05282550
+nih_record,Trontinemab,Phase 2,Hoffmann‐La Roche,exact_canonical,Trontinemab,Trontinemab,canonical,,,NCT04639050
+nih_record,VHB937,Phase 2,Novartis Pharmaceuticals,exact_canonical,VHB937,VHB937,canonical,,,NCT07094516
+nih_record,VY7523,Phase 2,Voyager Therapeutics,exact_canonical,VY7523,VY7523,canonical,,,NCT06874621
+nih_record,XPro1595,Phase 2,"Inmune Bio, Inc.",exact_canonical,XPro1595,XPro1595,canonical,,,NCT05522387
+nih_record,Zervimesine (CT1812),Phase 2,Cognition Therapeutics,exact_alias,CT1812,CT1812,alias,,,NCT05531656
+nih_record,AAV2‐BDNF,Phase 1,Mark Tuszynski,unmatched,,,,,,NCT05040217
+nih_record,ADEL‐Y01,Phase 1,"Alzheimer's Disease Expert Lab (ADEL), Inc.",unmatched,,,,,,NCT06247345
+nih_record,AK152,Phase 1,Akeso,unmatched,,,,,,NCT07301502
+nih_record,ALN‐5288,Phase 1,Alnylam Pharmaceuticals,normalized_exact,ALN-5288,ALN‐5288,canonical,,,NCT07214727
+nih_record,AS‐S603,Phase 1,Amyloid Solution Inc,normalized_exact,AS-S603,AS‐S603,canonical,,,NCT06786676
+nih_record,AV‐1959D,Phase 1,Institute for Molecular Medicine,normalized_exact,AV-1959D,AV‐1959D,canonical,,,NCT05642429
+nih_record,AV‐1959R,Phase 1,"Nuravax, Inc.",fuzzy_suggestion,AV-1959D,AV‐1959R,canonical,,,NCT06831812
+nih_record,AV‐1980R,Phase 1,Institute for Molecular Medicine,unmatched,,,,,,NCT07158905
+nih_record,BCG vaccine,Phase 1,Tamir Ben‐Hur,exact_canonical,BCG vaccine,BCG vaccine,canonical,,,NCT06078891
+nih_record,BIIB080,Phase 1,Biogen,unmatched,,,,,,NCT06454721
+nih_record,BnH‐015B,Phase 1,BnH Research,normalized_exact,BnH-015B,BnH‐015B,canonical,,,NCT06535308
+nih_record,Cannabidiol,Phase 1,Mclean Hospital,exact_canonical,Cannabidiol,Cannabidiol,canonical,,,NCT04075435
+nih_record,Centella asiatica,Phase 1,Oregon Health and Science University,unmatched,,,,,,NCT05591027
+nih_record,Choline,Phase 1,Paul E Schulz,exact_canonical,Choline,Choline,canonical,,,NCT05880849
+nih_record,CM383,Phase 1,Keymed Biosciences Co.Ltd; Keymed Biosciences Co.Ltd,exact_canonical,CM383,CM383,canonical,,,NCT06412185; NCT06619613
+nih_record,CpG1018,Phase 1,NYU Langone Health,exact_canonical,CpG1018,CpG1018,canonical,,,NCT05606341
+nih_record,DDN‐A‐0101,Phase 1,Pharmacobio,unmatched,,,,,,NCT06367426
+nih_record,DUVAX,Phase 1,"Nuravax, Inc.",unmatched,,,,,,NCT07142278
+nih_record,Emtricitabine,Phase 1,"Butler Hospital; National University Hospital, Singapore",unmatched,,,,,,NCT04500847; NCT07210528
+nih_record,Emtricitabine + Tenofovir alafenamide,Phase 1,"National University Hospital, Singapore",unmatched,,,,,,NCT07210528
+nih_record,HHT201,Phase 1,"Shanghai Synergy Pharmaceutical Sciences Co., Ltd.",unmatched,,,,,,NCT06373094
+nih_record,ION269,Phase 1,"Ionis Pharmaceuticals, Inc.",exact_canonical,ION269,ION269,canonical,,,NCT06673069
+nih_record,J4,Phase 1,"Academia Sinica, Taiwan",exact_canonical,J4,J4,canonical,,,NCT06938763
+nih_record,KS101,Phase 1,Klotho Sciences Australia Pty Ltd.,unmatched,,,,,,NCT07143331
+nih_record,Leucettinib‐21,Phase 1,Perha Pharmaceuticals,normalized_exact,Leucettinib-21,Leucettinib‐21,canonical,,,NCT06206824
+nih_record,LX1001,Phase 1,Lexeo Therapeutics,exact_canonical,LX1001,LX1001,canonical,,,NCT05400330
+nih_record,LY03017,Phase 1,Luye Pharma Group Ltd.; Luye Pharma Group Ltd.; Luye Pharma Group Ltd.,exact_canonical,LY03017,LY03017,canonical,,,NCT06388551; NCT06793995; NCT06980207
+nih_record,LY3954068,Phase 1,Eli Lilly and Company,exact_canonical,LY3954068,LY3954068,canonical,,,NCT06297590
+nih_record,LY4006895,Phase 1,Eli Lilly and Company,exact_canonical,LY4006895,LY4006895,canonical,,,NCT06657768
+nih_record,MIB‐626,Phase 1,Brigham and Women's Hospital,normalized_exact,MIB-626,MIB‐626,canonical,,,NCT07278492
+nih_record,Mivelsiran,Phase 1,Alnylam Pharmaceuticals,exact_canonical,Mivelsiran,Mivelsiran,canonical,,,NCT05231785
+nih_record,Nicotinamide riboside,Phase 1,Mclean Hospital,exact_canonical,Nicotinamide riboside,Nicotinamide riboside,canonical,,,NCT04430517
+nih_record,NIO752,Phase 1,"Novartis Pharmaceuticals; University College, London",exact_canonical,NIO752,NIO752,canonical,,,NCT05469360; NCT06372821
+nih_record,NPT 2042,Phase 1,"NeuroPro Therapeutics, Inc.",unmatched,,,,,,NCT07222878
+nih_record,OLX‐07010,Phase 1,"Oligomerix, Inc",unmatched,,,,,,NCT05696483
+nih_record,Phenserine,Phase 1,Helse Stavanger HF,exact_canonical,Phenserine,Phenserine,canonical,,,NCT06774261
+nih_record,Plasma exchange,Phase 1,Oslo University Hospital,fuzzy_suggestion,Plasma exchenge,Plasma exchange,canonical,,,NCT06234436
+nih_record,PMN310,Phase 1,"ProMis Neurosciences, Inc",exact_canonical,PMN310,PMN310,canonical,,,NCT06750432
+nih_record,Probiotics,Phase 1,University of Nicosia,fuzzy_suggestion,Probiotic,Probiotics,canonical,,,NCT06181513
+nih_record,Psilocybin,Phase 1,Johns Hopkins University,exact_canonical,Psilocybin,Psilocybin,canonical,,,NCT04123314
+nih_record,Recombinant human serum albumin,Phase 1,Protgen Ltd,normalized_exact,Recombinant Human Serum Albumin,Recombinant human serum albumin,canonical,,,NCT06489015
+nih_record,REM0045392,Phase 1,reMYND,unmatched,,,,,,NCT07016464
+nih_record,RO7812653,Phase 1,Hoffmann‐La Roche,exact_canonical,RO7812653,RO7812653,canonical,,,NCT07234942
+nih_record,THN391,Phase 1,"Therini Bio, Inc.",exact_canonical,THN391,THN391,canonical,,,NCT06814730
+nih_record,Xenon,Phase 1,General Biophysics LLC,unmatched,,,,,,NCT06945614
+dashboard_only,3APS,Phase 3,Bellus Health Inc. - a GSK company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AC-1204,Phase 3,Cerecin,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AG10,Phase 3,"Eidos Therapeutics, a BridgeBio company",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,AGB101,Phase 3,AgeneBio; Medical College of Wisconsin,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ANAVEX2-73,Phase 3,Anavex Life Sciences Corp.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ATH-1017,Phase 3,LeonaBio,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AVP-786,Phase 3,"Otsuka Pharmaceutical Development & Commercialization, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AVP-923,Phase 3,Avanir Pharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AXS-05,Phase 3,"Axsome Therapeutics, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AXS-05 (dextromethorphan-bupropion),Phase 3,"Axsome Therapeutics, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Acoramidis,Phase 3,"Eidos Therapeutics, a BridgeBio company",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Acoramidis (AG10),Phase 3,"Eidos Therapeutics, a BridgeBio company",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Aducanumab,Phase 3,Biogen,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Aducanumab (BIIB037),Phase 3,Biogen,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,"Angiotensin II receptor blocker (ARB, losartan) and calcium channel blocker (CCB, amlodipine)",Phase 3,University of Texas Southwestern Medical Center,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Aripiprazole,Phase 3,"Otsuka Pharmaceutical Development & Commercialization, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Aripiprazole (BMS-337039),Phase 3,"Otsuka Pharmaceutical Development & Commercialization, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Atabecestat,Phase 3,"Janssen Research & Development, LLC",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Atorvastatin,Phase 3,"Pfizer's Upjohn has merged with Mylan to form Viatris Inc.; University of Wisconsin, Madison",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Azeliragon,Phase 3,vTv Therapeutics,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,BPDO-1603,Phase 3,"Hyundai Pharm; Hyundai Pharmaceutical Co., LTD.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Bapineuzumab,Phase 3,"JANSSEN Alzheimer Immunotherapy Research & Development, LLC; Pfizer; Wyeth is now a wholly owned subsidiary of Pfizer",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Brexpiprazole,Phase 3,"Otsuka Pharmaceutical Co., Ltd.; Otsuka Pharmaceutical Development & Commercialization, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,"Brexpiprazole, OPC-34712",Phase 3,"Otsuka Pharmaceutical Development & Commercialization, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CBTi with Application,Phase 3,Penn State University,unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,CNP520,Phase 3,Novartis Pharmaceuticals,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,COR388,Phase 3,Cortexyme Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Cholinesterase Inhibitor,Phase 3,Sunnybrook Health Sciences Centre; VA Office of Research and Development,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Coconut Oil Beverage,Phase 3,University of South Florida,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Crenezumab,Phase 3,"Genentech, Inc.; Hoffmann-La Roche",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,DHA (Docosahexaenoic Acid),Phase 3,Alzheimer's Disease Cooperative Study (ADCS),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,DMB-I (INN: Latrepirdine),Phase 3,Bigespas LTD,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,DatSCAN,Phase 3,GE Healthcare,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Dimebon,Phase 3,"Medivation, Inc.; Pfizer",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Dimebon (latrepirdine),Phase 3,"Medivation, Inc.",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Dimebon for administration,Phase 3,Pfizer,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Docosahexaenoic acid,Phase 3,University of Southern California,unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,Donepezil (Aricept),Phase 3,Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Donepezil drug treatment,Phase 3,Shanghai Jiao Tong University School of Medicine,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Donepezil hydrochloride,Phase 3,Eisai Inc.; Eisai Limited,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Dronabinol,Phase 3,Benuvia Therapeutics Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,E2020,Phase 3,"Eisai Co., Ltd.; Eisai Inc.; Eisai Limited",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ENA713,Phase 3,Novartis Pharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,EVP-6124,Phase 3,FORUM Pharmaceuticals Inc,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Elenbecestat,Phase 3,"Eisai Co., Ltd.",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Elontril,Phase 3,"University Hospital, Bonn",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Epigallocatechin-Gallate,Phase 3,"Charite University, Berlin, Germany",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Experimental: ALZ-801,Phase 3,Alzheon Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Fx-1006A,Phase 3,Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,GV-971,Phase 3,"Green Valley (Shanghai) Pharmaceuticals Co., Ltd.",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,GV1001,Phase 3,"GemVax & Kael; Samsung Pharmaceutical Co., Ltd.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Galantamine HBr,Phase 3,Xian-Janssen Pharmaceutical Ltd.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Galantamine hydrobromide,Phase 3,"Janssen Pharmaceutica N.V., Belgium; Janssen-Cilag S.p.A.; Johnson & Johnson Pharmaceutical Research & Development, L.L.C.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Gam-COVID-Vac,Phase 3,"Gamaleya Research Institute of Epidemiology and Microbiology, Health Ministry of the Russian Federation",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Ginkgo biloba,Phase 3,National Center for Complementary and Integrative Health (NCCIH),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Ginkgo biloba dispersible,Phase 3,The First Affiliated Hospital with Nanjing Medical University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Hydralazine hydrochloride,Phase 3,Shahid Sadoughi University of Medical Sciences and Health Services,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,INM-176,Phase 3,Whanin Pharmaceutical Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ITI-007,Phase 3,"Intra-Cellular Therapies, Inc.",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Idalopirdine,Phase 3,H. Lundbeck A/S,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Insulin (Humulin® R U-100),Phase 3,University of Southern California; Wake Forest University Health Sciences,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Investigational drug,Phase 3,Merck Sharp & Dohme LLC,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,LMTM,Phase 3,TauRx Therapeutics Ltd,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,LY2062430,Phase 3,Eli Lilly and Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,LY450139,Phase 3,Eli Lilly and Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Lanabecestat,Phase 3,AstraZeneca,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Longevinex brand resveratrol supplement,Phase 3,Medical College of Wisconsin,unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,MLC 901,Phase 3,Moleac Pte Ltd.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MPC-7869,Phase 3,Myrexis Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MT-4666,Phase 3,Tanabe Pharma Corporation,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Masitinib (4.5),Phase 3,AB Science,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Melatonin,Phase 3,National Institute on Aging (NIA),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Mirtazapine,Phase 3,Brasilia University Hospital; University of Sussex,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Modafinil,Phase 3,Brown University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NE3107,Phase 3,BioVie Inc.; Neurological Associates of West Los Angeles,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Naproxen,Phase 3,Douglas Mental Health University Institute; National Institute on Aging (NIA),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Naproxen Sodium (Aleve),Phase 3,Seattle Institute for Biomedical and Clinical Research,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Neramexane,Phase 3,Forest Laboratories,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Nilotinib BE,Phase 3,"KeifeRx, LLC",fuzzy_suggestion,,,,unresolved_naming_alias_issue,Therapeutic Drug,
+dashboard_only,Nilvadipine,Phase 3,Prof Brian Lawlor,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Octohydroaminoacridine Succinate,Phase 3,"Changchun Huayang High-tech Co., Ltd; Shanghai Mental Health Center",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Omega-3 treatment,Phase 3,"University Hospital, Toulouse",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,P-tau217 Test,Phase 3,Eli Lilly and Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PM012,Phase 3,"Mediforum Ltd., Co.; VTBIO Co. LTD",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Pimavanserin,Phase 3,ACADIA Pharmaceuticals Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Prednisone,Phase 3,National Institute on Aging (NIA),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,RVT-101,Phase 3,Axovant Sciences Ltd.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Raloxifene,Phase 3,"Stanford University; University of Wisconsin, Madison",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Recombinant COVID-19 vaccine (adenovirus type 5 vector) for Inhalation (Ad5-nCoV-IH),Phase 3,CanSino Biologics Inc.,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Recombinant Novel Coronavirus Vaccine (Adenovirus Type 5 Vector),Phase 3,CanSino Biologics Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,"Resveratrol with Glucose, and Malate",Phase 3,US Department of Veterans Affairs,unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,Rivastigmine,Phase 3,Federal University of Bahia; Novartis,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Rivastigmine patch,Phase 3,Novartis; Novartis Pharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Rosiglitazone,Phase 3,GlaxoSmithKline; US Department of Veterans Affairs; University of Washington,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SK-PC-B70M,Phase 3,"SK Chemicals Co., Ltd.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Semagludtide,Phase 3,Novo Nordisk A/S,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Sertraline (Zoloft),Phase 3,Johns Hopkins University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Simufilam,Phase 3,"Cassava Sciences, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Simvastatin,Phase 3,"National Institute on Aging (NIA); University of Massachusetts, Worcester; University of Wisconsin, Madison",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Sodium oligo-mannurarate,Phase 3,"Shanghai Greenvalley Pharmaceutical Co., Ltd.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,TRx0237,Phase 3,TauRx Therapeutics Ltd,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Tafamidis,Phase 3,Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Talsaclidine,Phase 3,Boehringer Ingelheim,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Thalidomide,Phase 3,Banner Health,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Tramiprosate (3APS),Phase 3,Bellus Health Inc. - a GSK company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Tylex,Phase 3,"Xuanwu Hospital, Beijing",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,VP4896,Phase 3,Voyager Pharmaceutical Corporation,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Valproate,Phase 3,Alzheimer's Disease Cooperative Study (ADCS),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Verubecestat,Phase 3,Merck Sharp & Dohme LLC,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Vitamin D,Phase 3,"University Hospital, Angers",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Vitamin E,Phase 3,National Institute on Aging (NIA),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Washout (2 wks),Phase 3,Seoul National University Bundang Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Wujia Yizhi granules,Phase 3,"Sichuan Jishengtang Pharmaceutical Co., Ltd.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,XTR006,Phase 3,Sinotau Pharmaceutical Group,unmatched,,,,non_therapeutic_or_ambiguous,Needs Review,
+dashboard_only,Xanamem,Phase 3,Actinogen Medical,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[F-18]Flornaptitril,Phase 3,"CereMark Pharma, LLC",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,atomoxetine hydrochloride,Phase 3,Eli Lilly and Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,bifeprunox,Phase 3,Solvay Pharmaceuticals,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,buntanetap/posiphen,Phase 3,Annovis Bio Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,citalopram,Phase 3,JHSPH Center for Clinical Trials,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,es-citalopram,Phase 3,New York State Psychiatric Institute,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,estrogen,Phase 3,National Center for Research Resources (NCRR); National Institute on Aging (NIA); US Department of Veterans Affairs,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,galantamine,Phase 3,"Janssen Pharmaceutical K.K.; Janssen Research & Development, LLC; Janssen, LP; Johnson & Johnson Pharmaceutical Research & Development, L.L.C.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,icosapent ethyl (IPE),Phase 3,VA Office of Research and Development,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,indomethacin,Phase 3,Radboud University Medical Center,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,lecozotan SR (SRA-333),Phase 3,Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,memantine HCl,Phase 3,Forest Laboratories; Merz Pharmaceuticals GmbH,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,oculomotor measurements,Phase 3,Assistance Publique - Hôpitaux de Paris,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,pioglitazone,Phase 3,National Institute on Aging (NIA); Takeda,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,risperidone,Phase 3,"Janssen Pharmaceutica N.V., Belgium; Janssen Pharmaceutical K.K.; Janssen, LP; Janssen-Cilag Pty Ltd; Johnson & Johnson Pharmaceutical Research & Development, L.L.C.; University of Pittsburgh",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,semagacestat,Phase 3,Eli Lilly and Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,testosterone gel,Phase 3,University of Washington,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,tributyrin,Phase 3,Universidad de Almeria,unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,xaliproden (SR57746A),Phase 3,Sanofi,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,11C-ER176,Phase 2,Columbia University; National Institute of Mental Health (NIMH); The Methodist Hospital Research Institute,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,11C-PBR28,Phase 2,Patrick Lao; University of Pennsylvania,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,12 cm2 - 2 Active DMTS Patches,Phase 2,"Teikoku Pharma USA, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,18F-92,Phase 2,First Affiliated Hospital of Fujian Medical University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,18F-AV-133,Phase 2,Avid Radiopharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,18F-OP-801,Phase 2,"Ashvattha Therapeutics, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,2-hydroxybenzylamine acetate,Phase 2,MTI Biotech Inc,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,250mg rilapladib,Phase 2,GlaxoSmithKline,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,3TC,Phase 2,The University of Texas Health Science Center at San Antonio,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AAB-001,Phase 2,Pharmacology Research Institute,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ABBV-1758,Phase 2,AbbVie,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ABBV-552,Phase 2,AbbVie,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ABBV-8E12,Phase 2,AbbVie,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ABBV-916,Phase 2,AbbVie,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ABT-089,Phase 2,Abbott,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,ABT-126,Phase 2,"AbbVie (prior sponsor, Abbott); Abbott",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ABT-288,Phase 2,"AbbVie (prior sponsor, Abbott)",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ABT-384,Phase 2,"AbbVie (prior sponsor, Abbott)",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ABvac40,Phase 2,Araclon Biotech S.L.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AC-3933,Phase 2,"Sumitomo Pharma America, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ACC-001,Phase 2,Pfizer,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,ACC-001 (vanutide cridificar),Phase 2,"JANSSEN Alzheimer Immunotherapy Research & Development, LLC",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AD-35,Phase 2,Zhejiang Hisun Pharmaceutical Co. Ltd.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AD04,Phase 2,ADvantage Therapeutics,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ADENOSINE TRIPHOSPHATE,Phase 2,Sara Varea,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AFFITOPE AD02,Phase 2,Affiris AG,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,AH110690 (18F),Phase 2,GE Healthcare,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AL001,Phase 2,"Alzamend Neuro, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AL002,Phase 2,Alector Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ALZ-801,Phase 2,Alzheon Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ALZN002 (autologous DCs pulsed with E22W mutant peptide).,Phase 2,"Alzamend Neuro, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AMDX-2011P,Phase 2,Amydis Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AMX0035,Phase 2,Amylyx Pharmaceuticals Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AN-1792 also known as AIP-001,Phase 2,"JANSSEN Alzheimer Immunotherapy Research & Development, LLC",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,APH-1105,Phase 2,Aphios,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AQW051,Phase 2,Novartis Pharmaceuticals,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,ARO-MAPT-SC,Phase 2,Arrowhead Pharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ASN51,Phase 2,Asceneuron Pty Ltd.; Asceneuron S.A.,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,AVE1625,Phase 2,Sanofi,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AZD0530,Phase 2,Yale University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AZD1446,Phase 2,AstraZeneca,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AZD3480,Phase 2,AstraZeneca; Targacept Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AZD5213,Phase 2,AstraZeneca,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Acitretin,Phase 2,K. Lieb,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Active Treatment- CT1812,Phase 2,Cognition Therapeutics,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,All Subjects,Phase 2,"University of Wisconsin, Madison",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Allogeneic MSC,Phase 2,Longeveron Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Allopregnanolone,Phase 2,University of Arizona,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Alpha-Linolenic Acid,Phase 2,"Michal Schnaider Beeri, Ph.D.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Anatabloc(R),Phase 2,"Rock Creek Pharmaceuticals, Inc.",unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,Astragalus Membranaceus Root,Phase 2,Fujian Medical University Union Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AstroStem,Phase 2,Nature Cell Co. Ltd.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Atomoxetine,Phase 2,Emory University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Atorvastatin calcium,Phase 2,Institute for the Study of Aging (ISOA),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Avagacestat,Phase 2,Bristol-Myers Squibb,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,BI 409306,Phase 2,Boehringer Ingelheim,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,BIIB092,Phase 2,Biogen,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,BMS-708163,Phase 2,Bristol-Myers Squibb,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,BPN14770,Phase 2,Tetra Discovery Partners,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Bacillus Calmette-Guerin (BCG),Phase 2,Massachusetts General Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Bacillus of Calmette and Guerin (BCG),Phase 2,"Mindful Diagnostics and Therapeutics, LLC",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Bapineuzumab (AAB-001),Phase 2,"JANSSEN Alzheimer Immunotherapy Research & Development, LLC",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Bepranemab,Phase 2,UCB Biopharma SRL,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Bexarotene,Phase 2,"ReXceptor, Inc.; The Cleveland Clinic",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Biological/Vaccine: Bacillus Calmette-Guerin (BCG),Phase 2,"Steven E Arnold, MD",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Bromocriptine Mesilate,Phase 2,Kyoto University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Bryostatin,Phase 2,"Neurotrope Bioscience, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Bryostatin 1,Phase 2,"Neurotrope Bioscience, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Bryostatin for,Phase 2,Blanchette Rockefeller Neurosciences Insitute,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CAD106,Phase 2,Novartis; Novartis Pharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CB-AC-02,Phase 2,"CHABiotech CO., Ltd",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CBD,Phase 2,Sunnybrook Health Sciences Centre,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CERE-110: Adeno-Associated Virus Surgery,Phase 2,Sangamo Therapeutics,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CHF 5074,Phase 2,CERESPIR; Chiesi Farmaceutici S.p.A.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,COT,Phase 2,Evon Medics LLC,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CPC-201,Phase 2,"Chase Pharmaceuticals Corporation, an affiliate of Allergan plc",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CX516,Phase 2,RespireRx,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CX516 (Ampalex),Phase 2,National Institute of Neurological Disorders and Stroke (NINDS),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CY6463,Phase 2,Tisento Therapeutics,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Canakinumab,Phase 2,Novartis Pharmaceuticals,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Candesartan,Phase 2,Emory University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Cannabis,Phase 2,Federal University of Latin American Integration,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Cerebrolysin + donepezil,Phase 2,Ever Neuro Pharma GmbH,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Circadin,Phase 2,Neurim Pharmaceuticals Ltd.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Curcumin,Phase 2,VA Office of Research and Development,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Curcumin C3 Complex,Phase 2,John Douglas French Foundation,unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,DAOI-B,Phase 2,Chang Gung Memorial Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,DAOIB plus AO,Phase 2,Chang Gung Memorial Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,DCB-AD1,Phase 2,National Taiwan University Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,DHA,Phase 2,University of Southern California,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,DHP1401,Phase 2,"Daehwa Pharmaceutical Co., Ltd.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,DMB-I (Dimebon),Phase 2,Bigespas LTD,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,DMXB-A,Phase 2,CoMentis,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Dapagliflozin,Phase 2,"Jeff Burns, MD",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Daratumumab,Phase 2,"Marc L Gordon, MD",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Deferiprone,Phase 2,Neuroscience Trials Australia,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Diranersen,Phase 2,Biogen,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Dronabinol (Marinol®),Phase 2,Johns Hopkins University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,E2609,Phase 2,Eisai Inc.,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,EGb 761® (Tanakan®),Phase 2,Ipsen,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,EGb761®,Phase 2,Ipsen,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,EHT 0202 etazolate,Phase 2,Exonhit,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,EI-1071,Phase 2,Elixiron Immunotherapeutics Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ELND005,Phase 2,"OPKO Health, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ELND005 (scyllo-inositol),Phase 2,"OPKO Health, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,EVP-0962,Phase 2,FORUM Pharmaceuticals Inc,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Elderberry Juice,Phase 2,University of Missouri-Columbia,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Eligard,Phase 2,Weill Medical College of Cornell University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Epigallocatechin-3-gallate (EGCG),Phase 2,Parc de Salut Mar,unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,Etanercept,Phase 2,Life Extension Foundation Inc.; University of Southampton,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Exendin-4 SC,Phase 2,National Institute on Aging (NIA),unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Exosomes derived from umbilical cord mesenchymal stem cell for intranasal drop,Phase 2,"Xuanwu Hospital, Beijing",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Experimental Bapineuzumab,Phase 2,"JANSSEN Alzheimer Immunotherapy Research & Development, LLC",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,F-18 PMPBB3,Phase 2,Chang Gung Memorial Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,F18 Flutametamol,Phase 2,Mayo Clinic,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,FK962,Phase 2,Astellas Pharma Inc,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Fasting-Mimicking Diet ProlonADTM,Phase 2,University of Genova,unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,Filgrastim,Phase 2,Chang Gung Memorial Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Fisetin,Phase 2,Sunnybrook Health Sciences Centre,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Flos gossypii flavonoids,Phase 2,Capital Medical University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Formoterol A,Phase 2,Palo Alto Veterans Institute for Research,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,G-CSF; filgrastim,Phase 2,University of South Florida,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,GRF6019,Phase 2,"Alkahest, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,GSK239512,Phase 2,GlaxoSmithKline,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,GSK4527226,Phase 2,GlaxoSmithKline,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Ginkgo Biloba Extract 761,Phase 2,Hadassah Medical Organization,unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,Grape Powder,Phase 2,"University of California, Los Angeles",unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,Gut-X-001,Phase 2,Beijing Tiantan Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,HB-adMSCs,Phase 2,Hope Biosciences LLC,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,HF0220,Phase 2,Hunter-Fleming Ltd,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,HT-4253,Phase 2,"Halia Therapeutics, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Human Mesenchymal Stem Cells and Lactated Riunger's,Phase 2,"Stemedica Cell Technologies, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Human Umbilical Cord Derived MSC,Phase 2,Affiliated Hospital to Academy of Military Medical Sciences,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Hydroxypropyl Beta Cyclodextrin,Phase 2,"Cyclo Therapeutics, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ID1201,Phase 2,IlDong Pharmaceutical Co Ltd,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,IFN-alpha2A,Phase 2,National Center for Research Resources (NCRR),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,IGC-AD1-Active,Phase 2,"IGC Pharma, LLC",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Infusion of AD-SVF via IV and Intranasal,Phase 2,Ageless Regenerative Institute,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Insulin Aspart,Phase 2,"Jeff Burns, MD; Wake Forest University Health Sciences",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Insulin glulisine,Phase 2,HealthPartners Institute,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Interferon beta-1a,Phase 2,"Merck KGaA, Darmstadt, Germany",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Interleukin-2,Phase 2,The Methodist Hospital Research Institute,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Intravenous Immunoglobulin,Phase 2,Weill Medical College of Cornell University,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Isotretinoin,Phase 2,University Hospitals Cleveland Medical Center,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,JNJ-54861911,Phase 2,"Janssen Pharmaceutical K.K.; Janssen Research & Development, LLC",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,JNJ-63733657,Phase 2,"Janssen Research & Development, LLC",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,KDS2010,Phase 2,"NeuroBiogen Co., Ltd",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,L-Serine,Phase 2,Aleksandra Stark,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,LY2886721,Phase 2,Eli Lilly and Company,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,LY3202626,Phase 2,Eli Lilly and Company,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,LY3372689,Phase 2,Eli Lilly and Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,LY450139 dihydrate,Phase 2,Eli Lilly and Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,LY451395,Phase 2,Eli Lilly and Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Leronlimab,Phase 2,Weill Medical College of Cornell University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Leuprolide acetate,Phase 2,Voyager Pharmaceutical Corporation,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Levetiracetam (LEV),Phase 2,Sunnybrook Health Sciences Centre,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Lidocaine / Prilocaine Topical Cream,Phase 2,"University of Dublin, Trinity College",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Lipoic Acid plus Omega-3 Fatty Acids,Phase 2,Oregon Health and Science University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Lipoic acid and fish oil concentrate,Phase 2,Oregon Health and Science University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Liraglutide,Phase 2,Imperial College London,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Lithia water,Phase 2,American Society Of Thermalism And Climatology Inc,unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,Lithium,Phase 2,New York State Psychiatric Institute,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Lithium Carbonate,Phase 2,University of Sao Paulo,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Lithium orotate,Phase 2,Johns Hopkins University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Lu AE58054,Phase 2,H. Lundbeck A/S,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MABT5102A,Phase 2,"Genentech, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MAR,Phase 2,"Noah Pharmaceuticals, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MEM 1003,Phase 2,Memory Pharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MEM 3454,Phase 2,Memory Pharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MK-1942,Phase 2,Merck Sharp & Dohme LLC,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,MK-7622,Phase 2,Merck Sharp & Dohme LLC,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,MK0249,Phase 2,Merck Sharp & Dohme LLC,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MK0677,Phase 2,Merck Sharp & Dohme LLC,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MK0952,Phase 2,Merck Sharp & Dohme LLC,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,MLC601,Phase 2,Shahid Beheshti University of Medical Sciences,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MMFS-205-SR,Phase 2,"Neurocentria, Inc.",unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,MP-101,Phase 2,Mediti Pharma Inc.,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,MSDC-0160,Phase 2,Metabolic Solutions Development Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MW150,Phase 2,Neurokine Therapeutics,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Meganatural-Az Grapeseed Extract,Phase 2,Hillel Grossman,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Memantine Hydrochloride,Phase 2,University of Virginia,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Methylphenidate (MPH),Phase 2,Sunnybrook Health Sciences Centre,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Mifepristone,Phase 2,Corcept Therapeutics,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Minocycline,Phase 2,Huntington Medical Research Institutes,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Mobilan (M-VM3),Phase 2,Panacela Labs LLC,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Montelukast,Phase 2,Emory University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Montelukast buccal film,Phase 2,IntelGenx Corp.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NEOD001,Phase 2,Prothena Biosciences Ltd.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NIC5-15,Phase 2,Humanetics Corporation; VA Office of Research and Development,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NP031112,Phase 2,Noscira SA,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NPI-001,Phase 2,Arctic Therapeutics,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NS 2330 (Tesofensine),Phase 2,Boehringer Ingelheim,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NanoLithium® NP03,Phase 2,Medesis Pharma SA,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Nefiracetam,Phase 2,National Institute of Neurological Disorders and Stroke (NINDS),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NeuroEPO,Phase 2,University of Saskatchewan,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NewGam 10% IVIG,Phase 2,Sutter Health,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Niacin,Phase 2,Indiana University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Nicotinamide,Phase 2,"University of California, Irvine",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Nicotinamide Riboside (NR),Phase 2,Haukeland University Hospital,unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,Nicotine Patch,Phase 2,University of Southern California,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Nilotinib (s) Once a Day by Mouth,Phase 2,Georgetown University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Novasoy,Phase 2,"University of Wisconsin, Madison",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Nutriceutical formulation,Phase 2,"University of Massachusetts, Worcester",unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,Nutritional Supplement,Phase 2,National Institute on Aging (NIA),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ONO-2506PO,Phase 2,Ono Pharma USA Inc,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ORM-12741,Phase 2,"Orion Corporation, Orion Pharma",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Obicetrapib,Phase 2,NewAmsterdam Pharma,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Omega 3 PUFA,Phase 2,Oregon Health and Science University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PBT2,Phase 2,Prana Biotechnology Limited,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PF-04360365,Phase 2,Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PF-04447943,Phase 2,Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PF-04494700,Phase 2,Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PF-05212377 (SAM-760),Phase 2,Pfizer,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,PMPBB3,Phase 2,Chang Gung Memorial Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PPI-1019 (APAN),Phase 2,PRAECIS Pharmaceuticals Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PQ912,Phase 2,Vivoryon Therapeutics N.V.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PRI-002,Phase 2,PRInnovation GmbH,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PRX-03140,Phase 2,"Epix Pharmaceuticals, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PTI-125,Phase 2,Pain Therapeutics,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PXT00864,Phase 2,Pharnext S.C.A.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PYM50028,Phase 2,Phytopharm,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Panax Ginseng,Phase 2,Seoul National University Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Patient Education,Phase 2,University of Virginia,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Pepinemab,Phase 2,Vaccinex Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Pimavanserin tartrate,Phase 2,ACADIA Pharmaceuticals Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Polyamine,Phase 2,"Charite University, Berlin, Germany",unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,Posiphen,Phase 2,Annovis Bio Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Prazosin,Phase 2,Alzheimer's Disease Cooperative Study (ADCS),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PrimeC,Phase 2,NeuroSense Therapeutics Ltd.,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,PrimePro™/ PrimeMSK™,Phase 2,Thomas Advanced Medical LLC,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Probiotic,Phase 2,"University of Wisconsin, Madison",fuzzy_suggestion,,,,unresolved_naming_alias_issue,Therapeutic Drug,
+dashboard_only,Probucol,Phase 2,Douglas Mental Health University Institute,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Progenitor Stem Cell Culture,Phase 2,Department of Medical Services Ministry of Public Health of Thailand,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Proleukin,Phase 2,Centre Hospitalier St Anne,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,R-pramipexole,Phase 2,Virginia Commonwealth University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,RB-ADSC,Phase 2,"Regeneration Biomedical, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,RO4602522,Phase 2,Hoffmann-La Roche,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,RO5313534,Phase 2,Hoffmann-La Roche,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,RO7126209,Phase 2,Hoffmann-La Roche,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,RP902,Phase 2,"Risen (Suzhou) Pharma Tech Co., Ltd.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,RPh201,Phase 2,Regenera Pharma Ltd,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,"RPh201, botanical drug product",Phase 2,Regenera Pharma Ltd,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Ramelteon,Phase 2,Takeda,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Rapamycin,Phase 2,The University of Texas Health Science Center at San Antonio,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Rasagiline,Phase 2,"Teva Branded Pharmaceutical Products R&D, Inc.; The Cleveland Clinic",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Regular Insulin,Phase 2,University of Washington,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Resveratrol,Phase 2,Alzheimer's Disease Cooperative Study (ADCS),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,"Resveratrol, Quercetin, and Curcumin (RQC)",Phase 2,Zaparackas and Knepper LTD,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Revusiran (ALN-TTRSC),Phase 2,Alnylam Pharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Rifaximin 550 milligrams (MG),Phase 2,Duke University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Rifaximin SSD,Phase 2,Jasmohan Bajaj,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Riluzole,Phase 2,Icahn School of Medicine at Mount Sinai,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Rotigotine patch,Phase 2,I.R.C.C.S. Fondazione Santa Lucia,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,S-equol,Phase 2,"Akira Sekikawa; Russell Swerdlow, MD",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,S47445,Phase 2,Institut de Recherches Internationales Servier,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SAGE-718,Phase 2,"Supernus Pharmaceuticals, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SAM-531,Phase 2,Pfizer; Wyeth is now a wholly owned subsidiary of Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SAR110894,Phase 2,Sanofi,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SAR448851,Phase 2,Sanofi,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SB-742457,Phase 2,GlaxoSmithKline,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SCI -110,Phase 2,The Israeli Medical Center for Alzheimer's,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SGS742,Phase 2,Saegis Pharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SNK01,Phase 2,"NKGen Biotech, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SR57667B,Phase 2,Sanofi,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SRA-333,Phase 2,Wyeth is now a wholly owned subsidiary of Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SSR180711C,Phase 2,Sanofi,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,ST101,Phase 2,"Sonexa Therapeutics, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,STA-1,Phase 2,"Sinphar Pharmaceutical Co., Ltd",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SUVN-502,Phase 2,Suven Life Sciences Limited,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Sagramostim,Phase 2,"University of Colorado, Denver",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Sargramostim GZ402664,Phase 2,Sanofi,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Seltorexant,Phase 2,"Janssen Research & Development, LLC",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Semaglutide (Rybelsus®),Phase 2,Imperial College London,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Semaglutide Plus IL-2,Phase 2,The Methodist Hospital Research Institute,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Semorinemab,Phase 2,"Genentech, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,T-817MA,Phase 2,"FUJIFILM Toyama Chemical Co., Ltd.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,T2:C100,Phase 2,University of Southern California,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,TB006,Phase 2,"TrueBinding, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,TEP,Phase 2,Immungenetics AG,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,TH9507 human growth hormone releasing hormone (GHRH),Phase 2,University of Washington,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,THC-free CBD Oil,Phase 2,Eastern Virginia Medical School,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,TML-6,Phase 2,"Merry Life Biomedical Co., Ltd.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,TRx0014,Phase 2,TauRx Therapeutics Ltd,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,TW001,Phase 2,Treeway B.V.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Tacrolimus,Phase 2,Massachusetts General Hospital,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Tamibarotene,Phase 2,Osaka City University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Tauroursodeoxycholic Acid and Doxycycline,Phase 2,Brigham and Women's Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Tilavonemab,Phase 2,AbbVie,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,UB-311,Phase 2,United Biomedical; United Neuroscience Ltd.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,UCB-J,Phase 2,"University of Wisconsin, Madison",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,UCMSCs,Phase 2,South China Research Center for Stem Cell and Regenerative Medicine,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,VGH-AD1,Phase 2,"Taipei Veterans General Hospital, Taiwan",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,VI-1121,Phase 2,VIVUS LLC,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,VX-745,Phase 2,"EIP Pharma Inc; University Hospital, Toulouse",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Valaciclovir,Phase 2,Hugo Lovheim,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Valacyclovir,Phase 2,Columbia University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Varenicline,Phase 2,Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Wei Li Bai,Phase 2,Capital Medical University,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,XBD173,Phase 2,Imperial College London,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Zagotenemab,Phase 2,Eli Lilly and Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[123I]-IBVM,Phase 2,Institute for Neurodegenerative Disorders,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F]MC225,Phase 2,University Medical Center Groningen,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[C-11]PBR28,Phase 2,Brigham and Women's Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,active: AFFITOPE AD02,Phase 2,Affiris AG,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,adMSC,Phase 2,Paul E Schulz,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,hMSC,Phase 2,Bernard (Barry) Baumel,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,human Mesenchymal Stem Cells,Phase 2,Bernard (Barry) Baumel,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ladostigil hemitartrate,Phase 2,Avraham Pharmaceuticals Ltd,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,lecozotan SR,Phase 2,Wyeth is now a wholly owned subsidiary of Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,lutein/zeaxanthin,Phase 2,Oregon Health and Science University,unmatched,,,,non_therapeutic_or_ambiguous,Non-Drug Intervention,
+dashboard_only,masitinib (AB1010),Phase 2,AB Science,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,natural product combination-1 (NPC1),Phase 2,Massachusetts General Hospital,unmatched,,,,non_therapeutic_or_ambiguous,Needs Review,
+dashboard_only,neflamapimod,Phase 2,EIP Pharma Inc,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,neuropsychologic assessment,Phase 2,"University Hospital, Tours",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,octagam 10%,Phase 2,Octapharma; Sutter Health,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,smart soup,Phase 2,Peking Union Medical College Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,"tetanus toxoid, reduced diphtheria toxoid and acellular pertussis vaccine",Phase 2,"Mindful Diagnostics and Therapeutics, LLC",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,tideglusib,Phase 2,Noscira SA,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,troriluzole,Phase 2,"Biohaven Pharmaceuticals, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,11C-JNJ-63779586,Phase 1,"Janssen Research & Development, LLC",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,123-I MNI-187 and Imaging Procedures,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,123-I MNI-340,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,18F-JSS20-183A PET,Phase 1,University of Pennsylvania,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,18F-PF974,Phase 1,National Institute of Mental Health (NIMH),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,300 mg [C14] CT1812,Phase 1,Cognition Therapeutics,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,8M2D,Phase 1,Cenna Biosciences Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AAB-003 (PF-05236812),Phase 1,Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AAV-hTERT,Phase 1,Libella Gene Therapeutics,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ABT-354,Phase 1,AbbVie,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ABT-957,Phase 1,AbbVie,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,AC-1202,Phase 1,Cerecin,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,AC-OLE-01-VA,Phase 1,Cerecin,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ACD856,Phase 1,AlzeCure Pharma,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ACU193,Phase 1,Acumen Pharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AD16,Phase 1,South China Center For Innovative Pharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ADAS-Cog evaluation,Phase 1,"University Hospital, Tours",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AGN-242071,Phase 1,Allergan,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,AL003,Phase 1,Alector Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ALIA-1758,Phase 1,AbbVie,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ALN-APP,Phase 1,Alnylam Pharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ALZ-101,Phase 1,Alzinova AB,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ALZT-OP1 (cromolyn and ibuprofen) ALZT-OP1a (cromolyn) and ALZT-OP1b (ibuprofen),Phase 1,"AZTherapies, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,APNmAb005,Phase 1,"APRINOIA Therapeutics, LLC",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,ASP0777,Phase 1,Astellas Pharma Inc,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AV-1959R (Abeta vaccine),Phase 1,"Nuravax, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AZD0328,Phase 1,AstraZeneca,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AZD3293,Phase 1,AstraZeneca,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,AZD3839,Phase 1,AstraZeneca,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Acupuncture,Phase 1,Chengdu University of Traditional Chinese Medicine,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,"Aducanumab (recombinant, fully human anti-Aβ IgG1 mAb)",Phase 1,Biogen,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Aftobetin-HCl,Phase 1,"Cognoptix, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Alianza Latina,Phase 1,University of Kansas Medical Center,unmatched,,,,non_therapeutic_or_ambiguous,Needs Review,
+dashboard_only,Allopregnanolone (intravenous ),Phase 1,University of Southern California,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Alzheimer Disease (AD),Phase 1,Keymed Biosciences Co.Ltd,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Amniotic and Umbilical Cord Tissue Procedure,Phase 1,R3 Stem Cell,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Approximately 100 million cells allogeneic hMSC,Phase 1,Bernard (Barry) Baumel,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,BAY1006578,Phase 1,Lantheus Biosciences Ltd.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,BIIB076,Phase 1,Biogen,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,BMS-241027,Phase 1,Bristol-Myers Squibb,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,BMS-708163 (Gamma-Secretase Inhibitor),Phase 1,Bristol-Myers Squibb,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,BMS-984923,Phase 1,Allyx Therapeutics; Yale University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,BMS-9894923,Phase 1,Allyx Therapeutics,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,BNC,Phase 1,National Institute on Aging (NIA),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,BR4002,Phase 1,"Boryung Pharmaceutical Co., Ltd",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Begacestat,Phase 1,Wyeth is now a wholly owned subsidiary of Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,C: MK-3134,Phase 1,Merck Sharp & Dohme LLC,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CERE-110: Adeno-Associated Virus Delivery of NGF,Phase 1,Sangamo Therapeutics,unmatched,,,,non_therapeutic_or_ambiguous,Needs Review,
+dashboard_only,CHF5074,Phase 1,CERESPIR,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CMS121,Phase 1,"Virogenics, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CS6253 for,Phase 1,"Artery Therapeutics, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,CTS21166 (ZPQ-21166),Phase 1,CoMentis,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Centella asiatica product,Phase 1,Oregon Health and Science University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Cholinergic antagonist,Phase 1,University of Vermont,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Contraloid,Phase 1,Prof. Dr. Dieter Willbold,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Cyclophosphamate,Phase 1,National Institute of Mental Health (NIMH),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,D797,Phase 1,Chong Kun Dang Pharmaceutical,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,DKF-310,Phase 1,"Dongkook Pharmaceutical Co., Ltd.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,DNL628,Phase 1,Denali Therapeutics Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,DNL747,Phase 1,Denali Therapeutics Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,DSPE-DOTA-Gd Liposomal,Phase 1,"Alzeca Biosciences, Inc.",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Dabigatran,Phase 1,University of Rhode Island,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Dimebon + Dextromethorphan,Phase 1,Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,"Diprivan (propofol), Astra-Zeneca",Phase 1,Nyree Penn,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Donepezil Dihydroxynaphthalate for,Phase 1,"Shanghai Synergy Pharmaceutical Sciences Co., Ltd.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Donepezil TDS,Phase 1,"Corium, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Donepezil patch,Phase 1,Icure Pharmaceutical Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,E2212,Phase 1,Eisai Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Elpipodect,Phase 1,Merck Sharp & Dohme LLC,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Emraclidine,Phase 1,AbbVie,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Emtriva,Phase 1,Butler Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,F-18,Phase 1,Chang Gung Memorial Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,F-18 FEDAA1106 (BAY85-8101),Phase 1,Bayer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,F18-3F4AP,Phase 1,Massachusetts General Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Fecal Microbiota Transplant,Phase 1,"University of Wisconsin, Madison",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Fluoroethylnormemantine (FENM),Phase 1,ReST Therapeutics,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,GB-5001,Phase 1,"G2GBio, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,GC021109,Phase 1,"GliaCure, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,GSI 136,Phase 1,Wyeth is now a wholly owned subsidiary of Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,GSI-953,Phase 1,Wyeth is now a wholly owned subsidiary of Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,GSK1034702,Phase 1,GlaxoSmithKline,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,GSK2647544,Phase 1,GlaxoSmithKline,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,GSK2981710,Phase 1,GlaxoSmithKline,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,GSK933776,Phase 1,GlaxoSmithKline,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,GSM-779690T,Phase 1,Acta Pharmaceuticals,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Galantamine and Donepezil,Phase 1,"University Hospital, Clermont-Ferrand",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Galcanezumab,Phase 1,"Xuanwu Hospital, Beijing",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Gemfibrozil,Phase 1,"Gregory Jicha, 323-5550",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,HPP854,Phase 1,"High Point Pharmaceuticals, LLC.",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,HTL0009936,Phase 1,Nxera Pharma UK Limited,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,HTL0018318,Phase 1,Nxera Pharma UK Limited,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Human Nerve Growth Factor,Phase 1,The Shiley Family Trust,unmatched,,,,non_therapeutic_or_ambiguous,Needs Review,
+dashboard_only,Human Umbilical Cord Blood Derived-Mesenchymal Stem Cells,Phase 1,Medipost Co Ltd.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,I123MNI388/I123MNI390,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,IBC-Ab002,Phase 1,Immunobrain Checkpoint,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,IONIS MAPTRx,Phase 1,"Ionis Pharmaceuticals, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Ibuprofen,Phase 1,National Institute on Aging (NIA),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Idalopirdine (Lu AE58054),Phase 1,H. Lundbeck A/S,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Idazoxan,Phase 1,Imperial College London,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Intravenous infusion of mononuclear cells from umbilical cord blood,Phase 1,Anhui Provincial Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,J147,Phase 1,"Abrexa Pharmaceuticals, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,JNJ-39393406,Phase 1,"Janssen Pharmaceutica N.V., Belgium",unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,JNJ-40346527,Phase 1,University of Oxford,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,KHK6640,Phase 1,"Kyowa Kirin Co., Ltd.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,LNK-754,Phase 1,Link Medicine Corporation,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,LPS,Phase 1,Yale University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,LY03020,Phase 1,Luye Pharma Group Ltd.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,LY2811376,Phase 1,Eli Lilly and Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,LY3303560 - IV,Phase 1,Eli Lilly and Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,LY3372993,Phase 1,Eli Lilly and Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,LY3439539,Phase 1,Eli Lilly and Company,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,LYN-057,Phase 1,Lyndra Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Lecozotan,Phase 1,Wyeth is now a wholly owned subsidiary of Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Longeveron Mesenchymal Stem Cells,Phase 1,Longeveron Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Lu AF20513,Phase 1,H. Lundbeck A/S,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Lu AF87908,Phase 1,H. Lundbeck A/S,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MK-0249,Phase 1,Merck Sharp & Dohme LLC,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,MK-1708,Phase 1,Merck Sharp & Dohme LLC,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MK-4334,Phase 1,Merck Sharp & Dohme LLC,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,MK-8931,Phase 1,Merck Sharp & Dohme LLC,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,MNI-513-01,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,N-hydroxy-N'-phenyl-octanediamide (Vorinostat),Phase 1,German Center for Neurodegenerative Diseases (DZNE),unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,NDX-1017,Phase 1,LeonaBio,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NGP 555,Phase 1,NeuroGenetic Pharmaceuticals Inc,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NMRA-323511,Phase 1,"Neumora Therapeutics, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NNI-362,Phase 1,"Neuronascent, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NP001,Phase 1,Beau Nakamoto,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,NPT088,Phase 1,"Proclara Biosciences, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NSA-789,Phase 1,Wyeth is now a wholly owned subsidiary of Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NX210c,Phase 1,Axoltis Pharma,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Nerve Growth Factor,Phase 1,NsGene A/S,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Neural Stem Cell-Derived Exosomes,Phase 1,Shanghai Mental Health Center,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,NirsCure with Lecanemab,Phase 1,"Xuanwu Hospital, Beijing",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,OLX-07010 Active,Phase 1,"Oligomerix, Inc",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PAZ-417,Phase 1,Wyeth is now a wholly owned subsidiary of Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,PF-03654746,Phase 1,Pfizer,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,PF-05212377,Phase 1,Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Plasma exchenge,Phase 1,Oslo University Hospital,fuzzy_suggestion,,,,unresolved_naming_alias_issue,Therapeutic Drug,
+dashboard_only,Posiphen® tartrate,Phase 1,Annovis Bio Inc.,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,Pramlintide challenge test,Phase 1,Boston University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Preprocessed thawed donor FMT,Phase 1,University Hospital of North Norway,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Probiotic Blend,Phase 1,University of Nicosia,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Protollin,Phase 1,Brigham and Women's Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,QLH2405,Phase 1,"Qilu Pharmaceutical Co., Ltd.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,REM0046127,Phase 1,reMYND,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,RGN1016,Phase 1,National Taiwan University Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,RO7105705,Phase 1,"Genentech, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,RSG,Phase 1,GlaxoSmithKline,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Radiopharmaceuticals,Phase 1,"University of California, Berkeley",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Rapamune,Phase 1,The University of Texas Health Science Center at San Antonio,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Recognized pharmacological treatments for AD.,Phase 1,Chinese PLA General Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Retinal fundus photography,Phase 1,Mayo Clinic,unmatched,,,,non_therapeutic_or_ambiguous,Diagnostic Agent,
+dashboard_only,SAM-315,Phase 1,Wyeth is now a wholly owned subsidiary of Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SAM-531 and gemfibrozil,Phase 1,Wyeth is now a wholly owned subsidiary of Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SAR228810,Phase 1,Sanofi,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SNP318 (A),Phase 1,SciNeuro,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,SRA-444,Phase 1,Wyeth is now a wholly owned subsidiary of Pfizer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Salsalate,Phase 1,Adam Boxer,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Salvia officinalis (sage),Phase 1,Oregon Health and Science University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Stem Cell Therapy - Experimental,Phase 1,"Noah Tech, Corp.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Sustiva Pill,Phase 1,Case Western Reserve University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,TAK-071,Phase 1,Takeda,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,TC-5619,Phase 1,Targacept Inc.,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,THN 201,Phase 1,Theranexus,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,TML-6 Granules,Phase 1,"Merry Life Biomedical Co., Ltd.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,TPI-287,Phase 1,"University of California, San Francisco",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,TRx0037,Phase 1,TauRx Therapeutics Ltd,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,TTP4000,Phase 1,vTv Therapeutics,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Trehalose,Phase 1,Mashhad University of Medical Sciences,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,V950,Phase 1,Merck Sharp & Dohme LLC,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,VG-3927,Phase 1,"Vigil Neuroscience, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,VT301,Phase 1,VTBIO Co. LTD,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,Valproic Acid,Phase 1,"Gregory Jicha, 323-5550",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[ 18F]3F4AP,Phase 1,Yale University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[11C]-UCB-J,Phase 1,"Alkermes, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[11C]MK-6884,Phase 1,Merck Sharp & Dohme LLC,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[11C]MPC6827,Phase 1,Columbia University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[11C]MeS-IMPY,Phase 1,National Institute of Mental Health (NIMH),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[123I] AV 39,Phase 1,Molecular NeuroImaging,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[123I] AV-151,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[123I] MNI-308,Phase 1,Molecular NeuroImaging,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,[123I]AV94,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,[123I]CLINDE,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,[18F] CFPyPB,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F] MNI-558,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F] MNI-946,Phase 1,Invicro,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F] PBR06,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,historical_or_discontinued,Therapeutic Drug,
+dashboard_only,[18F] PBR111,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F]-FEPPA,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F]-FMH3,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F]ACI-19626,Phase 1,AC Immune SA,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F]FPEB,Phase 1,Institute for Neurodegenerative Disorders,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F]MK-3328,Phase 1,Merck Sharp & Dohme LLC,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F]MNI-1020,Phase 1,"Janssen Research & Development, LLC",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F]MNI-1126,Phase 1,Invicro,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F]MNI-815 (MNI-815),Phase 1,Molecular NeuroImaging,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F]MNI-952,Phase 1,Molecular NeuroImaging,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F]MNI-958,Phase 1,Invicro,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F]P16-129,Phase 1,"Five Eleven Pharma, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[18F]RO-948,Phase 1,Washington University School of Medicine,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,[F-18]W372,Phase 1,Siemens Molecular Imaging,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,anle138b,Phase 1,MODAG GmbH,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,anti-Abeta,Phase 1,"Genentech, Inc.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,empagliflozin (Jardiance),Phase 1,National Institute on Aging (NIA),unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,etanercept and repeated contrast ultrasound,Phase 1,Fondation Ophtalmologique Adolphe de Rothschild,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,etanercept given by perispinal administration,Phase 1,"Tobinick, Edward Lewis, M.D.",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,"grape seed polyphenolic extract, resveratrol",Phase 1,Johns Hopkins University,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,hUC-MSC-sEV-001 nasal drops,Phase 1,"Xuanwu Hospital, Beijing",unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,high CBD/low THC sublingual,Phase 1,Mclean Hospital,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,lorazepam,Phase 1,Mayo Clinic,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,radioligand [11C]AZD2184,Phase 1,AstraZeneca,unmatched,,,,current_missing_from_nih,Therapeutic Drug,
+dashboard_only,saracatinib,Phase 1,Stephen M. Strittmatter,unmatched,,,,current_missing_from_nih,Therapeutic Drug,

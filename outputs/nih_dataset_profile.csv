@@ -1,0 +1,12 @@
+field,non_null_count,total_rows,pct_populated,distinct_values,example_value,supports
+agent_raw,165,165,100.0,158,ACP‐204,"canonical name (raw, as published)"
+canonical_name,165,165,100.0,158,ACP‐204,canonical name candidate (Agent cell verbatim; combination agents keep the full '+'-joined text)
+aliases,3,165,1.8,3,"['E2814', 'BAN2401']",alias/development-code candidate (parenthetical short codes only)
+therapeutic_purpose,165,165,100.0,13,STT; neuropsychiatric (psychosis),DTT/STT classification + (DTT-only) modality / (STT-only) symptomatic category
+purpose_class,165,165,100.0,2,STT,DTT (disease-targeted) vs STT (symptomatic) — reliable for every row
+purpose_detail,165,165,100.0,13,neuropsychiatric (psychosis),"modality (small molecule/biologic) for DTT rows ONLY; a symptomatic-category label for STT rows, NOT a modality"
+cadro,165,165,100.0,22,Neurotransmitter receptors,target/pathway/mechanism-category candidate (NIA's CADRO ontology — finer-grained than the dashboard's 7-bucket target field)
+mechanism_of_action,165,165,100.0,154,Selective antagonist/inverse agonist of 5‐hydroxytryptamine (serotonin) receptor subtype 2A,"free-text mechanism narrative — not structured, supporting/reference only"
+nct_ids,165,165,100.0,161,"['NCT06159673', 'NCT06194799']",trial linkage (one or more NCT IDs per agent)
+lead_sponsors,165,165,100.0,140,"['ACADIA Pharmaceuticals Inc.', 'ACADIA Pharmaceuticals Inc.']","company/sponsor candidate (one per listed trial, parallel to nct_ids)"
+phase,165,165,100.0,3,Phase 3,"phase candidate (the report SECTION the agent is listed under — a single snapshot value, not a full trial-status history)"
