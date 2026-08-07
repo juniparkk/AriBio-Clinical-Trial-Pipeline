@@ -16,6 +16,7 @@
 # No network calls are made anywhere in this file.
 # ============================================================
 
+import hashlib
 import re
 
 import pandas as pd
@@ -1594,31 +1595,89 @@ def build_target_phase_counts(resolved_drugs_df, targets, phases):
 MATURITY_PHASE_ORDER = ["Early Phase 1", "Phase 1", "Phase 1/Phase 2", "Phase 2", "Phase 2/Phase 3", "Phase 3", "Phase 4"]
 
 
+def _deterministic_unit_jitter(seed_text):
+    """
+    Deterministic pseudo-random float in [-1, 1] derived from seed_text
+    via a stable hash — NOT Python's built-in hash(), which is
+    randomized per-process (PYTHONHASHSEED) and would give a different
+    jitter on every dashboard regeneration. The same seed always
+    produces the same output, so the same drug lands in the same
+    jittered spot on the competitive-matrix chart every time.
+    """
+    digest = hashlib.md5(seed_text.encode("utf-8")).hexdigest()
+    as_int = int(digest[:8], 16)
+    return (as_int / 0xFFFFFFFF) * 2 - 1
+
+
 def build_relevance_matrix(resolved_drugs_df, top_n=40):
     """
     Top-N competitor drugs (by aribio_relevance_score, AR1001 itself
-    excluded and rows with an unresolved phase dropped) with a numeric
-    maturity_x position appended — the exact data the "Competitive
-    Matrix" chart plots as one bubble per drug (x=maturity_x/development
-    stage, y=aribio_relevance_score, color=target). Extracted as a pure
-    function for the same reason as build_target_phase_counts():
-    unit-testable independent of the Plotly figure it feeds.
+    excluded and rows with an unresolved phase dropped), with a numeric
+    maturity_x position and small deterministic jitter_x/jitter_y
+    offsets appended — the exact data the "AR1001 Competitive
+    Landscape" chart plots as one bubble per drug (x=maturity_x/
+    development stage, y=aribio_relevance_score, color=target).
+    Extracted as a pure function for the same reason as
+    build_target_phase_counts(): unit-testable independent of the
+    Plotly figure it feeds.
+
+    The jitter columns are visual-only nudges — display code adds them
+    to maturity_x/aribio_relevance_score when plotting so overlapping
+    same-phase/same-score drugs are distinguishable, but the true
+    phase_reached/aribio_relevance_score values returned here are never
+    altered, and hover text should always read from those, not the
+    jittered plot position.
 
     AR1001 itself (is_aribio == True) is excluded — its relevance score
     is scored against itself, which isn't a meaningful point among its
     own competitors; the chart shows it separately as a fixed reference
     marker instead.
     """
-    columns = ["display_name", "sponsor", "phase_reached", "target", "aribio_relevance_score", "maturity_x"]
+    columns = ["display_name", "sponsor", "phase_reached", "target", "modality",
+               "aribio_relevance_score", "aribio_relevance_reasons", "maturity_x",
+               "jitter_x", "jitter_y"]
     if resolved_drugs_df is None or resolved_drugs_df.empty:
         return pd.DataFrame(columns=columns)
     competitors = resolved_drugs_df[
         (~resolved_drugs_df["is_aribio"]) & (resolved_drugs_df["phase_reached"].isin(MATURITY_PHASE_ORDER))
     ].copy()
+    if "aribio_relevance_reasons" not in competitors.columns:
+        competitors["aribio_relevance_reasons"] = ""
     maturity_index = {phase: i for i, phase in enumerate(MATURITY_PHASE_ORDER)}
     competitors["maturity_x"] = competitors["phase_reached"].map(maturity_index)
+    # magnitudes kept small relative to the axes' own scale (maturity
+    # steps are 1 apart, relevance runs 0-100) -- enough to separate
+    # overlapping dots without visually implying a different phase or
+    # a materially different score
+    competitors["jitter_x"] = competitors["display_name"].apply(
+        lambda name: _deterministic_unit_jitter(f"{name}|x") * 0.28)
+    competitors["jitter_y"] = competitors["display_name"].apply(
+        lambda name: _deterministic_unit_jitter(f"{name}|y") * 3.5)
     competitors = competitors.sort_values(["aribio_relevance_score", "display_name"], ascending=[False, True])
     return competitors[columns].head(top_n).reset_index(drop=True)
+
+
+def summarize_relevance_scores(scores):
+    """
+    Distribution stats for a collection of AR1001 relevance scores
+    (e.g. the Top-40 competitor set) -- min/max/median/unique count/
+    per-score frequency. Exists so the deterministic point-sum
+    scoring's discreteness (how many competitors tie on the same
+    score) can be REPORTED rather than silently papered over by the
+    chart's visual jitter.
+    """
+    clean = pd.Series(scores).dropna()
+    if clean.empty:
+        return {"min": None, "max": None, "median": None, "n_unique": 0, "n_total": 0, "score_counts": {}}
+    counts = clean.value_counts().sort_index(ascending=False)
+    return {
+        "min": int(clean.min()),
+        "max": int(clean.max()),
+        "median": float(clean.median()),
+        "n_unique": int(clean.nunique()),
+        "n_total": int(len(clean)),
+        "score_counts": {int(score): int(count) for score, count in counts.items()},
+    }
 
 
 def build_resolved_drug_trial_links_df(resolved_drugs_df):

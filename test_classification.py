@@ -1291,9 +1291,11 @@ def test_build_target_phase_counts_sum_equals_eligible_drug_count():
 
 
 def _matrix_drug_row(display_name, aribio_relevance_score=50, phase_reached="Phase 2",
-                      target="Amyloid", sponsor="Acme Pharma", is_aribio=False):
+                      target="Amyloid", sponsor="Acme Pharma", is_aribio=False,
+                      modality="Small Molecule", aribio_relevance_reasons="Same phase: Phase 2"):
     return {"display_name": display_name, "sponsor": sponsor, "phase_reached": phase_reached,
-            "target": target, "aribio_relevance_score": aribio_relevance_score, "is_aribio": is_aribio}
+            "target": target, "modality": modality, "aribio_relevance_score": aribio_relevance_score,
+            "aribio_relevance_reasons": aribio_relevance_reasons, "is_aribio": is_aribio}
 
 
 def test_build_relevance_matrix_excludes_ar1001_itself():
@@ -1340,14 +1342,97 @@ def test_build_relevance_matrix_respects_top_n():
 
 
 def test_build_relevance_matrix_empty_dataframe():
-    matrix = build_relevance_matrix(pd.DataFrame(columns=["display_name", "sponsor", "phase_reached", "target", "aribio_relevance_score", "is_aribio"]))
+    matrix = build_relevance_matrix(pd.DataFrame(columns=[
+        "display_name", "sponsor", "phase_reached", "target", "modality",
+        "aribio_relevance_score", "aribio_relevance_reasons", "is_aribio",
+    ]))
     assert len(matrix) == 0
-    assert list(matrix.columns) == ["display_name", "sponsor", "phase_reached", "target", "aribio_relevance_score", "maturity_x"]
+    assert list(matrix.columns) == [
+        "display_name", "sponsor", "phase_reached", "target", "modality",
+        "aribio_relevance_score", "aribio_relevance_reasons", "maturity_x", "jitter_x", "jitter_y",
+    ]
 
 
 def test_build_relevance_matrix_none_input():
     matrix = build_relevance_matrix(None)
     assert len(matrix) == 0
+
+
+def test_build_relevance_matrix_includes_modality_and_reasons_for_hover():
+    resolved = pd.DataFrame([_matrix_drug_row(
+        "DrugA", modality="Biologic", aribio_relevance_reasons="Same modality: Biologic",
+    )])
+    matrix = build_relevance_matrix(resolved)
+    assert matrix.iloc[0]["modality"] == "Biologic"
+    assert matrix.iloc[0]["aribio_relevance_reasons"] == "Same modality: Biologic"
+
+
+def test_build_relevance_matrix_missing_reasons_column_defaults_to_blank():
+    resolved = pd.DataFrame([{
+        "display_name": "DrugA", "sponsor": "Acme", "phase_reached": "Phase 2",
+        "target": "Amyloid", "modality": "Small Molecule", "aribio_relevance_score": 50,
+        "is_aribio": False,
+    }])
+    matrix = build_relevance_matrix(resolved)
+    assert matrix.iloc[0]["aribio_relevance_reasons"] == ""
+
+
+def test_build_relevance_matrix_jitter_is_deterministic_across_calls():
+    resolved = pd.DataFrame([_matrix_drug_row("SameDrugEachTime", aribio_relevance_score=80)])
+    matrix1 = build_relevance_matrix(resolved)
+    matrix2 = build_relevance_matrix(resolved)
+    assert matrix1.iloc[0]["jitter_x"] == matrix2.iloc[0]["jitter_x"]
+    assert matrix1.iloc[0]["jitter_y"] == matrix2.iloc[0]["jitter_y"]
+
+
+def test_build_relevance_matrix_jitter_does_not_alter_true_values():
+    resolved = pd.DataFrame([
+        _matrix_drug_row("TiedA", aribio_relevance_score=85, phase_reached="Phase 3"),
+        _matrix_drug_row("TiedB", aribio_relevance_score=85, phase_reached="Phase 3"),
+    ])
+    matrix = build_relevance_matrix(resolved)
+    # the true phase/score columns must be identical for both -- jitter
+    # lives ONLY in jitter_x/jitter_y, added separately at plot time
+    assert list(matrix["aribio_relevance_score"]) == [85, 85]
+    assert list(matrix["maturity_x"]) == [MATURITY_PHASE_ORDER.index("Phase 3")] * 2
+
+
+def test_build_relevance_matrix_jitter_separates_tied_points():
+    resolved = pd.DataFrame([
+        _matrix_drug_row("TiedA", aribio_relevance_score=85, phase_reached="Phase 3"),
+        _matrix_drug_row("TiedB", aribio_relevance_score=85, phase_reached="Phase 3"),
+    ])
+    matrix = build_relevance_matrix(resolved)
+    # two different drug names must not collide on both jitter axes at once
+    row_a, row_b = matrix.iloc[0], matrix.iloc[1]
+    assert (row_a["jitter_x"], row_a["jitter_y"]) != (row_b["jitter_x"], row_b["jitter_y"])
+
+
+def test_deterministic_unit_jitter_is_bounded_and_repeatable():
+    from drug_classification import _deterministic_unit_jitter
+    value1 = _deterministic_unit_jitter("SomeDrug|x")
+    value2 = _deterministic_unit_jitter("SomeDrug|x")
+    assert value1 == value2
+    assert -1.0 <= value1 <= 1.0
+
+
+def test_summarize_relevance_scores_basic_stats():
+    from drug_classification import summarize_relevance_scores
+    report = summarize_relevance_scores([85, 85, 80, 75, 75, 75])
+    assert report["min"] == 75
+    assert report["max"] == 85
+    assert report["median"] == 77.5  # sorted: 75,75,75,80,85,85 -> avg of the two middle values
+    assert report["n_unique"] == 3
+    assert report["n_total"] == 6
+    assert report["score_counts"] == {85: 2, 80: 1, 75: 3}
+
+
+def test_summarize_relevance_scores_empty_input():
+    from drug_classification import summarize_relevance_scores
+    report = summarize_relevance_scores([])
+    assert report["n_total"] == 0
+    assert report["n_unique"] == 0
+    assert report["score_counts"] == {}
 
 
 def test_build_resolved_drug_trial_links_df_explodes_nct_ids():
@@ -2537,6 +2622,14 @@ ALL_TESTS = [
     test_build_relevance_matrix_respects_top_n,
     test_build_relevance_matrix_empty_dataframe,
     test_build_relevance_matrix_none_input,
+    test_build_relevance_matrix_includes_modality_and_reasons_for_hover,
+    test_build_relevance_matrix_missing_reasons_column_defaults_to_blank,
+    test_build_relevance_matrix_jitter_is_deterministic_across_calls,
+    test_build_relevance_matrix_jitter_does_not_alter_true_values,
+    test_build_relevance_matrix_jitter_separates_tied_points,
+    test_deterministic_unit_jitter_is_bounded_and_repeatable,
+    test_summarize_relevance_scores_basic_stats,
+    test_summarize_relevance_scores_empty_input,
     test_build_resolved_drug_trial_links_df_explodes_nct_ids,
     test_build_resolved_drug_trial_links_df_handles_blank_nct_ids,
     test_build_resolved_drug_trial_links_df_row_count_matches_trial_count_sum,
