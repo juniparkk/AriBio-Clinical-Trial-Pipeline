@@ -441,15 +441,11 @@ def test_successful_refresh_writes_snapshot_and_updates_trials_csv():
         run_pipeline.subprocess.run = lambda *a, **k: _FakeCompleted()
 
         # The mocked subprocess call stands in for pipeline_viz.py, which
-        # normally writes this file (with both placeholder tokens) itself —
+        # normally writes this file (with the placeholder token) itself —
         # write a minimal stand-in so STEP 7's splice step has something
         # real to operate on.
         with open(run_pipeline.OVERVIEW_HTML, "w") as f:
-            f.write(
-                f"<html><body>{competitive_attention_viz.PLACEHOLDER}"
-                f"<div class=\"kpi-value\">{competitive_attention_viz.CHANGES_THIS_WEEK_PLACEHOLDER}</div>"
-                f"</body></html>"
-            )
+            f.write(f"<html><body>{competitive_attention_viz.PLACEHOLDER}</body></html>")
 
         exit_code = run_pipeline.run_refresh()
 
@@ -466,48 +462,8 @@ def test_successful_refresh_writes_snapshot_and_updates_trials_csv():
         assert competitive_attention_viz.PLACEHOLDER not in overview_content
         assert "Needs Attention" in overview_content
         assert "Upcoming Competitive Milestones" in overview_content
-        assert competitive_attention_viz.CHANGES_THIS_WEEK_PLACEHOLDER not in overview_content
-        assert '<div class="kpi-value">0</div>' in overview_content  # no changes detected in this canned run
         assert os.path.exists(run_pipeline.ATTENTION_CSV)
         assert not os.path.exists(run_pipeline.TRIALS_CSV_BACKUP)
-
-
-def test_missing_changes_this_week_placeholder_does_not_block_section_splice():
-    # The "Changes this week" KPI splice is a smaller additive feature
-    # layered on top of the main Needs Attention/Milestones section
-    # splice -- if a stand-in/older OVERVIEW_HTML happens not to carry
-    # that specific token, the section splice must still go through
-    # (never let an additive feature discard an already-successful update).
-    with _RefreshSandbox() as sb:
-        studies = _canned_studies(5)
-        ctgov_client.fetch_all_studies = lambda: (
-            studies,
-            {
-                "pages_fetched": 1, "total_count_reported": 5, "api_records_retrieved": 5,
-                "query_params": {"query.cond": "Alzheimer Disease"},
-                "query_url_example": "https://clinicaltrials.gov/api/v2/studies?query.cond=Alzheimer+Disease",
-            },
-        )
-        ctgov_client.fetch_data_version = lambda: "2026-08-07T09:00:05"
-
-        class _FakeCompleted:
-            returncode = 0
-            stdout = "ok"
-            stderr = ""
-
-        run_pipeline.subprocess.run = lambda *a, **k: _FakeCompleted()
-
-        # Deliberately missing CHANGES_THIS_WEEK_PLACEHOLDER this time.
-        with open(run_pipeline.OVERVIEW_HTML, "w") as f:
-            f.write(f"<html><body>{competitive_attention_viz.PLACEHOLDER}</body></html>")
-
-        exit_code = run_pipeline.run_refresh()
-        assert exit_code == 0
-
-        with open(run_pipeline.OVERVIEW_HTML) as f:
-            overview_content = f.read()
-        assert "Needs Attention" in overview_content
-        assert "Upcoming Competitive Milestones" in overview_content
 
 
 def test_refresh_aborts_and_preserves_previous_trials_csv_on_fetch_failure():
@@ -624,7 +580,6 @@ ALL_TESTS = [
     test_previous_good_snapshot_is_preserved_after_a_later_validation_failure,
     test_write_validated_snapshot_refuses_to_overwrite_existing_file,
     test_successful_refresh_writes_snapshot_and_updates_trials_csv,
-    test_missing_changes_this_week_placeholder_does_not_block_section_splice,
     test_refresh_aborts_and_preserves_previous_trials_csv_on_fetch_failure,
     test_refresh_aborts_before_rebuild_on_validation_failure,
     test_refresh_rolls_back_trials_csv_if_dashboard_rebuild_fails,
