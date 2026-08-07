@@ -38,6 +38,7 @@ from drug_classification import (
     build_resolved_drugs_dataframe,
     build_unresolved_trials_dataframe,
     build_target_phase_counts,
+    build_relevance_landscape,
     build_resolved_drug_trial_links_df,
     classify_pipeline_scope,
     load_scope_overrides,
@@ -1288,6 +1289,43 @@ def test_build_target_phase_counts_sum_equals_eligible_drug_count():
     assert sum(sum(row) for row in z) == len(resolved)
 
 
+def test_build_relevance_landscape_excludes_ar1001_itself():
+    resolved = pd.DataFrame([
+        {"display_name": "AR1001", "target": "Amyloid", "phase_reached": "Phase 3",
+         "aribio_relevance_score": 100, "is_aribio": True},
+        {"display_name": "Competitor", "target": "Amyloid", "phase_reached": "Phase 3",
+         "aribio_relevance_score": 85, "is_aribio": False},
+    ])
+    landscape = build_relevance_landscape(resolved)
+    assert len(landscape) == 1
+    assert landscape.iloc[0]["count"] == 1
+    assert landscape.iloc[0]["avg_score"] == 85
+
+
+def test_build_relevance_landscape_averages_score_within_group():
+    resolved = pd.DataFrame([
+        {"display_name": "DrugA", "target": "Tau", "phase_reached": "Phase 2",
+         "aribio_relevance_score": 40, "is_aribio": False},
+        {"display_name": "DrugB", "target": "Tau", "phase_reached": "Phase 2",
+         "aribio_relevance_score": 60, "is_aribio": False},
+    ])
+    landscape = build_relevance_landscape(resolved)
+    row = landscape[(landscape["target"] == "Tau") & (landscape["phase_reached"] == "Phase 2")].iloc[0]
+    assert row["count"] == 2
+    assert row["avg_score"] == 50
+
+
+def test_build_relevance_landscape_empty_dataframe():
+    landscape = build_relevance_landscape(pd.DataFrame(columns=["display_name", "target", "phase_reached", "aribio_relevance_score", "is_aribio"]))
+    assert len(landscape) == 0
+    assert list(landscape.columns) == ["target", "phase_reached", "count", "avg_score"]
+
+
+def test_build_relevance_landscape_none_input():
+    landscape = build_relevance_landscape(None)
+    assert len(landscape) == 0
+
+
 def test_build_resolved_drug_trial_links_df_explodes_nct_ids():
     resolved = pd.DataFrame([
         {"display_name": "AR1001", "nct_ids": "NCT001; NCT002"},
@@ -2468,6 +2506,10 @@ ALL_TESTS = [
     test_build_target_phase_counts_basic_crosstab,
     test_build_target_phase_counts_empty_dataframe,
     test_build_target_phase_counts_sum_equals_eligible_drug_count,
+    test_build_relevance_landscape_excludes_ar1001_itself,
+    test_build_relevance_landscape_averages_score_within_group,
+    test_build_relevance_landscape_empty_dataframe,
+    test_build_relevance_landscape_none_input,
     test_build_resolved_drug_trial_links_df_explodes_nct_ids,
     test_build_resolved_drug_trial_links_df_handles_blank_nct_ids,
     test_build_resolved_drug_trial_links_df_row_count_matches_trial_count_sum,

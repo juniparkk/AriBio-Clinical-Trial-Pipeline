@@ -27,6 +27,7 @@ from drug_classification import (
     build_resolved_drugs_dataframe,
     build_unresolved_trials_dataframe,
     build_target_phase_counts,
+    build_relevance_landscape,
     build_resolved_drug_trial_links_df,
     build_drug_date_rollup,
     load_scope_overrides,
@@ -1058,6 +1059,53 @@ def build_heatmap(sub_df):
 
 heatmap_figs = {label: build_heatmap(sub) for label, sub in HEATMAP_TABS}
 
+# --- Relevance-vs-Phase bubble chart (magnitude AND competitive-similarity
+# position, complementing the heatmap's pure counts) — one bubble per
+# (target, phase) group actually present among competitors: x=phase,
+# y=mean AR1001 relevance score, size=drug count, color=target pathway
+# (reuses TARGET_COLORS, the one deliberately-distinct categorical palette
+# in this file). AR1001 itself is plotted separately as a star reference
+# marker at its own phase — see build_relevance_landscape()'s docstring
+# for why it's excluded from the aggregate bubbles. ---
+def build_relevance_landscape_figure(resolved_drugs_df):
+    landscape_df = build_relevance_landscape(resolved_drugs_df)
+    fig = go.Figure()
+    for target in TARGET_ORDER + ["Other", "Unknown"]:
+        rows = landscape_df[landscape_df["target"] == target]
+        if rows.empty:
+            continue
+        sizes = [min(46, 10 + (count ** 0.5) * 8) for count in rows["count"]]
+        fig.add_trace(go.Scatter(
+            x=rows["phase_reached"], y=rows["avg_score"], mode="markers",
+            marker=dict(size=sizes, color=TARGET_COLORS.get(target, "#999"), opacity=0.75,
+                        line=dict(width=1, color="white")),
+            name=target, customdata=rows["count"],
+            hovertemplate=f"<b>{target}</b> &middot; %{{x}}<br>%{{customdata}} drug(s) &middot; "
+                           f"avg AR1001 relevance %{{y:.0f}}/100<extra></extra>",
+        ))
+
+    ar1001_rows = resolved_drugs_df[resolved_drugs_df["is_aribio"]]
+    if not ar1001_rows.empty:
+        ar1001 = ar1001_rows.iloc[0]
+        fig.add_trace(go.Scatter(
+            x=[ar1001["phase_reached"]], y=[100], mode="markers+text",
+            marker=dict(size=22, symbol="star", color=ARIBIO_ACCENT, line=dict(width=1.5, color="white")),
+            text=["AR1001"], textposition="top center", textfont=dict(size=11, color=ARIBIO_ACCENT),
+            name="AR1001 (AriBio)",
+            hovertemplate="<b>AR1001</b> &middot; AriBio's own program &middot; %{x}<extra></extra>",
+        ))
+
+    fig.update_xaxes(categoryorder="array", categoryarray=PHASES_ASC, tickfont=dict(size=12))
+    fig.update_yaxes(title="Avg. AR1001 relevance score", range=[-5, 108], tickfont=dict(size=11))
+    fig.update_layout(
+        height=340, margin=dict(t=6, b=6, l=6, r=6), paper_bgcolor="white", plot_bgcolor="white",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0, font=dict(size=11)),
+    )
+    return fig
+
+
+relevance_landscape_fig = build_relevance_landscape_figure(therapeutic_drugs_df)
+
 # --- Phase 3 leaderboard: same drug-level data, sorted by target ---
 # Phase 0: built from resolved_drugs_df (was legacy_drugs_df). Phase 1A:
 # narrowed to therapeutic_drugs_df, per the requirement that the
@@ -1159,6 +1207,7 @@ heatmap_html = {
     label: pio.to_html(f, include_plotlyjs=False, full_html=False, div_id=HEATMAP_DIV_IDS[label])
     for label, f in heatmap_figs.items()
 }
+relevance_landscape_html = pio.to_html(relevance_landscape_fig, include_plotlyjs=False, full_html=False, div_id="relevanceLandscape")
 
 def status_text(status):
     if status == "FDA Approved":
@@ -1674,6 +1723,12 @@ html_template = f"""
         </table>
         <span id="show-all-phase3" onclick="showAllPhase3()">Show all {len(phase3_df)} Phase 3 agents in the table below &darr;</span>
       </div>
+    </div>
+
+    <div class="glance-panel" style="margin-bottom: 20px;">
+      <div class="glance-panel-title">Competitive landscape &mdash; relevance vs. phase</div>
+      {relevance_landscape_html}
+      <div class="section-hint">Bubble size = number of competitor drugs in that target/phase group &middot; y = mean AR1001 relevance score &middot; &#9733; marks AR1001's own phase for reference.</div>
     </div>
 
     <h2 class="section-title">Trial Composition</h2>

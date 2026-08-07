@@ -1586,6 +1586,31 @@ def build_target_phase_counts(resolved_drugs_df, targets, phases):
     ]
 
 
+def build_relevance_landscape(resolved_drugs_df):
+    """
+    One row per (target, phase_reached) group actually present among
+    competitors — count of drugs and their mean aribio_relevance_score
+    — the exact data the "Relevance vs. Phase" bubble chart plots
+    (x=phase, y=avg relevance, size=count, color=target). Extracted as
+    a pure function for the same reason as build_target_phase_counts:
+    unit-testable independent of the Plotly figure it feeds.
+
+    AR1001 itself (is_aribio == True) is excluded — its relevance
+    score is scored against itself, which isn't a meaningful bubble
+    among its own competitors; the chart shows it separately as a
+    fixed reference marker instead.
+    """
+    if resolved_drugs_df is None or resolved_drugs_df.empty:
+        return pd.DataFrame(columns=["target", "phase_reached", "count", "avg_score"])
+    competitors = resolved_drugs_df[~resolved_drugs_df["is_aribio"]]
+    grouped = (
+        competitors.groupby(["target", "phase_reached"])
+        .agg(count=("display_name", "size"), avg_score=("aribio_relevance_score", "mean"))
+        .reset_index()
+    )
+    return grouped[grouped["count"] > 0]
+
+
 def build_resolved_drug_trial_links_df(resolved_drugs_df):
     """
     One row per (canonical drug, contributing trial) pair — the explicit
