@@ -27,7 +27,8 @@ from drug_classification import (
     build_resolved_drugs_dataframe,
     build_unresolved_trials_dataframe,
     build_target_phase_counts,
-    build_relevance_landscape,
+    build_relevance_matrix,
+    MATURITY_PHASE_ORDER,
     build_resolved_drug_trial_links_df,
     build_drug_date_rollup,
     load_scope_overrides,
@@ -1059,52 +1060,89 @@ def build_heatmap(sub_df):
 
 heatmap_figs = {label: build_heatmap(sub) for label, sub in HEATMAP_TABS}
 
-# --- Relevance-vs-Phase bubble chart (magnitude AND competitive-similarity
-# position, complementing the heatmap's pure counts) — one bubble per
-# (target, phase) group actually present among competitors: x=phase,
-# y=mean AR1001 relevance score, size=drug count, color=target pathway
-# (reuses TARGET_COLORS, the one deliberately-distinct categorical palette
-# in this file). AR1001 itself is plotted separately as a star reference
-# marker at its own phase — see build_relevance_landscape()'s docstring
-# for why it's excluded from the aggregate bubbles. ---
-def build_relevance_landscape_figure(resolved_drugs_df):
-    landscape_df = build_relevance_landscape(resolved_drugs_df)
+# --- Competitive Matrix — a 2x2 executive-summary view of the same
+# per-drug relevance data the AR1001 Relevance list already ranks: one
+# bubble per top-N competitor (by aribio_relevance_score), x=development
+# maturity (Early Phase 1 -> Phase 4), y=AR1001 relevance score,
+# color=target pathway (reuses TARGET_COLORS). Divider lines split the
+# plot into four labeled quadrants (PRIORITY / WATCH / LOWER PRIORITY /
+# LATE-STAGE, DIFFERENT APPROACH) at fixed, deterministic thresholds —
+# x between Phase 2 and Phase 2/Phase 3 (the conventional late-stage/
+# pivotal-trial boundary), y at the midpoint of the 0-100 relevance
+# scale — not a data-driven median, so the quadrant a drug lands in
+# doesn't shift meaning from one refresh to the next. AR1001 itself is
+# plotted separately as a star reference marker at its own phase — see
+# build_relevance_matrix()'s docstring for why it's excluded from the
+# ranked competitor bubbles. ---
+RELEVANCE_MATRIX_TOP_N = 40
+MATURITY_X_DIVIDER = 3.5  # between "Phase 2" (index 3) and "Phase 2/Phase 3" (index 4)
+RELEVANCE_Y_DIVIDER = 50
+
+
+def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_N):
+    matrix_df = build_relevance_matrix(resolved_drugs_df, top_n)
     fig = go.Figure()
     for target in TARGET_ORDER + ["Other", "Unknown"]:
-        rows = landscape_df[landscape_df["target"] == target]
+        rows = matrix_df[matrix_df["target"] == target]
         if rows.empty:
             continue
-        sizes = [min(46, 10 + (count ** 0.5) * 8) for count in rows["count"]]
         fig.add_trace(go.Scatter(
-            x=rows["phase_reached"], y=rows["avg_score"], mode="markers",
-            marker=dict(size=sizes, color=TARGET_COLORS.get(target, "#999"), opacity=0.75,
+            x=rows["maturity_x"], y=rows["aribio_relevance_score"], mode="markers",
+            marker=dict(size=13, color=TARGET_COLORS.get(target, "#999"), opacity=0.85,
                         line=dict(width=1, color="white")),
-            name=target, customdata=rows["count"],
-            hovertemplate=f"<b>{target}</b> &middot; %{{x}}<br>%{{customdata}} drug(s) &middot; "
-                           f"avg AR1001 relevance %{{y:.0f}}/100<extra></extra>",
+            name=target, text=rows["display_name"],
+            customdata=list(zip(rows["sponsor"], rows["phase_reached"])),
+            hovertemplate="<b>%{text}</b><br>%{customdata[0]}<br>%{customdata[1]} &middot; "
+                           "relevance %{y}/100<extra></extra>",
         ))
 
     ar1001_rows = resolved_drugs_df[resolved_drugs_df["is_aribio"]]
     if not ar1001_rows.empty:
         ar1001 = ar1001_rows.iloc[0]
-        fig.add_trace(go.Scatter(
-            x=[ar1001["phase_reached"]], y=[100], mode="markers+text",
-            marker=dict(size=22, symbol="star", color=ARIBIO_ACCENT, line=dict(width=1.5, color="white")),
-            text=["AR1001"], textposition="top center", textfont=dict(size=11, color=ARIBIO_ACCENT),
-            name="AR1001 (AriBio)",
-            hovertemplate="<b>AR1001</b> &middot; AriBio's own program &middot; %{x}<extra></extra>",
-        ))
+        ar1001_x = MATURITY_PHASE_ORDER.index(ar1001["phase_reached"]) if ar1001["phase_reached"] in MATURITY_PHASE_ORDER else None
+        if ar1001_x is not None:
+            fig.add_trace(go.Scatter(
+                x=[ar1001_x], y=[100], mode="markers+text",
+                marker=dict(size=20, symbol="star", color=ARIBIO_ACCENT, line=dict(width=1.5, color="white")),
+                text=["AR1001"], textposition="top center", textfont=dict(size=11, color=ARIBIO_ACCENT),
+                name="AR1001 (AriBio)",
+                hovertemplate="<b>AR1001</b> &middot; AriBio's own program &middot; %{customdata}<extra></extra>",
+                customdata=[ar1001["phase_reached"]],
+            ))
 
-    fig.update_xaxes(categoryorder="array", categoryarray=PHASES_ASC, tickfont=dict(size=12))
-    fig.update_yaxes(title="Avg. AR1001 relevance score", range=[-5, 108], tickfont=dict(size=11))
+    x_max = len(MATURITY_PHASE_ORDER) - 1
+    fig.add_shape(type="line", x0=MATURITY_X_DIVIDER, x1=MATURITY_X_DIVIDER, y0=-5, y1=108,
+                  line=dict(color="#ccc", width=1, dash="dash"))
+    fig.add_shape(type="line", x0=-0.5, x1=x_max + 0.5, y0=RELEVANCE_Y_DIVIDER, y1=RELEVANCE_Y_DIVIDER,
+                  line=dict(color="#ccc", width=1, dash="dash"))
+
+    quadrant_labels = [
+        ("WATCH", MATURITY_X_DIVIDER / 2, 102, "left"),
+        ("PRIORITY", (MATURITY_X_DIVIDER + x_max) / 2, 102, "left"),
+        ("LOWER PRIORITY", MATURITY_X_DIVIDER / 2, -3, "left"),
+        ("LATE-STAGE, DIFFERENT APPROACH", (MATURITY_X_DIVIDER + x_max) / 2, -3, "left"),
+    ]
+    for text, x, y, anchor in quadrant_labels:
+        fig.add_annotation(x=x, y=y, text=text, showarrow=False, xanchor="center",
+                            font=dict(size=10.5, color="#999"))
+
+    fig.update_xaxes(
+        tickvals=list(range(len(MATURITY_PHASE_ORDER))), ticktext=MATURITY_PHASE_ORDER,
+        range=[-0.5, x_max + 0.5], tickfont=dict(size=11),
+        title=dict(text="Development Maturity &mdash; Early &rarr; Late", font=dict(size=12)),
+    )
+    fig.update_yaxes(
+        range=[-8, 112], tickfont=dict(size=11),
+        title=dict(text="Competitive Similarity to AR1001 (relevance score)", font=dict(size=12)),
+    )
     fig.update_layout(
-        height=340, margin=dict(t=6, b=6, l=6, r=6), paper_bgcolor="white", plot_bgcolor="white",
+        height=440, margin=dict(t=10, b=6, l=6, r=6), paper_bgcolor="white", plot_bgcolor="white",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0, font=dict(size=11)),
     )
     return fig
 
 
-relevance_landscape_fig = build_relevance_landscape_figure(therapeutic_drugs_df)
+relevance_matrix_fig = build_relevance_matrix_figure(therapeutic_drugs_df)
 
 # --- Phase 3 leaderboard: same drug-level data, sorted by target ---
 # Phase 0: built from resolved_drugs_df (was legacy_drugs_df). Phase 1A:
@@ -1207,7 +1245,7 @@ heatmap_html = {
     label: pio.to_html(f, include_plotlyjs=False, full_html=False, div_id=HEATMAP_DIV_IDS[label])
     for label, f in heatmap_figs.items()
 }
-relevance_landscape_html = pio.to_html(relevance_landscape_fig, include_plotlyjs=False, full_html=False, div_id="relevanceLandscape")
+relevance_matrix_html = pio.to_html(relevance_matrix_fig, include_plotlyjs=False, full_html=False, div_id="relevanceMatrix")
 
 def status_text(status):
     if status == "FDA Approved":
@@ -1726,9 +1764,9 @@ html_template = f"""
     </div>
 
     <div class="glance-panel" style="margin-bottom: 20px;">
-      <div class="glance-panel-title">Competitive landscape &mdash; relevance vs. phase</div>
-      {relevance_landscape_html}
-      <div class="section-hint">Bubble size = number of competitor drugs in that target/phase group &middot; y = mean AR1001 relevance score &middot; &#9733; marks AR1001's own phase for reference.</div>
+      <div class="glance-panel-title">Competitive matrix &mdash; relevance vs. development stage</div>
+      {relevance_matrix_html}
+      <div class="section-hint">Top {RELEVANCE_MATRIX_TOP_N} competitors by AR1001 relevance score &middot; each bubble = one drug &middot; color = target pathway &middot; &#9733; marks AR1001's own phase for reference.</div>
     </div>
 
     <h2 class="section-title">Trial Composition</h2>

@@ -1586,29 +1586,39 @@ def build_target_phase_counts(resolved_drugs_df, targets, phases):
     ]
 
 
-def build_relevance_landscape(resolved_drugs_df):
+# Ascending clinical-progression order for the competitive-matrix chart's
+# x-axis (development maturity). Deliberately narrower than PHASE_ORDER --
+# "NA"/unresolved-phase drugs have no meaningful position on a maturity
+# axis, so build_relevance_matrix() drops them rather than placing them
+# at some arbitrary spot.
+MATURITY_PHASE_ORDER = ["Early Phase 1", "Phase 1", "Phase 1/Phase 2", "Phase 2", "Phase 2/Phase 3", "Phase 3", "Phase 4"]
+
+
+def build_relevance_matrix(resolved_drugs_df, top_n=40):
     """
-    One row per (target, phase_reached) group actually present among
-    competitors — count of drugs and their mean aribio_relevance_score
-    — the exact data the "Relevance vs. Phase" bubble chart plots
-    (x=phase, y=avg relevance, size=count, color=target). Extracted as
-    a pure function for the same reason as build_target_phase_counts:
+    Top-N competitor drugs (by aribio_relevance_score, AR1001 itself
+    excluded and rows with an unresolved phase dropped) with a numeric
+    maturity_x position appended — the exact data the "Competitive
+    Matrix" chart plots as one bubble per drug (x=maturity_x/development
+    stage, y=aribio_relevance_score, color=target). Extracted as a pure
+    function for the same reason as build_target_phase_counts():
     unit-testable independent of the Plotly figure it feeds.
 
-    AR1001 itself (is_aribio == True) is excluded — its relevance
-    score is scored against itself, which isn't a meaningful bubble
-    among its own competitors; the chart shows it separately as a
-    fixed reference marker instead.
+    AR1001 itself (is_aribio == True) is excluded — its relevance score
+    is scored against itself, which isn't a meaningful point among its
+    own competitors; the chart shows it separately as a fixed reference
+    marker instead.
     """
+    columns = ["display_name", "sponsor", "phase_reached", "target", "aribio_relevance_score", "maturity_x"]
     if resolved_drugs_df is None or resolved_drugs_df.empty:
-        return pd.DataFrame(columns=["target", "phase_reached", "count", "avg_score"])
-    competitors = resolved_drugs_df[~resolved_drugs_df["is_aribio"]]
-    grouped = (
-        competitors.groupby(["target", "phase_reached"])
-        .agg(count=("display_name", "size"), avg_score=("aribio_relevance_score", "mean"))
-        .reset_index()
-    )
-    return grouped[grouped["count"] > 0]
+        return pd.DataFrame(columns=columns)
+    competitors = resolved_drugs_df[
+        (~resolved_drugs_df["is_aribio"]) & (resolved_drugs_df["phase_reached"].isin(MATURITY_PHASE_ORDER))
+    ].copy()
+    maturity_index = {phase: i for i, phase in enumerate(MATURITY_PHASE_ORDER)}
+    competitors["maturity_x"] = competitors["phase_reached"].map(maturity_index)
+    competitors = competitors.sort_values(["aribio_relevance_score", "display_name"], ascending=[False, True])
+    return competitors[columns].head(top_n).reset_index(drop=True)
 
 
 def build_resolved_drug_trial_links_df(resolved_drugs_df):
