@@ -617,6 +617,41 @@ def test_prepare_recent_changes_empty_input():
     assert "description" in prepared.columns
 
 
+# ------------------------------------------------------------
+# "Changes this week" KPI count
+# ------------------------------------------------------------
+
+def test_count_recent_changes_counts_within_7_day_window():
+    changes = _changes_df([
+        {"detected_date": TODAY},                 # today -- in window
+        {"detected_date": "2026-08-09"},           # 5 days ago -- in window (6-day cutoff)
+        {"detected_date": "2026-08-08"},           # 6 days ago -- in window (edge, inclusive)
+        {"detected_date": "2026-08-07"},           # 7 days ago -- OUTSIDE the window
+        {"detected_date": "2026-01-01"},           # long past -- outside
+    ])
+    assert ca.count_recent_changes(changes, today=TODAY) == 3
+
+
+def test_count_recent_changes_excludes_future_dates():
+    changes = _changes_df([{"detected_date": "2026-08-20"}])  # after "today"
+    assert ca.count_recent_changes(changes, today=TODAY) == 0
+
+
+def test_count_recent_changes_respects_custom_window():
+    changes = _changes_df([{"detected_date": "2026-08-10"}])  # 4 days ago
+    assert ca.count_recent_changes(changes, today=TODAY, days=3) == 0
+    assert ca.count_recent_changes(changes, today=TODAY, days=5) == 1
+
+
+def test_count_recent_changes_empty_input_returns_zero():
+    assert ca.count_recent_changes(None, today=TODAY) == 0
+    assert ca.count_recent_changes(_changes_df([]), today=TODAY) == 0
+
+
+def test_count_recent_changes_missing_column_returns_zero():
+    assert ca.count_recent_changes(pd.DataFrame([{"other_col": 1}]), today=TODAY) == 0
+
+
 def test_render_recent_changes_section_handles_empty_dataframe():
     html = cav.render_recent_changes_section(pd.DataFrame(columns=["description"]))
     assert "Recent Changes" in html
@@ -720,6 +755,11 @@ ALL_TESTS = [
     test_prepare_recent_changes_adds_description_column,
     test_prepare_recent_changes_sorts_high_importance_first,
     test_prepare_recent_changes_empty_input,
+    test_count_recent_changes_counts_within_7_day_window,
+    test_count_recent_changes_excludes_future_dates,
+    test_count_recent_changes_respects_custom_window,
+    test_count_recent_changes_empty_input_returns_zero,
+    test_count_recent_changes_missing_column_returns_zero,
     test_render_recent_changes_section_handles_empty_dataframe,
     test_render_recent_changes_section_shows_change_and_drug,
     test_render_recent_changes_section_respects_top_n,

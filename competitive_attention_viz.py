@@ -38,6 +38,12 @@ import html
 import pandas as pd
 
 PLACEHOLDER = "<!--COMPETITIVE_ATTENTION_SECTION-->"
+# Same splice pattern as PLACEHOLDER above, for a single KPI-tile value
+# (competitive_attention.count_recent_changes()) instead of a whole HTML
+# section -- pipeline_viz.py emits this token in the "Changes this week"
+# KPI tile; run_pipeline.py's post-refresh splice step replaces it with
+# the real count via a plain string .replace(), same as PLACEHOLDER.
+CHANGES_THIS_WEEK_PLACEHOLDER = "<!--CHANGES_THIS_WEEK-->"
 
 PRIORITY_ORDER = ["Critical", "High", "Medium", "Low"]
 

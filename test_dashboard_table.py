@@ -217,18 +217,36 @@ def test_kpi_total_drugs_equals_resolved_drugs_df_length():
 
 def test_kpi_phase_counts_computed_from_resolved_drugs_df():
     therapeutic_rows = get_therapeutic_rows()
+    # 4 colored numeric KPI tiles now (Phase 3/2/1 agents + High relevance);
+    # "Changes this week" is also colored but its value is a PLACEHOLDER
+    # comment token in a standalone pipeline_viz.py run (not a digit), so
+    # the \d+ regex below doesn't match it here -- see
+    # test_changes_this_week_kpi_uses_placeholder_before_splice.
     phase_kpi_matches = re.findall(r'<div class="kpi-value" style="color:[^"]*">(\d+)</div>', HTML_SOURCE)
-    assert len(phase_kpi_matches) == 3, "expected exactly 3 colored KPI tiles (Phase 3/2/1 agents)"
-    phase3_kpi, phase2_kpi, phase1_kpi = (int(v) for v in phase_kpi_matches)
+    assert len(phase_kpi_matches) == 4, "expected 4 colored numeric KPI tiles (Phase 3/2/1 agents + High relevance)"
+    phase3_kpi, phase2_kpi, phase1_kpi, high_relevance_kpi = (int(v) for v in phase_kpi_matches)
 
     phase_counts = {"Phase 1": 0, "Phase 2": 0, "Phase 3": 0}
+    high_relevance_count = 0
     for row in therapeutic_rows:
         if row["phase_reached"] in phase_counts:
             phase_counts[row["phase_reached"]] += 1
+        if row["aribio_relevance_score"] >= 70 and not row["is_aribio"]:
+            high_relevance_count += 1
 
     assert phase3_kpi == phase_counts["Phase 3"]
     assert phase2_kpi == phase_counts["Phase 2"]
     assert phase1_kpi == phase_counts["Phase 1"]
+    assert high_relevance_kpi == high_relevance_count
+
+
+def test_changes_this_week_kpi_uses_placeholder_before_splice():
+    # pipeline_viz.py alone can't know how many changes were detected
+    # this week (that's computed later, from outputs/pipeline_changes.csv,
+    # by run_pipeline.py) -- so a standalone rebuild must leave the
+    # placeholder token in place rather than guessing/defaulting to 0.
+    assert "Changes this week" in HTML_SOURCE
+    assert "<!--CHANGES_THIS_WEEK-->" in HTML_SOURCE
 
 
 TARGET_ORDER = ["Amyloid", "Tau", "Inflammation", "Neuroprotection", "Metabolism", "Symptomatic", "Neuropsychiatric"]
@@ -473,6 +491,7 @@ ALL_TESTS = [
     test_unresolved_trials_do_not_enter_the_table,
     test_kpi_total_drugs_equals_resolved_drugs_df_length,
     test_kpi_phase_counts_computed_from_resolved_drugs_df,
+    test_changes_this_week_kpi_uses_placeholder_before_splice,
     test_heatmap_all_tab_reconciles_to_resolved_drug_counts,
     test_phase3_leaderboard_names_are_subset_of_resolved_drugs_df,
     test_pipeline_table_names_are_subset_of_pipeline_drugs_csv,

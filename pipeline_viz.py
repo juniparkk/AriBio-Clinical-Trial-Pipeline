@@ -50,7 +50,11 @@ from scientific_classification import (
     classify_pipeline_quadrant,
 )
 from competitive_intelligence import compute_relevance_score
-from competitive_attention_viz import COMPETITIVE_ATTENTION_CSS, PLACEHOLDER as COMPETITIVE_ATTENTION_PLACEHOLDER
+from competitive_attention_viz import (
+    COMPETITIVE_ATTENTION_CSS,
+    PLACEHOLDER as COMPETITIVE_ATTENTION_PLACEHOLDER,
+    CHANGES_THIS_WEEK_PLACEHOLDER,
+)
 
 # ============================================================
 # AriBio brand colors + shade helpers — defined up front (rather than
@@ -97,7 +101,7 @@ SURFACE_TINT = lighten(ARIBIO_BLUE, 0.96)     # subtle panel/hover backgrounds
 SURFACE_BORDER = lighten(ARIBIO_BLUE, 0.85)   # subtle dividers/borders on white
 CARD_RADIUS = "12px"                          # one border-radius for every card in the system
 CARD_SHADOW = "0 1px 3px rgba(20, 40, 70, 0.09)"           # resting, in-flow cards
-ELEVATED_SHADOW = "0 6px 20px rgba(20, 40, 70, 0.14)"      # floating/fixed elements (sidebar)
+ELEVATED_SHADOW = "0 6px 20px rgba(20, 40, 70, 0.14)"      # floating/sticky elements (filter bar)
 
 # ============================================================
 # STEP 1: LOAD THE DATA
@@ -1247,7 +1251,7 @@ TABLE_COLUMNS = [
     # (data key, header label, column width %) — the width is what lets
     # the table use table-layout:fixed (see CSS below): with the default
     # table-layout:auto, the browser recomputes every column's width from
-    # whichever ROWS ARE CURRENTLY VISIBLE, so filtering in the sidebar
+    # whichever ROWS ARE CURRENTLY VISIBLE, so filtering in the filter bar
     # (which changes the visible row set) reshuffles column widths on
     # every click. Fixed layout + explicit widths means columns are set
     # once and never move again regardless of what's filtered.
@@ -1305,6 +1309,15 @@ total_resolved_records = len(resolved_drugs_df)
 phase3_agents = int((therapeutic_drugs_df["phase_reached"] == "Phase 3").sum())
 phase2_agents = int((therapeutic_drugs_df["phase_reached"] == "Phase 2").sum())
 phase1_agents = int((therapeutic_drugs_df["phase_reached"] == "Phase 1").sum())
+# "High relevance" reuses the same RELEVANCE_Y_DIVIDER (70) the AR1001
+# Competitive Landscape chart's quadrant split is built on -- one
+# consistent "high relevance" threshold across the dashboard, not a
+# separately-tuned KPI cutoff. Computable synchronously here (unlike
+# "Changes this week" below) since aribio_relevance_score already
+# exists on therapeutic_drugs_df at this point in the script.
+high_relevance_agents = int((
+    (therapeutic_drugs_df["aribio_relevance_score"] >= RELEVANCE_Y_DIVIDER) & (~therapeutic_drugs_df["is_aribio"])
+).sum())
 
 plotlyjs_lib = pyo.get_plotlyjs()  # loaded once at the top of the page; every figure below skips its own copy
 pies_html = pio.to_html(fig, include_plotlyjs=False, full_html=False, div_id="pieDiv")
@@ -1407,11 +1420,11 @@ _PILL_SHORT_LABELS = {
 
 def render_pill_group(field, title, values, colors):
     # Target is the one group that keeps its full color coding (a
-    # colored dot per value) AND a single, full-label column — it's the
-    # one dimension worth telling apart at a glance, per the existing
-    # design. Phase/Drug Type/Status are plain monochrome text in a
-    # tight 2-column grid — a single shared --pill-color (brand blue)
-    # used only for the active/selected state, no per-value hue.
+    # colored dot per value) — it's the one dimension worth telling
+    # apart at a glance, per the existing design. Phase/Drug Type/
+    # Status are plain monochrome chips — a single shared --pill-color
+    # (brand blue) used only for the active/selected state, no
+    # per-value hue.
     show_dot = field == "target"
     dot_class = " filter-pill--dot" if show_dot else ""
     layout_class = " filter-pills--single" if field == "target" else ""
@@ -1462,22 +1475,12 @@ html_template = f"""
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: #f4f5f8; margin: 0; padding: 0 0 40px; color: #1a1a1a;
   }}
-  /* sidebar floats as a detached card near the left edge (margin + radius
-     + all-around shadow, not flush/docked); page-content is shifted right
-     to clear it. No max-width on main/topbar-inner anymore — the whole
-     point of pulling the sidebar out here is to give the table (and
-     everything else) the full remaining viewport width to span, instead
-     of being capped at 1280px and centered. */
-  .page-content {{ margin-left: 276px; }}
-  /* asymmetric padding: sidebar already provides its own 16px gap on the
-     left, so the extra breathing room belongs on the right, otherwise
-     wide tables/cards run flush to the browser edge and feel crowded */
+  /* No max-width on main/topbar-inner — the table (and everything else)
+     spans the full remaining viewport width instead of being capped at
+     1280px and centered. */
+  .page-content {{ margin-left: 0; }}
   main {{ margin: 0; padding: 0 96px 0 24px; }}
 
-  /* topbar is a full-bleed top-level element now (a sibling of the
-     sidebar/page-content, not nested inside page-content's margin), so
-     it spans the entire page width; the sidebar sits below it (see
-     positionSidebar() in the script, which measures its real height) */
   .topbar {{
     background: {ARIBIO_BLUE}; color: white; padding: 20px 96px 20px 24px; margin-bottom: 24px;
     box-shadow: 0 2px 10px rgba(20, 40, 70, 0.16);
@@ -1493,7 +1496,9 @@ html_template = f"""
   }}
   .spotlight b {{ color: {ARIBIO_ACCENT}; }}
 
-  .kpi-row {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }}
+  .kpi-row {{ display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 20px; }}
+  @media (max-width: 1100px) {{ .kpi-row {{ grid-template-columns: repeat(3, 1fr); }} }}
+  @media (max-width: 640px) {{ .kpi-row {{ grid-template-columns: repeat(2, 1fr); }} }}
   .kpi-tile {{
     background: white; border-radius: {CARD_RADIUS}; border-top: 3px solid {ARIBIO_BLUE};
     padding: 16px 18px; box-shadow: {CARD_SHADOW};
@@ -1501,61 +1506,45 @@ html_template = f"""
   .kpi-value {{ font-size: 27px; font-weight: 700; color: {ARIBIO_BLUE}; letter-spacing: -0.01em; }}
   .kpi-label {{ font-size: 12.5px; color: #666; margin-top: 3px; }}
 
-  .sidebar {{
-    /* top: 96px is a fallback (topbar height + gap) for the instant
-       before JS measures the real header height and overrides it via
-       positionSidebar() below — keeps things sane with JS disabled too.
-       transition: top so any later re-measurement (window resize, text
-       reflow) eases into place instead of snapping. */
-    position: fixed; left: 16px; top: 96px; bottom: 16px; width: 240px;
+  /* Filter bar sits inline in the page flow, right above the table,
+     rather than floating as a fixed left-hand panel — position:sticky
+     (not fixed) means it scrolls normally until it reaches `top`
+     (the topbar's real rendered height + gap, measured dynamically by
+     positionFilterBar() in the script below — the value here is just
+     a same-instant-as-page-load fallback), then docks there while the
+     long table scrolls underneath it. */
+  .filter-bar {{
+    position: sticky; top: 76px; z-index: 15;
     background: white; border-radius: {CARD_RADIUS}; box-shadow: {ELEVATED_SHADOW};
-    z-index: 20; display: flex; flex-direction: column; overflow: hidden;
+    padding: 12px 16px; margin: 10px 0 14px;
     transition: top 0.2s ease;
   }}
-  .sidebar-header {{
-    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-    padding: 11px 14px; background: {ARIBIO_BLUE_SUBTLE}; border-bottom: 1px solid {SURFACE_BORDER};
+  .filter-bar-row {{ display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }}
+  /* Filter groups now run in a horizontal, wrapping row (was a vertical
+     stack in a narrow fixed sidebar) — each group is a compact labeled
+     cluster of chips instead of a full-width list column. */
+  .filter-groups {{
+    display: flex; flex-wrap: wrap; gap: 14px 30px; margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid {SURFACE_BORDER};
   }}
-  .sidebar-title {{
-    display: flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 700;
-    color: {ARIBIO_BLUE}; text-transform: uppercase; letter-spacing: 0.05em;
-  }}
-  .sidebar-title svg {{ color: {ARIBIO_BLUE}; flex-shrink: 0; }}
-  /* overflow-y stays auto as a fallback for genuinely short viewports —
-     the sizing below is tuned to fit all 4 groups without scrolling on
-     ordinary laptop/desktop viewport heights, not to physically prevent
-     scrolling from ever being possible. */
-  .filter-groups {{ flex: 1 1 auto; overflow-y: auto; padding: 4px 14px 12px; display: flex; flex-direction: column; }}
-  .filter-group {{ padding: 9px 0; }}
-  .filter-group:first-child {{ padding-top: 8px; }}
-  .filter-group + .filter-group {{ border-top: 1px solid {SURFACE_BORDER}; }}
+  .filter-group {{ min-width: 150px; }}
   .filter-group-title {{ font-size: 10px; letter-spacing: 0.06em; color: #9aa0ab; margin-bottom: 5px; font-weight: 600; }}
-  /* 2-column grid is what makes Phase (8 values) and Status/Drug Type
-     fit without scrolling — Target keeps its own single-column legend
-     (see .filter-pills--single) since it's the one group meant to be
-     scanned as a color-coded list, not a dense grid. */
-  .filter-pills {{ display: grid; grid-template-columns: 1fr 1fr; gap: 0 4px; }}
-  .filter-pills--single {{ display: flex; flex-direction: column; gap: 0; }}
-  @media (max-width: 960px) {{
-    .sidebar {{
-      position: static; width: auto; height: auto; box-shadow: {CARD_SHADOW};
-      border-radius: {CARD_RADIUS}; margin: 0 24px 20px;
-    }}
-    .page-content {{ margin-left: 0; }}
-    .filter-pills {{ grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }}
-  }}
-  /* Clean list style, not a bubble/badge: plain text. No color-coding
-     except the Target group (the one dimension worth telling apart at
-     a glance) — those pills get the .filter-pill--dot modifier and a
-     small colored dot; every other group is plain monochrome text.
-     Active state reads like a selected nav item: a colored left accent
-     bar + soft tinted background, rather than a filled pill. */
+  .filter-pills {{ display: flex; flex-wrap: wrap; gap: 4px; max-width: 340px; }}
+  .filter-pills--single {{ display: flex; flex-wrap: wrap; gap: 4px; }}
+  /* Clean list style, not a bubble/badge: plain text on a light chip
+     background (needed now that chips sit side-by-side in a row rather
+     than as full-width rows in a narrow column — a resting-state
+     boundary is what lets you tell one chip from the next). No
+     color-coding except the Target group (the one dimension worth
+     telling apart at a glance) — those pills get the
+     .filter-pill--dot modifier and a small colored dot; every other
+     group is plain monochrome text. Active state reads like a
+     selected chip: a soft tinted background + ring. */
   .filter-pill {{
-    --pill-color: {ARIBIO_BLUE}; display: flex; align-items: center; gap: 7px;
-    background: none; border: none; border-radius: 5px;
-    font-size: 12.5px; color: #444; padding: 4px 8px; width: 100%; text-align: left;
-    cursor: pointer; font-family: inherit; line-height: 1.3;
-    overflow-wrap: break-word; white-space: normal;
+    --pill-color: {ARIBIO_BLUE}; display: flex; align-items: center; gap: 6px;
+    background: #fafbfc; border: 1px solid #e4e6ea; border-radius: 14px;
+    font-size: 12.5px; color: #444; padding: 4px 10px; text-align: left;
+    cursor: pointer; font-family: inherit; line-height: 1.3; white-space: nowrap;
     transition: background-color 0.15s ease, color 0.15s ease,
                 box-shadow 0.15s ease, transform 0.1s ease;
   }}
@@ -1582,21 +1571,21 @@ html_template = f"""
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--pill-color) 22%, transparent);
   }}
   #clear-filter {{
-    font-size: 12px; font-weight: 600; color: {ARIBIO_ACCENT}; background: none; border: none;
-    cursor: pointer; padding: 2px 0; visibility: hidden; font-family: inherit;
+    font-size: 12.5px; font-weight: 600; color: {ARIBIO_ACCENT}; background: none; border: none;
+    cursor: pointer; padding: 2px 0; visibility: hidden; font-family: inherit; margin-left: auto;
   }}
   #clear-filter:hover {{ text-decoration: underline; }}
   #clear-filter.visible {{ visibility: visible; }}
 
   h2.section-title {{ color: #1a1a1a; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; margin: 30px 0 6px; }}
   .section-hint {{ font-size: 13px; color: #666; margin-bottom: 4px; }}
+  #composition-toggle-label {{ font-size: 12.5px; font-weight: 600; color: {ARIBIO_BLUE}; }}
 
-  #controls {{ display: flex; align-items: center; gap: 12px; margin: 10px 0 12px; flex-wrap: wrap; }}
-  #controls input[type="text"] {{
+  .filter-bar-row input[type="text"] {{
     padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px; width: 280px;
     font-family: inherit; transition: border-color 0.12s ease, box-shadow 0.12s ease;
   }}
-  #controls input[type="text"]:focus {{
+  .filter-bar-row input[type="text"]:focus {{
     outline: none; border-color: {ARIBIO_BLUE}; box-shadow: 0 0 0 3px {lighten(ARIBIO_BLUE, 0.82)};
   }}
   #scope-toggle-label {{
@@ -1609,7 +1598,7 @@ html_template = f"""
     max-height: 640px; border-radius: {CARD_RADIUS}; background: white; box-shadow: {CARD_SHADOW};
     /* overflow-y:scroll (not auto) + scrollbar-gutter:stable — the space
        for the scrollbar is reserved whether or not it's currently
-       needed, so toggling a sidebar filter (which changes the row count,
+       needed, so toggling a filter (which changes the row count,
        which flips the scrollbar on/off) never shifts the table's column
        widths left/right. scroll+gutter is the belt-and-suspenders pair:
        gutter is the modern/clean way, scroll is the fallback for
@@ -1619,7 +1608,7 @@ html_template = f"""
   /* table-layout:fixed + explicit per-column widths (set inline on each
      <th>, from TABLE_COLUMNS) — with the default table-layout:auto, the
      browser recomputes every column's width from whatever ROWS ARE
-     CURRENTLY VISIBLE, so filtering in the sidebar (which changes the
+     CURRENTLY VISIBLE, so filtering in the filter bar (which changes the
      visible row set) reshuffled column widths on every click. Fixed
      layout locks widths in from the header row alone, once, so the
      table never shifts again regardless of what's filtered. */
@@ -1782,26 +1771,6 @@ html_template = f"""
   </div>
 </header>
 
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <div class="sidebar-title">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
-        <line x1="4" y1="6" x2="20" y2="6"></line>
-        <line x1="4" y1="12" x2="20" y2="12"></line>
-        <line x1="4" y1="18" x2="20" y2="18"></line>
-        <circle cx="9" cy="6" r="2" fill="white" stroke-width="1.6"></circle>
-        <circle cx="15" cy="12" r="2" fill="white" stroke-width="1.6"></circle>
-        <circle cx="9" cy="18" r="2" fill="white" stroke-width="1.6"></circle>
-      </svg>
-      Filters
-    </div>
-    <button id="clear-filter" onclick="clearFilters()">Clear</button>
-  </div>
-  <div class="filter-groups">
-    {pill_groups_html}
-  </div>
-</aside>
-
 <div class="page-content">
   <main>
     <div class="spotlight">
@@ -1815,9 +1784,18 @@ html_template = f"""
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 3']}">{phase3_agents}</div><div class="kpi-label">Phase 3 agents</div></div>
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 2']}">{phase2_agents}</div><div class="kpi-label">Phase 2 agents</div></div>
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 1']}">{phase1_agents}</div><div class="kpi-label">Phase 1 agents</div></div>
+      <div class="kpi-tile"><div class="kpi-value" style="color:{ARIBIO_ACCENT}">{high_relevance_agents}</div><div class="kpi-label">High relevance to AR1001 (&ge;{RELEVANCE_Y_DIVIDER})</div></div>
+      <div class="kpi-tile"><div class="kpi-value" style="color:{ARIBIO_ACCENT}">{CHANGES_THIS_WEEK_PLACEHOLDER}</div><div class="kpi-label">Changes this week</div></div>
     </div>
 
     {COMPETITIVE_ATTENTION_PLACEHOLDER}
+
+    <div class="glance-panel" style="margin-bottom: 20px;">
+      <div class="glance-panel-title">AR1001 Competitive Landscape</div>
+      <div class="section-hint" style="margin-top:-2px;">{RELEVANCE_MATRIX_SUBTITLE}</div>
+      <div style="margin-top:10px;">{relevance_matrix_html}</div>
+      <div class="section-hint">{RELEVANCE_MATRIX_EXPLANATION}</div>
+    </div>
 
     <div class="glance-grid">
       <div class="glance-panel">
@@ -1840,25 +1818,26 @@ html_template = f"""
       </div>
     </div>
 
-    <div class="glance-panel" style="margin-bottom: 20px;">
-      <div class="glance-panel-title">AR1001 Competitive Landscape</div>
-      <div class="section-hint" style="margin-top:-2px;">{RELEVANCE_MATRIX_SUBTITLE}</div>
-      <div style="margin-top:10px;">{relevance_matrix_html}</div>
-      <div class="section-hint">{RELEVANCE_MATRIX_EXPLANATION}</div>
-    </div>
-
-    <h2 class="section-title">Trial Composition</h2>
-    <div class="section-hint">Click any pie slice to filter the table below (in addition to the filters in the sidebar).</div>
-    <div class="pies-card">
+    <h2 class="section-title" style="cursor:pointer;" onclick="togglePipelineComposition()">
+      Trial Composition <span id="composition-toggle-label">View details &#9662;</span>
+    </h2>
+    <div class="section-hint">Click any pie slice to filter the table below (in addition to the filters above).</div>
+    <div class="pies-card" id="pipeline-composition-card" style="display:none;">
       {pies_html}
     </div>
 
     <h2 class="section-title">Drug Pipeline Table</h2>
-    <div id="controls">
-      <input type="text" id="search-box" placeholder="Search by drug, sponsor, target, or verification...">
-      <label id="scope-toggle-label">
-        <input type="checkbox" id="scope-toggle"> Show non-therapeutic / needs-review records
-      </label>
+    <div class="filter-bar">
+      <div class="filter-bar-row">
+        <input type="text" id="search-box" placeholder="Search by drug, sponsor, target, or verification...">
+        <label id="scope-toggle-label">
+          <input type="checkbox" id="scope-toggle"> Show non-therapeutic / needs-review records
+        </label>
+        <button id="clear-filter" onclick="clearFilters()">Clear filters</button>
+      </div>
+      <div class="filter-groups">
+        {pill_groups_html}
+      </div>
     </div>
     <div id="row-count"></div>
     <div id="table-wrap">
@@ -2188,6 +2167,25 @@ html_template = f"""
     document.getElementById('table-wrap').scrollIntoView({{ behavior: 'smooth', block: 'start' }});
   }}
 
+  // Trial Composition (the 4 pies) starts collapsed (display:none) so
+  // the page doesn't front-load a secondary/exploratory chart before
+  // the primary AR1001-focused sections -- "View details" reveals it
+  // on demand instead. Plotly measures 0 width for a chart rendered
+  // inside a display:none container, so a resize is needed the first
+  // time it's un-hidden (same reason switchHeatmapTab() above does one).
+  let pipelineCompositionRevealed = false;
+  function togglePipelineComposition() {{
+    const card = document.getElementById('pipeline-composition-card');
+    const label = document.getElementById('composition-toggle-label');
+    const isHidden = card.style.display === 'none';
+    card.style.display = isHidden ? 'block' : 'none';
+    label.innerHTML = isHidden ? 'Hide details &#9652;' : 'View details &#9662;';
+    if (isHidden && !pipelineCompositionRevealed) {{
+      pipelineCompositionRevealed = true;
+      Plotly.Plots.resize(document.getElementById('pieDiv'));
+    }}
+  }}
+
   // --- Drug Comparator: AR1001 vs. a selected drug, side by side.
   // Only fields this pipeline actually resolves with real evidence are
   // shown (Mechanism of Action, Modality, Target Pathway(s), Phase,
@@ -2235,21 +2233,21 @@ html_template = f"""
     if (e.key === 'Escape') closeComparator();
   }});
 
-  // The topbar now spans the full page width (it's a sibling of the
-  // sidebar, not nested inside it), so the floating sidebar needs to
-  // start below it rather than at the very top of the viewport. This
-  // measures the topbar's REAL rendered height (rather than hardcoding
-  // an estimate) so it stays correct if text wraps differently across
-  // browsers/zoom levels.
-  function positionSidebar() {{
+  // The sticky filter bar (position:sticky, docks above the table once
+  // scrolled to) needs its `top` offset to exactly match the sticky
+  // topbar's real rendered height, or it would either dock with a gap
+  // or slide partly underneath the topbar. This measures the topbar's
+  // REAL rendered height (rather than hardcoding an estimate) so it
+  // stays correct if text wraps differently across browsers/zoom levels.
+  function positionFilterBar() {{
     const header = document.querySelector('.topbar');
-    const sidebar = document.querySelector('.sidebar');
-    if (!header || !sidebar) return;
-    sidebar.style.top = (header.getBoundingClientRect().height + 16) + 'px';
+    const filterBar = document.querySelector('.filter-bar');
+    if (!header || !filterBar) return;
+    filterBar.style.top = (header.getBoundingClientRect().height + 12) + 'px';
   }}
-  window.addEventListener('load', positionSidebar);
-  window.addEventListener('resize', positionSidebar);
-  positionSidebar();
+  window.addEventListener('load', positionFilterBar);
+  window.addEventListener('resize', positionFilterBar);
+  positionFilterBar();
 
   renderTable();
 </script>

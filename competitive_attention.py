@@ -524,6 +524,28 @@ def prepare_recent_changes(changes_df):
     return prepared.reset_index(drop=True)
 
 
+def count_recent_changes(changes_df, today=None, days=7):
+    """Count of pipeline_changes.csv rows with detected_date within the
+    last `days` days (inclusive of today) -- the "Changes this week"
+    KPI tile value. A pure data function (not a viz one) for the same
+    reason compute_attention()/build_milestones() are: unit-testable
+    independent of how/where it gets displayed.
+
+    Depends on change-detection output that pipeline_viz.py itself
+    doesn't have at its own build time -- like the "Needs Attention"/
+    "Recent Changes"/"AR1001 Relevance" sections, its dashboard value
+    is spliced in later via a PLACEHOLDER token (see
+    competitive_attention_viz.CHANGES_THIS_WEEK_PLACEHOLDER), not
+    computed inline in pipeline_viz.py.
+    """
+    if changes_df is None or changes_df.empty or "detected_date" not in changes_df.columns:
+        return 0
+    today = pd.Timestamp(today) if today is not None else pd.Timestamp.now(tz=None).normalize()
+    cutoff = today - pd.Timedelta(days=days - 1)
+    detected = pd.to_datetime(changes_df["detected_date"], errors="coerce")
+    return int(((detected >= cutoff) & (detected <= today)).sum())
+
+
 def build_milestones(annotated_df, trials_df, changes_df, watchlist, today=None):
     """Buckets currently-therapeutic trials by completion-date timing for
     the "Upcoming Competitive Milestones" dashboard section.

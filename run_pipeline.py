@@ -263,10 +263,28 @@ def run_refresh():
         if competitive_attention_viz.PLACEHOLDER not in html_content:
             raise RuntimeError(f"{OVERVIEW_HTML} is missing the competitive-attention placeholder")
         html_content = html_content.replace(competitive_attention_viz.PLACEHOLDER, section_html)
+
+        # Best-effort, not gated on like PLACEHOLDER above: the KPI-tile
+        # splice is a smaller additive feature layered on top of the
+        # section splice above, which has ALREADY succeeded by this
+        # point. If some future/older OVERVIEW_HTML happens not to carry
+        # this specific token, skip just this replace rather than
+        # discarding the (valid, already-computed) section splice too —
+        # same "never let an additive feature block a good update"
+        # philosophy as the outer try/except this whole block lives in.
+        changes_this_week = competitive_attention.count_recent_changes(changes_df)
+        if competitive_attention_viz.CHANGES_THIS_WEEK_PLACEHOLDER in html_content:
+            html_content = html_content.replace(
+                competitive_attention_viz.CHANGES_THIS_WEEK_PLACEHOLDER, str(changes_this_week)
+            )
+        else:
+            print(f"NOTE: {OVERVIEW_HTML} has no 'Changes this week' KPI placeholder to fill in "
+                  f"(skipped, section splice above still applied).")
+
         with open(OVERVIEW_HTML, "w") as f:
             f.write(html_content)
         print(f"{OVERVIEW_HTML} updated with AR1001 Relevance / Recent Changes / Needs Attention / "
-              f"Upcoming Competitive Milestones sections.")
+              f"Upcoming Competitive Milestones sections ({changes_this_week} change(s) this week).")
     except Exception as e:
         # Non-fatal: the core refresh (trials.csv, pipeline_drugs.csv,
         # pipeline_changes.csv) is already valid and committable even if
