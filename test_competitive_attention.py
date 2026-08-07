@@ -66,11 +66,12 @@ def _trials_df(rows):
 
 
 def _annotated_row(nct_id="NCT00000001", pipeline_scope="Therapeutic Drug", verification_status="no_match",
-                    classification_confidence="high", phase_clean="Phase 2", status_clean="Recruiting"):
+                    classification_confidence="high", phase_clean="Phase 2", status_clean="Recruiting",
+                    developed_drug="TestDrug"):
     return {
         "nct_id": nct_id, "pipeline_scope": pipeline_scope, "verification_status": verification_status,
         "classification_confidence": classification_confidence, "phase_clean": phase_clean,
-        "status_clean": status_clean,
+        "status_clean": status_clean, "developed_drug": developed_drug,
     }
 
 
@@ -356,6 +357,40 @@ def test_milestone_next_30_days_bucket():
     assert len(m["next_90_days"]) == 0
 
 
+def test_milestone_item_carries_resolved_drug_name():
+    trials = _trials_df([_trial_row("NCT00000001", status="RECRUITING", primary_completion="2026-08-20", completion="2026-09-01")])
+    annotated = _annotated_df([_annotated_row("NCT00000001", status_clean="Recruiting", developed_drug="Wonderdrug")])
+    m = ca.build_milestones(annotated, trials, None, WATCHLIST, today=TODAY)
+    assert m["next_30_days"][0]["drug_name"] == "Wonderdrug"
+
+
+def test_milestone_item_falls_back_to_nct_id_when_drug_unresolved():
+    trials = _trials_df([_trial_row("NCT00000001", status="RECRUITING", primary_completion="2026-08-20", completion="2026-09-01")])
+    annotated = _annotated_df([_annotated_row("NCT00000001", status_clean="Recruiting", developed_drug="")])
+    m = ca.build_milestones(annotated, trials, None, WATCHLIST, today=TODAY)
+    assert m["next_30_days"][0]["drug_name"] == "NCT00000001"
+
+
+def test_milestone_rendering_shows_drug_name_not_nct_id_as_link_text():
+    trials = _trials_df([_trial_row("NCT00000001", status="RECRUITING", primary_completion="2026-08-20", completion="2026-09-01")])
+    annotated = _annotated_df([_annotated_row("NCT00000001", status_clean="Recruiting", developed_drug="Wonderdrug")])
+    m = ca.build_milestones(annotated, trials, None, WATCHLIST, today=TODAY)
+    html = cav.render_milestones_section(m)
+    assert ">Wonderdrug</a>" in html
+    assert ">NCT00000001</a>" not in html
+    assert 'title="NCT00000001"' in html  # NCT ID preserved as a hover reference
+
+
+def test_milestone_materially_delayed_uses_canonical_drug_name_from_changes_row():
+    changes = _changes_df([
+        _change_row(nct_id="NCT00000001", canonical_drug_name="Wonderdrug", change_type="primary_completion_date_change",
+                    old_value="2026-01-01", new_value="2026-06-01", importance="Medium"),
+    ])
+    annotated = _annotated_df([_annotated_row("NCT00000001", developed_drug="Wonderdrug")])
+    m = ca.build_milestones(annotated, None, changes, WATCHLIST, today=TODAY)
+    assert m["materially_delayed"][0]["drug_name"] == "Wonderdrug"
+
+
 def test_milestone_next_90_days_bucket_excludes_next_30_days_items():
     trials = _trials_df([_trial_row("NCT00000001", status="RECRUITING", primary_completion="2026-10-01", completion="2027-01-01")])
     annotated = _annotated_df([_annotated_row("NCT00000001", status_clean="Recruiting")])
@@ -501,6 +536,10 @@ ALL_TESTS = [
     test_output_columns_match_required_schema,
     test_empty_changes_produces_empty_result_with_correct_columns,
     test_milestone_next_30_days_bucket,
+    test_milestone_item_carries_resolved_drug_name,
+    test_milestone_item_falls_back_to_nct_id_when_drug_unresolved,
+    test_milestone_rendering_shows_drug_name_not_nct_id_as_link_text,
+    test_milestone_materially_delayed_uses_canonical_drug_name_from_changes_row,
     test_milestone_next_90_days_bucket_excludes_next_30_days_items,
     test_milestone_recently_completed_bucket,
     test_milestone_discontinued_trial_excluded_from_upcoming_buckets,

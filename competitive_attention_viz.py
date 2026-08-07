@@ -128,6 +128,7 @@ def _render_milestone_list(items, bucket_key, date_field):
     rows = []
     for item in items[:10]:
         nct_id = item.get("nct_id", "")
+        drug_name = item.get("drug_name") or nct_id
         url = _study_url(nct_id)
         sponsor = _esc(item.get("sponsor", ""))
         if bucket_key == "materially_delayed":
@@ -136,7 +137,7 @@ def _render_milestone_list(items, bucket_key, date_field):
             detail = _esc(item.get(date_field, ""))
         rows.append(
             f'<div class="milestone-row">'
-            f'<a href="{_esc(url)}" target="_blank" rel="noopener">{_esc(nct_id)}</a>'
+            f'<a href="{_esc(url)}" target="_blank" rel="noopener" title="{_esc(nct_id)}">{_esc(drug_name)}</a>'
             f'<span class="milestone-sponsor">{sponsor}</span>'
             f'<span class="milestone-detail">{detail}</span>'
             f'</div>'

@@ -180,6 +180,7 @@ def build_trial_lookup(annotated_df, trials_df):
             entry["classification_confidence"] = r.get("classification_confidence", "")
             entry["phase_clean"] = r.get("phase_clean", "")
             entry["status_clean"] = r.get("status_clean", "")
+            entry["developed_drug"] = r.get("developed_drug", "")
     return lookup
 
 
@@ -485,6 +486,7 @@ def build_milestones(annotated_df, trials_df, changes_df, watchlist, today=None)
 
         item = {
             "nct_id": nct_id,
+            "drug_name": info.get("developed_drug", "") or nct_id,
             "sponsor": info.get("sponsor", ""),
             "status": info.get("status_clean", ""),
             "primary_completion_date": info.get("primary_completion_date", ""),
@@ -523,8 +525,10 @@ def build_milestones(annotated_df, trials_df, changes_df, watchlist, today=None)
                 continue
             if (new_d - old_d).days >= thresholds["major_delay_days"]:
                 info = trial_lookup.get(row["nct_id"], {})
+                drug_name = row.get("canonical_drug_name") or info.get("developed_drug", "") or row["nct_id"]
                 materially_delayed.append({
                     "nct_id": row["nct_id"],
+                    "drug_name": drug_name,
                     "sponsor": info.get("sponsor", row.get("sponsor_or_company", "")),
                     "change_type": row["change_type"],
                     "old_value": row.get("old_value", ""),
