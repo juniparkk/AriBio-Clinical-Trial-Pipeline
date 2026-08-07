@@ -1648,11 +1648,15 @@ def build_relevance_matrix(resolved_drugs_df, top_n=40):
     # magnitudes kept small relative to the axes' own scale (maturity
     # steps are 1 apart, relevance runs 0-100) -- enough to separate
     # overlapping dots without visually implying a different phase or
-    # a materially different score
+    # a materially different score. x stays comfortably inside a
+    # drug's own phase column (< 0.5 half-step); y is wide enough to
+    # break up the real-world cluster of competitors tied at the same
+    # 2-3 discrete scores (see summarize_relevance_scores()) without
+    # crossing into a visually different score band.
     competitors["jitter_x"] = competitors["display_name"].apply(
-        lambda name: _deterministic_unit_jitter(f"{name}|x") * 0.28)
+        lambda name: _deterministic_unit_jitter(f"{name}|x") * 0.40)
     competitors["jitter_y"] = competitors["display_name"].apply(
-        lambda name: _deterministic_unit_jitter(f"{name}|y") * 3.5)
+        lambda name: _deterministic_unit_jitter(f"{name}|y") * 5.5)
     competitors = competitors.sort_values(["aribio_relevance_score", "display_name"], ascending=[False, True])
     return competitors[columns].head(top_n).reset_index(drop=True)
 

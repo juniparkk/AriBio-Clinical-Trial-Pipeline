@@ -1127,6 +1127,11 @@ def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_
     # preferred among ties) get a visible name label; every other point's
     # name is hover-only, per the "label only important competitors"
     # requirement — this is a presentation choice, doesn't touch matrix_df.
+    # These competitors tend to cluster tightly (they're tied on the
+    # same 1-2 top scores — see summarize_relevance_scores()), so a
+    # single shared textposition stacks every label on top of the next;
+    # cycling through several placements fans them out around their dots.
+    LABEL_TEXT_POSITIONS = ["top center", "bottom center", "middle right", "middle left", "top right", "bottom left"]
     labeled = matrix_df.sort_values(
         ["aribio_relevance_score", "maturity_x", "display_name"], ascending=[False, False, True]
     ).head(RELEVANCE_MATRIX_LABEL_COUNT)
@@ -1134,7 +1139,8 @@ def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_
         fig.add_trace(go.Scatter(
             x=(labeled["maturity_x"] + labeled["jitter_x"]).tolist(),
             y=(labeled["aribio_relevance_score"] + labeled["jitter_y"]).clip(1, 99).tolist(),
-            mode="text", text=labeled["display_name"].tolist(), textposition="top center",
+            mode="text", text=labeled["display_name"].tolist(),
+            textposition=[LABEL_TEXT_POSITIONS[i % len(LABEL_TEXT_POSITIONS)] for i in range(len(labeled))],
             textfont=dict(size=10.5, color="#2a2a2a", family="Arial Black, Arial"),
             showlegend=False, hoverinfo="skip",
         ))
@@ -1147,7 +1153,12 @@ def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_
             fig.add_trace(go.Scatter(
                 x=[ar1001_x], y=[100], mode="markers+text",
                 marker=dict(size=24, symbol="star", color=ARIBIO_ACCENT, line=dict(width=1.5, color="white")),
-                text=["AR1001"], textposition="top center",
+                # "middle right" (not "top center") keeps AR1001's own
+                # label from climbing toward the quadrant caption band
+                # above it — the real competitor cluster already crowds
+                # the top of the chart (see the jitter comment above),
+                # so nothing here should compete with that space vertically.
+                text=["AR1001"], textposition="middle right",
                 textfont=dict(size=12, color=ARIBIO_ACCENT, family="Arial Black, Arial"),
                 name="AR1001 (AriBio)",
                 hovertemplate="<b>AR1001</b> &middot; AriBio's own program &middot; %{customdata}<extra></extra>",
@@ -1160,14 +1171,27 @@ def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_
     fig.add_shape(type="line", x0=-0.5, x1=x_max + 0.5, y0=RELEVANCE_Y_DIVIDER, y1=RELEVANCE_Y_DIVIDER,
                   line=dict(color="#d8d8d8", width=1, dash="dash"))
 
+    # Quadrant captions are pinned near the top/bottom edge of the AXES
+    # rectangle itself (yref="y domain", a 0-1 fraction of the plot area,
+    # not the data scale) rather than at a fixed data y-value — the real
+    # Top-40 dataset clusters almost entirely between relevance 75-100,
+    # so a data-coordinate caption near the top risked colliding with
+    # actual points/labels (as seen before this fix). Domain placement
+    # at 0.965/0.025, combined with AR1001's label now sitting beside
+    # its star instead of above it, keeps this row genuinely empty.
+    quadrant_x_fracs = [
+        (MATURITY_X_DIVIDER / 2 + 0.5) / (x_max + 1),
+        ((MATURITY_X_DIVIDER + x_max) / 2 + 0.5) / (x_max + 1),
+    ]
     quadrant_labels = [
-        ("WATCH", MATURITY_X_DIVIDER / 2, 105),
-        ("PRIORITY COMPETITORS", (MATURITY_X_DIVIDER + x_max) / 2, 105),
-        ("LOWER PRIORITY", MATURITY_X_DIVIDER / 2, -6),
-        ("LATE-STAGE / DIFFERENT MECHANISM", (MATURITY_X_DIVIDER + x_max) / 2, -6),
+        ("WATCH", quadrant_x_fracs[0], 0.965),
+        ("PRIORITY COMPETITORS", quadrant_x_fracs[1], 0.965),
+        ("LOWER PRIORITY", quadrant_x_fracs[0], 0.025),
+        ("LATE-STAGE / DIFFERENT MECHANISM", quadrant_x_fracs[1], 0.025),
     ]
     for text, x, y in quadrant_labels:
-        fig.add_annotation(x=x, y=y, text=text, showarrow=False, xanchor="center",
+        fig.add_annotation(x=x, y=y, xref="x domain", yref="y domain", text=text,
+                            showarrow=False, xanchor="center",
                             font=dict(size=10.5, color="#b0b0b0"))
 
     fig.update_xaxes(
@@ -1180,7 +1204,7 @@ def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_
         title=dict(text="Competitive Relevance to AR1001", font=dict(size=12.5, color="#555")),
     )
     fig.update_layout(
-        height=460, margin=dict(t=14, b=6, l=6, r=6), paper_bgcolor="white", plot_bgcolor="white",
+        height=480, margin=dict(t=40, b=44, l=6, r=50), paper_bgcolor="white", plot_bgcolor="white",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0, font=dict(size=11)),
         hoverlabel=dict(bgcolor="white", font_size=12, bordercolor="#ddd"),
     )
