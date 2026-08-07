@@ -327,6 +327,8 @@
   .attention-company { font-size: 12.5px; font-weight: 400; color: #666; margin-left: 8px; }
   .attention-change { font-size: 13px; color: #333; margin-top: 3px; }
   .attention-factors { font-size: 11.5px; color: #999; margin-top: 3px; }
+  .attention-ar1001 { font-size: 12px; color: #666; margin-top: 5px; font-weight: 600; }
+  .attention-ar1001 span { font-weight: 700; }
   .attention-side { font-size: 12.5px; white-space: nowrap; }
   .attention-link { color: #2e5fa3; text-decoration: none; font-weight: 600; }
   .attention-link:hover { text-decoration: underline; }
@@ -4343,7 +4345,7 @@ return Plotly;
     <div id="row-count"></div>
     <div id="table-wrap">
       <table id="drug-table">
-        <thead><tr><th data-key="display_name" style="width:19%" onclick="sortTable('display_name')">Drug <span class="sort-arrow" id="arrow-display_name"></span></th><th data-key="sponsor" style="width:17%" onclick="sortTable('sponsor')">Sponsor <span class="sort-arrow" id="arrow-sponsor"></span></th><th data-key="phase_reached" style="width:10%" onclick="sortTable('phase_reached')">Highest Phase <span class="sort-arrow" id="arrow-phase_reached"></span></th><th data-key="status_summary" style="width:9%" onclick="sortTable('status_summary')">Status <span class="sort-arrow" id="arrow-status_summary"></span></th><th data-key="target_display" style="width:12%" onclick="sortTable('target_display')">Target / Pathway <span class="sort-arrow" id="arrow-target_display"></span></th><th data-key="drug_type" style="width:11%" onclick="sortTable('drug_type')">Drug Type <span class="sort-arrow" id="arrow-drug_type"></span></th><th data-key="trial_count" style="width:7%" onclick="sortTable('trial_count')">Trial Count <span class="sort-arrow" id="arrow-trial_count"></span></th><th data-key="max_enrollment" style="width:6%" onclick="sortTable('max_enrollment')">Enrollment <span class="sort-arrow" id="arrow-max_enrollment"></span></th><th data-key="aribio_relevance_score" style="width:9%" onclick="sortTable('aribio_relevance_score')">AR1001 Relevance <span class="sort-arrow" id="arrow-aribio_relevance_score"></span></th></tr></thead>
+        <thead><tr><th data-key="display_name" style="width:24%" onclick="sortTable('display_name')">Drug <span class="sort-arrow" id="arrow-display_name"></span></th><th data-key="sponsor" style="width:21%" onclick="sortTable('sponsor')">Sponsor <span class="sort-arrow" id="arrow-sponsor"></span></th><th data-key="phase_reached" style="width:10%" onclick="sortTable('phase_reached')">Highest Phase <span class="sort-arrow" id="arrow-phase_reached"></span></th><th data-key="status_summary" style="width:9%" onclick="sortTable('status_summary')">Status <span class="sort-arrow" id="arrow-status_summary"></span></th><th data-key="target_display" style="width:12%" onclick="sortTable('target_display')">Target / Pathway <span class="sort-arrow" id="arrow-target_display"></span></th><th data-key="drug_type" style="width:11%" onclick="sortTable('drug_type')">Drug Type <span class="sort-arrow" id="arrow-drug_type"></span></th><th data-key="trial_count" style="width:7%" onclick="sortTable('trial_count')">Trial Count <span class="sort-arrow" id="arrow-trial_count"></span></th><th data-key="max_enrollment" style="width:6%" onclick="sortTable('max_enrollment')">Enrollment <span class="sort-arrow" id="arrow-max_enrollment"></span></th></tr></thead>
         <tbody id="drug-table-body"></tbody>
       </table>
     </div>
@@ -4374,7 +4376,7 @@ return Plotly;
   const VERIFICATION_COLORS = {"Confirmed official match": "#204272", "Pipeline match; source needed": "#2e5fa3", "Mixed evidence": "#577fb5", "Unverified investigational": "#819fc7", "Manual review required": "#c2255c"};
   const CONFIDENCE_COLORS = {"High": "#204272", "Medium": "#2e5fa3", "Low": "#819fc7"};
   const PIE_FIELD_MAP = ["phase", "drugType", "target", "status"];
-  const TABLE_COLUMN_COUNT = 9;
+  const TABLE_COLUMN_COUNT = 8;
   // maps a pill/pie "field" key to the actual column name on each row
   const FIELD_TO_COLUMN = {
     phase: 'phase_reached', drugType: 'drug_type', target: 'target', status: 'status_summary',
@@ -4485,6 +4487,12 @@ return Plotly;
       <div><strong>Molecular target(s)</strong>${escapeHtml(r.molecular_targets || '—')}</div>
       <div><strong>Classification source</strong>${escapeHtml(r.classification_source || '—')} (${escapeHtml(r.scientific_classification_confidence || '—')} confidence)</div>
       <div><strong>Trial IDs</strong>${escapeHtml(r.nct_ids || '—')}</div>
+      <div><strong>AR1001 Relevance</strong>${
+        r.display_name === 'AR1001'
+          ? '<span style="color:#999;">Reference</span>'
+          : `<span style="color:${relevanceColor(r.aribio_relevance_score)};font-weight:700;">${r.aribio_relevance_score}/100</span>
+             <button class="compare-btn" onclick="event.stopPropagation(); openComparator('${escapeHtml(r.display_name)}')" title="Compare to AR1001">&#8646; Compare</button>`
+      }</div>
     </div></td></tr>`;
   }
 
@@ -4540,10 +4548,6 @@ return Plotly;
       const enrollment = r.max_enrollment ? Math.round(r.max_enrollment).toLocaleString() : '—';
       const isExpanded = expandedRows.has(r.display_name);
       const toggle = `<button class="details-toggle" data-drug-key="${escapeHtml(r.display_name)}" title="Show details"><span class="caret${isExpanded ? ' expanded' : ''}">\u25b8</span></button>`;
-      const relevanceCell = r.display_name === 'AR1001'
-        ? '<span style="color:#999;font-size:11.5px;">Reference</span>'
-        : `<span style="color:${relevanceColor(r.aribio_relevance_score)};font-weight:700;">${r.aribio_relevance_score}</span>
-           <button class="compare-btn" onclick="event.stopPropagation(); openComparator('${escapeHtml(r.display_name)}')" title="Compare to AR1001">&#8646;</button>`;
       const mainRow = `<tr class="${classes.join(' ')}">
         <td>${toggle} ${star}<a href="${r.study_url}" target="_blank" rel="noopener">${r.display_name}</a></td>
         <td class="sponsor-cell" title="${escapeHtml(r.sponsor || '')}">${r.sponsor_display || ''}</td>
@@ -4553,7 +4557,6 @@ return Plotly;
         <td>${pill(r.drug_type, TYPE_COLORS)}</td>
         <td>${r.trial_count}</td>
         <td>${enrollment}</td>
-        <td>${relevanceCell}</td>
       </tr>`;
       return isExpanded ? mainRow + renderDetailRow(r) : mainRow;
     }).join('');

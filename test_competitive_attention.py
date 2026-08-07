@@ -331,8 +331,8 @@ def test_output_columns_match_required_schema():
     annotated = _annotated_df([_annotated_row()])
     result = ca.compute_attention(changes, drugs, annotated, trials, WATCHLIST, today=TODAY)
     assert list(result.columns) == [
-        "priority_rank", "priority_level", "relevance_score", "canonical_drug_name",
-        "nct_id", "company_or_sponsor", "change_type", "old_value", "new_value",
+        "priority_rank", "priority_level", "relevance_score", "aribio_relevance_score",
+        "canonical_drug_name", "nct_id", "company_or_sponsor", "change_type", "old_value", "new_value",
         "highest_phase", "modality", "target_pathways", "trial_status",
         "primary_completion_date", "completion_date", "why_it_matters",
         "relevance_factors", "source", "needs_human_review",

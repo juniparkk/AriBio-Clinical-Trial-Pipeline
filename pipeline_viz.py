@@ -1096,15 +1096,19 @@ TABLE_COLUMNS = [
     # (which changes the visible row set) reshuffles column widths on
     # every click. Fixed layout + explicit widths means columns are set
     # once and never move again regardless of what's filtered.
-    ("display_name", "Drug", 19),
-    ("sponsor", "Sponsor", 17),
+    # AR1001 Relevance removed from this table (now surfaced in the
+    # "Needs Attention" section instead, for the items that section
+    # actually ranks — full score + reasons still available via each
+    # row's detail-panel "Compare to AR1001" button). Drug/Sponsor
+    # absorb the freed-up width.
+    ("display_name", "Drug", 24),
+    ("sponsor", "Sponsor", 21),
     ("phase_reached", "Highest Phase", 10),
     ("status_summary", "Status", 9),
     ("target_display", "Target / Pathway", 12),
     ("drug_type", "Drug Type", 11),
     ("trial_count", "Trial Count", 7),
     ("max_enrollment", "Enrollment", 6),
-    ("aribio_relevance_score", "AR1001 Relevance", 9),
     # Verification/Confidence/Review Status columns removed from the main
     # table per request — still available per-row via the details toggle
     # (the underlying data columns are kept in table_df below for that).
@@ -1830,6 +1834,12 @@ html_template = f"""
       <div><strong>Molecular target(s)</strong>${{escapeHtml(r.molecular_targets || '—')}}</div>
       <div><strong>Classification source</strong>${{escapeHtml(r.classification_source || '—')}} (${{escapeHtml(r.scientific_classification_confidence || '—')}} confidence)</div>
       <div><strong>Trial IDs</strong>${{escapeHtml(r.nct_ids || '—')}}</div>
+      <div><strong>AR1001 Relevance</strong>${{
+        r.display_name === 'AR1001'
+          ? '<span style="color:#999;">Reference</span>'
+          : `<span style="color:${{relevanceColor(r.aribio_relevance_score)}};font-weight:700;">${{r.aribio_relevance_score}}/100</span>
+             <button class="compare-btn" onclick="event.stopPropagation(); openComparator('${{escapeHtml(r.display_name)}}')" title="Compare to AR1001">&#8646; Compare</button>`
+      }}</div>
     </div></td></tr>`;
   }}
 
@@ -1885,10 +1895,6 @@ html_template = f"""
       const enrollment = r.max_enrollment ? Math.round(r.max_enrollment).toLocaleString() : '—';
       const isExpanded = expandedRows.has(r.display_name);
       const toggle = `<button class="details-toggle" data-drug-key="${{escapeHtml(r.display_name)}}" title="Show details"><span class="caret${{isExpanded ? ' expanded' : ''}}">\\u25b8</span></button>`;
-      const relevanceCell = r.display_name === 'AR1001'
-        ? '<span style="color:#999;font-size:11.5px;">Reference</span>'
-        : `<span style="color:${{relevanceColor(r.aribio_relevance_score)}};font-weight:700;">${{r.aribio_relevance_score}}</span>
-           <button class="compare-btn" onclick="event.stopPropagation(); openComparator('${{escapeHtml(r.display_name)}}')" title="Compare to AR1001">&#8646;</button>`;
       const mainRow = `<tr class="${{classes.join(' ')}}">
         <td>${{toggle}} ${{star}}<a href="${{r.study_url}}" target="_blank" rel="noopener">${{r.display_name}}</a></td>
         <td class="sponsor-cell" title="${{escapeHtml(r.sponsor || '')}}">${{r.sponsor_display || ''}}</td>
@@ -1898,7 +1904,6 @@ html_template = f"""
         <td>${{pill(r.drug_type, TYPE_COLORS)}}</td>
         <td>${{r.trial_count}}</td>
         <td>${{enrollment}}</td>
-        <td>${{relevanceCell}}</td>
       </tr>`;
       return isExpanded ? mainRow + renderDetailRow(r) : mainRow;
     }}).join('');

@@ -124,8 +124,8 @@ POINTS_POPULATION_MATCH = 3
 ACTIVE_STATUSES = {"Recruiting", "Active"}
 
 ATTENTION_COLUMNS = [
-    "priority_rank", "priority_level", "relevance_score", "canonical_drug_name",
-    "nct_id", "company_or_sponsor", "change_type", "old_value", "new_value",
+    "priority_rank", "priority_level", "relevance_score", "aribio_relevance_score",
+    "canonical_drug_name", "nct_id", "company_or_sponsor", "change_type", "old_value", "new_value",
     "highest_phase", "modality", "target_pathways", "trial_status",
     "primary_completion_date", "completion_date", "why_it_matters",
     "relevance_factors", "source", "needs_human_review",
@@ -418,6 +418,9 @@ def compute_attention(changes_df, drugs_df, annotated_df, trials_df, watchlist, 
         pcd = (trial_info or {}).get("primary_completion_date", "") if trial_info else ""
         cd = (trial_info or {}).get("completion_date", "") if trial_info else ""
 
+        raw_relevance = (drug_info or {}).get("aribio_relevance_score")
+        aribio_relevance_score = int(raw_relevance) if raw_relevance is not None and pd.notna(raw_relevance) else None
+
         confidence = (drug_info or trial_info or {}).get("classification_confidence", "")
         needs_human_review = bool(
             score >= watchlist["alert_thresholds"]["high_score"]
@@ -429,6 +432,7 @@ def compute_attention(changes_df, drugs_df, annotated_df, trials_df, watchlist, 
             "priority_rank": None,  # filled in after sorting
             "priority_level": priority_level_for_score(score, watchlist["alert_thresholds"]),
             "relevance_score": score,
+            "aribio_relevance_score": aribio_relevance_score,
             "canonical_drug_name": change_row.get("canonical_drug_name", ""),
             "nct_id": change_row.get("nct_id", ""),
             "company_or_sponsor": company,

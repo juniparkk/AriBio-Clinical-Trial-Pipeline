@@ -35,6 +35,8 @@
 
 import html
 
+import pandas as pd
+
 PLACEHOLDER = "<!--COMPETITIVE_ATTENTION_SECTION-->"
 
 PRIORITY_ORDER = ["Critical", "High", "Medium", "Low"]
@@ -63,6 +65,24 @@ _PRIORITY_COLORS = {
     "Low": "#9e9e9e",
 }
 
+# Mirrors pipeline_viz.py's own relevanceColor() JS thresholds exactly
+# (same blue-ramp convention, not a separate palette) — kept here as a
+# narrow, intentional duplication for the same reason as every other
+# mirrored constant in this file (see PLACEHOLDER/ARIBIO_BLUE above).
+_RELEVANCE_HIGH_COLOR = _darken(ARIBIO_BLUE, 0.30)
+_RELEVANCE_MID_COLOR = ARIBIO_BLUE
+_RELEVANCE_LOW_COLOR = "#9e9e9e"
+
+
+def _relevance_color(score):
+    if score is None or pd.isna(score):
+        return _RELEVANCE_LOW_COLOR
+    if score >= 65:
+        return _RELEVANCE_HIGH_COLOR
+    if score >= 35:
+        return _RELEVANCE_MID_COLOR
+    return _RELEVANCE_LOW_COLOR
+
 
 def _study_url(nct_id):
     nct_id = str(nct_id or "").strip()
@@ -88,6 +108,12 @@ def render_needs_attention_section(attention_df, top_n=8):
                 f'<a href="{_esc(url)}" target="_blank" rel="noopener" class="attention-link">{_esc(nct_id)}</a>'
                 if url else '<span class="attention-link attention-link--none">no linked trial</span>'
             )
+            ar1001_score = pd.to_numeric(row.get("aribio_relevance_score"), errors="coerce")
+            ar1001_html = (
+                f'<div class="attention-ar1001">AR1001 Relevance: '
+                f'<span style="color:{_relevance_color(ar1001_score)}">{int(ar1001_score)}/100</span></div>'
+                if pd.notna(ar1001_score) else ""
+            )
             rows_html.append(f"""
             <div class="attention-card">
               <div class="attention-badge" style="background:{color}">{_esc(level)} &middot; {int(row['relevance_score'])}</div>
@@ -95,6 +121,7 @@ def render_needs_attention_section(attention_df, top_n=8):
                 <div class="attention-title">{drug}<span class="attention-company">{company}</span></div>
                 <div class="attention-change">{_esc(row.get('why_it_matters') or '')}</div>
                 <div class="attention-factors">{_esc(row.get('relevance_factors') or '')}</div>
+                {ar1001_html}
               </div>
               <div class="attention-side">{link_html}</div>
             </div>""")
@@ -186,6 +213,8 @@ COMPETITIVE_ATTENTION_CSS = """
   .attention-company { font-size: 12.5px; font-weight: 400; color: #666; margin-left: 8px; }
   .attention-change { font-size: 13px; color: #333; margin-top: 3px; }
   .attention-factors { font-size: 11.5px; color: #999; margin-top: 3px; }
+  .attention-ar1001 { font-size: 12px; color: #666; margin-top: 5px; font-weight: 600; }
+  .attention-ar1001 span { font-weight: 700; }
   .attention-side { font-size: 12.5px; white-space: nowrap; }
   .attention-link { color: #2e5fa3; text-decoration: none; font-weight: 600; }
   .attention-link:hover { text-decoration: underline; }
