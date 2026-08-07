@@ -462,6 +462,68 @@ def compute_attention(changes_df, drugs_df, annotated_df, trials_df, watchlist, 
     return result
 
 
+AR1001_RANKING_COLUMNS = ["display_name", "sponsor", "phase_reached", "aribio_relevance_score", "aribio_relevance_reasons"]
+
+
+def build_ar1001_relevance_ranking(drugs_df, watchlist, top_n=10):
+    """Top-N drugs by aribio_relevance_score (competitive_intelligence.py's
+    existing rule-based 0-100 similarity-to-AR1001 score, already
+    computed into pipeline_drugs.csv) — the primary AriBio asset itself
+    is excluded.
+
+    Unlike Needs Attention, this is STATIC — it doesn't depend on
+    anything having changed since the last refresh, so it's always
+    populated as long as resolved_drugs_df has rows at all.
+    """
+    if drugs_df is None or drugs_df.empty or "aribio_relevance_score" not in drugs_df.columns:
+        return pd.DataFrame(columns=AR1001_RANKING_COLUMNS)
+
+    primary_asset = aribio_watchlist.get_primary_asset(watchlist)
+    primary_name = primary_asset.get("name", "")
+
+    ranking = drugs_df[drugs_df["display_name"] != primary_name].copy()
+    ranking["aribio_relevance_score"] = pd.to_numeric(ranking["aribio_relevance_score"], errors="coerce").fillna(0)
+    if "aribio_relevance_reasons" not in ranking.columns:
+        ranking["aribio_relevance_reasons"] = ""
+    ranking = ranking.sort_values(["aribio_relevance_score", "display_name"], ascending=[False, True])
+    return ranking[AR1001_RANKING_COLUMNS].head(top_n).reset_index(drop=True)
+
+
+def describe_change(change_row):
+    """Plain factual one-line description of a single pipeline_changes.csv
+    row, with NO scoring involved — used by the unscored "Recent
+    Changes" feed. Reuses _why_it_matters() with an empty factors list
+    so the same change_type phrase templates apply without any
+    scored "supporting factors" clause being appended."""
+    return _why_it_matters(change_row, [])
+
+
+_IMPORTANCE_SORT_ORDER = {"High": 0, "Medium": 1, "Low": 2}
+
+
+def prepare_recent_changes(changes_df):
+    """Returns ALL rows of pipeline_changes.csv, sorted by ctgov_changes.py's
+    own importance (High/Medium/Low — NOT the competitive-priority
+    score), with a "description" column added via describe_change().
+    Not truncated here — competitive_attention_viz.py's renderer owns
+    the "top N of total" slicing, same as render_needs_attention_section.
+    Kept separate from compute_attention()/Needs Attention: this is the
+    raw, UNSCORED "what changed" feed — the renderer consumes
+    "description" directly and performs no computation of its own.
+    """
+    fallback_columns = ["detected_date", "entity_type", "nct_id", "canonical_drug_name",
+                         "sponsor_or_company", "change_type", "old_value", "new_value",
+                         "importance", "source", "needs_review", "description"]
+    if changes_df is None or changes_df.empty:
+        return pd.DataFrame(columns=fallback_columns)
+
+    prepared = changes_df.copy()
+    prepared["_importance_rank"] = prepared["importance"].map(_IMPORTANCE_SORT_ORDER).fillna(3)
+    prepared = prepared.sort_values(["_importance_rank", "detected_date"], ascending=[True, False]).drop(columns="_importance_rank")
+    prepared["description"] = prepared.apply(describe_change, axis=1)
+    return prepared.reset_index(drop=True)
+
+
 def build_milestones(annotated_df, trials_df, changes_df, watchlist, today=None):
     """Buckets currently-therapeutic trials by completion-date timing for
     the "Upcoming Competitive Milestones" dashboard section.

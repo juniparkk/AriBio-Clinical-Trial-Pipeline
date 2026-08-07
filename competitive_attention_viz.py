@@ -89,6 +89,89 @@ def _study_url(nct_id):
     return f"https://clinicaltrials.gov/study/{nct_id}" if nct_id else ""
 
 
+def render_ar1001_relevance_section(ranking_df, top_n=10):
+    """STATIC top-N drugs by similarity to AR1001 (competitive_
+    intelligence.py's rule-based 0-100 score) — always populated as
+    long as resolved_drugs_df has rows, unlike Needs Attention/Recent
+    Changes below it, which depend on something having changed."""
+    if ranking_df is None or ranking_df.empty:
+        body = '<div class="attention-empty">No other drugs are currently resolved to compare against AR1001.</div>'
+        count_note = "0 drugs"
+    else:
+        top = ranking_df.head(top_n)
+        count_note = f"top {len(top)} of {len(ranking_df)} resolved drugs"
+        rows_html = []
+        for _, row in top.iterrows():
+            score = pd.to_numeric(row.get("aribio_relevance_score"), errors="coerce")
+            score_html = (
+                f'<span style="color:{_relevance_color(score)}">{int(score)}/100</span>' if pd.notna(score) else "&mdash;"
+            )
+            reasons = _esc(row.get("aribio_relevance_reasons") or "")
+            rows_html.append(f"""
+            <div class="attention-card">
+              <div class="attention-badge" style="background:{_RELEVANCE_MID_COLOR if pd.isna(score) or score < 65 else _RELEVANCE_HIGH_COLOR}">{score_html}</div>
+              <div class="attention-main">
+                <div class="attention-title">{_esc(row.get('display_name') or '')}<span class="attention-company">{_esc(row.get('sponsor') or '')}</span></div>
+                <div class="attention-change">{_esc(row.get('phase_reached') or 'Phase not reported')}</div>
+                <div class="attention-factors">{reasons}</div>
+              </div>
+            </div>""")
+        body = "".join(rows_html)
+
+    return f"""
+    <div class="attention-panel" style="border-radius:{CARD_RADIUS}; box-shadow:{CARD_SHADOW}">
+      <div class="attention-panel-header">
+        <div class="attention-panel-title">AR1001 Relevance</div>
+        <div class="attention-panel-note">{count_note} &middot; ranked by deterministic similarity score (pathway/modality/phase), not AI judgment</div>
+      </div>
+      {body}
+    </div>"""
+
+
+def render_recent_changes_section(changes_df, top_n=15):
+    """Raw, UNSCORED feed of every change pipeline_changes.csv detected
+    in the most recent refresh — distinct from Needs Attention below
+    it, which is the same changes filtered/ranked by competitive
+    priority. This section shows everything that changed, regardless
+    of how much competitive priority it scored."""
+    if changes_df is None or changes_df.empty:
+        body = '<div class="attention-empty">No pipeline changes were detected in the most recent refresh.</div>'
+        count_note = "0 changes"
+    else:
+        top = changes_df.head(top_n)
+        count_note = f"showing {len(top)} of {len(changes_df)} detected changes"
+        rows_html = []
+        for _, row in top.iterrows():
+            drug = _esc(row.get("canonical_drug_name") or "(unresolved)")
+            company = _esc(row.get("sponsor_or_company") or "")
+            nct_id = row.get("nct_id") or ""
+            url = _study_url(nct_id)
+            link_html = (
+                f'<a href="{_esc(url)}" target="_blank" rel="noopener" class="attention-link">{_esc(nct_id)}</a>'
+                if url else '<span class="attention-link attention-link--none">no linked trial</span>'
+            )
+            change_type = _esc((row.get("change_type") or "").replace("_", " "))
+            rows_html.append(f"""
+            <div class="attention-card">
+              <div class="attention-badge" style="background:#9e9e9e">{change_type}</div>
+              <div class="attention-main">
+                <div class="attention-title">{drug}<span class="attention-company">{company}</span></div>
+                <div class="attention-change">{_esc(row.get('description') or '')}</div>
+              </div>
+              <div class="attention-side">{link_html}</div>
+            </div>""")
+        body = "".join(rows_html)
+
+    return f"""
+    <div class="attention-panel" style="border-radius:{CARD_RADIUS}; box-shadow:{CARD_SHADOW}; margin-top:16px;">
+      <div class="attention-panel-header">
+        <div class="attention-panel-title">Recent Changes</div>
+        <div class="attention-panel-note">{count_note} &middot; every detected change, unranked &mdash; see Needs Attention below for competitive priority</div>
+      </div>
+      {body}
+    </div>"""
+
+
 def render_needs_attention_section(attention_df, top_n=8):
     if attention_df is None or attention_df.empty:
         body = '<div class="attention-empty">No pipeline changes currently need attention.</div>'
@@ -108,12 +191,6 @@ def render_needs_attention_section(attention_df, top_n=8):
                 f'<a href="{_esc(url)}" target="_blank" rel="noopener" class="attention-link">{_esc(nct_id)}</a>'
                 if url else '<span class="attention-link attention-link--none">no linked trial</span>'
             )
-            ar1001_score = pd.to_numeric(row.get("aribio_relevance_score"), errors="coerce")
-            ar1001_html = (
-                f'<div class="attention-ar1001">AR1001 Relevance: '
-                f'<span style="color:{_relevance_color(ar1001_score)}">{int(ar1001_score)}/100</span></div>'
-                if pd.notna(ar1001_score) else ""
-            )
             rows_html.append(f"""
             <div class="attention-card">
               <div class="attention-badge" style="background:{color}">{_esc(level)} &middot; {int(row['relevance_score'])}</div>
@@ -121,14 +198,13 @@ def render_needs_attention_section(attention_df, top_n=8):
                 <div class="attention-title">{drug}<span class="attention-company">{company}</span></div>
                 <div class="attention-change">{_esc(row.get('why_it_matters') or '')}</div>
                 <div class="attention-factors">{_esc(row.get('relevance_factors') or '')}</div>
-                {ar1001_html}
               </div>
               <div class="attention-side">{link_html}</div>
             </div>""")
         body = "".join(rows_html)
 
     return f"""
-    <div class="attention-panel" style="border-radius:{CARD_RADIUS}; box-shadow:{CARD_SHADOW}">
+    <div class="attention-panel" style="border-radius:{CARD_RADIUS}; box-shadow:{CARD_SHADOW}; margin-top:16px;">
       <div class="attention-panel-header">
         <div class="attention-panel-title">Needs Attention</div>
         <div class="attention-panel-note">{count_note} &middot; ranked by deterministic competitive-priority score, not AI judgment</div>
@@ -233,8 +309,11 @@ COMPETITIVE_ATTENTION_CSS = """
 """
 
 
-def render_competitive_sections(attention_df, milestones, top_n=8):
+def render_competitive_sections(ar1001_ranking_df, recent_changes_df, attention_df, milestones,
+                                 ar1001_top_n=10, changes_top_n=15, attention_top_n=8):
     return (
-        render_needs_attention_section(attention_df, top_n)
+        render_ar1001_relevance_section(ar1001_ranking_df, ar1001_top_n)
+        + render_recent_changes_section(recent_changes_df, changes_top_n)
+        + render_needs_attention_section(attention_df, attention_top_n)
         + render_milestones_section(milestones)
     )
