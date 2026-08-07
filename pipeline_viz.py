@@ -32,6 +32,7 @@ from drug_classification import (
     load_scope_overrides,
     build_scope_audit_dataframe,
     build_diagnostic_agent_audit_dataframe,
+    build_resolved_drugs_exclusion_audit_dataframe,
     THERAPEUTIC_SCOPE,
     normalize_text,
 )
@@ -866,6 +867,12 @@ diagnostic_agent_audit_df.to_csv("outputs/diagnostic_agent_audit.csv", index=Fal
 _leaked_count = int(diagnostic_agent_audit_df["previously_leaked_into_therapeutic_dashboard"].sum()) if len(diagnostic_agent_audit_df) else 0
 print(f"=== SAVED: outputs/diagnostic_agent_audit.csv ({len(diagnostic_agent_audit_df)} suspected imaging/radiotracer records, "
       f"{_leaked_count} currently/previously leaking into the therapeutic view) ===")
+print()
+
+non_drug_exclusion_audit_df = build_resolved_drugs_exclusion_audit_dataframe(interventions_df)
+non_drug_exclusion_audit_df.to_csv("outputs/non_drug_exclusion_audit.csv", index=False)
+print(f"=== SAVED: outputs/non_drug_exclusion_audit.csv ({len(non_drug_exclusion_audit_df)} non-drug/non-biologic "
+      f"interventions excluded from resolved_drugs_df) ===")
 print()
 
 # ============================================================

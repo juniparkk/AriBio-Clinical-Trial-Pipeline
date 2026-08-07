@@ -80,7 +80,6 @@ Amnesia Light and Brief Assessment (ALBA),NCT07558785,1,intervention type is DIA
 Amyloid PET scan,NCT03860857,1,RADIATION-type intervention with imaging/scan wording,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,medium,False
 Amyloid-β radiopharmaceutical (11C-PiB or 18F-Florbetaben or 18F-NAV-4694 or 18F-Flutemetamol),NCT05361382,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 Amyvid,NCT04118764; NCT05164536; NCT06600880,3,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
-Approach A (PeeSpot urine collection device).,NCT04295889,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Approach B (ACR,NCT04295889,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 BAY 94-9172 (Florbetaben),NCT01222351,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 Bgaze Attention Task,NCT06963879,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
@@ -92,7 +91,6 @@ CONFMEM,NCT06080659,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diag
 CT scan,NCT03597360,1,RADIATION-type intervention with imaging/scan wording,Diagnostic Agent,Diagnostic Agent,PET tracer,medium,False
 California Cognitive Assessment Battery,NCT04800588,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Cognigram,NCT06191952,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
-Cognitive Failure Questionnaire (CFQ),NCT06711952,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Cognitive Tests,NCT06711952,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Collection of nasal secretion,NCT05791552,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Computer assisted ambulatory electroencephalogram,NCT04002583,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
@@ -125,7 +123,6 @@ Flutemetamol (18F) Injection,NCT01028053,1,matches a curated diagnostic/imaging 
 Flutemetamol (Vizamyl),NCT02353949,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 Flutemetamol F18 Injection,NCT03174938,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 Fractional diuresis,NCT05629871,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
-Gait analysis via vicon- and app-system,NCT07613957,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Geriatric Depression Scale (GDS-15),NCT07558785,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 IUDS,NCT05785910,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Kit Buccal swab collection & stabilization de Canvax®,NCT06275243,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
@@ -139,7 +136,6 @@ Measurement of serum level of anti-dementia drug,NCT04117178,1,intervention type
 MicRNAs battery,NCT04137926,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 MyCog,NCT05607732,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Neuraceq (florbetaben 18F),NCT02681172,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
-Neuropsychological Assessments and Other Questionnaires,NCT06896201,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Neuropsychological test battery,NCT03333096,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Olfactory test,NCT03698760,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Optical coherence tomography (OCT),NCT04794634,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
@@ -164,7 +160,6 @@ Radioligand 18F-AV-1451,NCT03641768,1,matches a curated diagnostic/imaging trace
 Retinal fundus photography,NCT04567745,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 SNUBH-NM-333(18F),NCT02149017,1,"isotope-labeled name pattern (18F/11C-style notation) present, but no confirmed diagnostic study context (ClinicalTrials.gov Primary Purpose, or PET/imaging/radioligand wording in title or brief summary) was found — needs manual review",Non-Drug Intervention,Non-Drug Intervention,,low,False
 SPARK Cognitive Status Indicator (software support data collected via EEG),NCT06809725,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
-Subjective cognitive decline questionnaire (SCD-Q),NCT06191952; NCT06711952,2,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Tau (18-F-AV-1451),NCT00950430,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 Tau PET scan using MK-6240,NCT03860857,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 Tau Pet,NCT02759887,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False

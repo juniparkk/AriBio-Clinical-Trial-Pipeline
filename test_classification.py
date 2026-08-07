@@ -47,6 +47,11 @@ from drug_classification import (
     _is_isotope_labeled_name,
     determine_diagnostic_subtype,
     build_diagnostic_agent_audit_dataframe,
+    _is_extended_non_drug_activity,
+    _has_known_therapeutic_evidence,
+    build_resolved_drugs_exclusion_audit_dataframe,
+    RESOLVED_DRUGS_DF_ELIGIBLE_SCOPES,
+    EXTENDED_NON_DRUG_REASON,
 )
 
 PIPELINE_CSV_PATH = os.path.join(os.path.dirname(__file__), "data", "official_pipeline.csv")
@@ -1685,6 +1690,176 @@ def test_build_diagnostic_agent_audit_dataframe_aggregates_nct_ids_across_trials
     assert result.iloc[0]["nct_ids"] == "NCT00000001; NCT00000002"
 
 
+# ------------------------------------------------------------
+# Non-drug intervention exclusion (source-level filtering) — devices,
+# neuromodulation/electrical stimulation, digital/apps, extended
+# behavioral/cognitive/educational/exercise, observational/monitoring.
+# resolved_drugs_df now only ever contains "Therapeutic Drug" scope
+# rows; see RESOLVED_DRUGS_DF_ELIGIBLE_SCOPES and
+# _is_extended_non_drug_activity.
+# ------------------------------------------------------------
+
+def test_resolved_drugs_df_eligible_scopes_is_therapeutic_drug_only():
+    assert RESOLVED_DRUGS_DF_ELIGIBLE_SCOPES == ["Therapeutic Drug"]
+
+
+def test_extended_net_catches_neuromodulation_device():
+    for name in ("transcranial magnetic stimulation", "tDCS", "Deep brain stimulation",
+                 "Active transcutaneous vagus nerve stimulation of the auricle"):
+        assert _is_extended_non_drug_activity(normalize_text(name)), name
+
+
+def test_extended_net_catches_digital_app_intervention():
+    for name in ("Mobile app", "Cultural pathways App", "A digital self-help self-compassion app intervention"):
+        assert _is_extended_non_drug_activity(normalize_text(name)), name
+
+
+def test_extended_net_catches_exercise_variants():
+    for name in ("Aerobic exercises", "Adapted Physical Activity", "Physical training"):
+        assert _is_extended_non_drug_activity(normalize_text(name)), name
+
+
+def test_extended_net_catches_educational_intervention():
+    for name in ("Patient Education", "Dementia Education", "Educational Materials"):
+        assert _is_extended_non_drug_activity(normalize_text(name)), name
+
+
+def test_extended_net_catches_observational_monitoring():
+    for name in ("Questionnaire and Physical Exam", "Actigraphy and video recording signal",
+                 "Remote activity monitoring system"):
+        assert _is_extended_non_drug_activity(normalize_text(name)), name
+
+
+def test_extended_net_does_not_match_ordinary_drug_names():
+    for name in ("Donepezil", "AR1001", "Lecanemab", "BMS-708163"):
+        assert not _is_extended_non_drug_activity(normalize_text(name)), name
+
+
+def test_extended_net_does_not_use_bare_therapy_token():
+    # "therapy" alone must never be a trigger -- it would wrongly
+    # exclude real modalities like "Stem Cell Therapy"/"Gene Therapy".
+    assert not _is_extended_non_drug_activity(normalize_text("Stem Cell Therapy - Experimental"))
+    assert not _is_extended_non_drug_activity(normalize_text("Gene Therapy"))
+
+
+def test_classify_intervention_vagus_nerve_stimulation_is_behavioral_non_drug():
+    r = classify_intervention(
+        "OTHER",
+        "Active transcutaneous vagus nerve stimulation respiratory-gated non-painful electrical "
+        "stimulation of the auricle for 10 minute sessions",
+        "Massachusetts General Hospital", [], [],
+    )
+    assert r["classification"] == "behavioral"
+    assert r["reason"] == EXTENDED_NON_DRUG_REASON
+
+
+def test_classify_intervention_cognitive_stimulation_therapy_is_behavioral_non_drug():
+    r = classify_intervention("OTHER", "Cognitive Stimulation Therapy", "Some Sponsor", [], [])
+    assert r["classification"] == "behavioral"
+
+
+def test_scope_extended_net_match_becomes_non_drug_intervention():
+    r = classify_pipeline_scope("OTHER", "transcranial magnetic stimulation", "behavioral", "not_applicable")
+    assert r["pipeline_scope"] == "Non-Drug Intervention"
+
+
+# --- false-positive protection: known-compound override guard -------
+
+def test_has_known_therapeutic_evidence_true_for_curated_compound_substring():
+    assert _has_known_therapeutic_evidence(normalize_text("etanercept and repeated contrast ultrasound"))
+
+
+def test_has_known_therapeutic_evidence_false_for_unrelated_text():
+    assert not _has_known_therapeutic_evidence(normalize_text("transcranial magnetic stimulation"))
+
+
+def test_classify_intervention_real_drug_combined_with_procedure_word_stays_therapeutic():
+    # "etanercept" (a real, KNOWN_COMPOUND_NAMES-listed biologic)
+    # combined in one string with a trailing procedure word
+    # ("ultrasound") must NOT be excluded by the extended non-drug net.
+    r = classify_intervention("DRUG", "etanercept and repeated contrast ultrasound", "Some Sponsor", [], [])
+    assert r["classification"] == "investigational_therapeutic_unverified"
+
+
+def test_classify_intervention_aln_app_is_not_misread_as_an_application():
+    # ALN-APP (Alnylam Pharmaceuticals) is a real RNAi therapeutic
+    # targeting Amyloid Precursor Protein -- "APP" here is the gene/
+    # protein target, not "application". Confirmed false positive found
+    # during the real-data audit for this fix; protected via the
+    # curated KNOWN_COMPOUND_NAMES list (data/reference precedent).
+    r = classify_intervention("DRUG", "ALN-APP", "Alnylam Pharmaceuticals", [], [])
+    assert r["classification"] == "investigational_therapeutic_unverified"
+    assert r["reason"] != EXTENDED_NON_DRUG_REASON
+
+
+# --- resolved_drugs_df exclusion audit (outputs/non_drug_exclusion_audit.csv) ---
+
+def test_exclusion_audit_includes_scope_level_exclusion():
+    interventions_df = pd.DataFrame([
+        _fake_interventions_row(
+            "NCT00000001", "Florbetapir F18", "florbetapir f18", "Diagnostic Agent",
+            "matches a curated diagnostic/imaging tracer name", "rule_classification",
+        ),
+    ])
+    interventions_df["classification"] = "investigational_therapeutic_unverified"
+    interventions_df["reason"] = "no confirmed pipeline match"
+    interventions_df["original_type"] = "DRUG"
+    result = build_resolved_drugs_exclusion_audit_dataframe(interventions_df)
+    assert len(result) == 1
+    assert result.iloc[0]["pipeline_scope"] == "Diagnostic Agent"
+
+
+def test_exclusion_audit_includes_extended_net_classification_level_exclusion():
+    # This population is classified "behavioral" from the start (never
+    # investigational_therapeutic_unverified), so it would NOT be
+    # caught by a scope-only filter -- confirms the audit's second
+    # (classification-level) population actually fires.
+    interventions_df = pd.DataFrame([
+        _fake_interventions_row(
+            "NCT00000002", "transcranial magnetic stimulation", "transcranial magnetic stimulation",
+            "Non-Drug Intervention", "behavioral/non-drug activity", "rule_type",
+        ),
+    ])
+    interventions_df["classification"] = "behavioral"
+    interventions_df["reason"] = EXTENDED_NON_DRUG_REASON
+    interventions_df["original_type"] = "OTHER"
+    result = build_resolved_drugs_exclusion_audit_dataframe(interventions_df)
+    assert len(result) == 1
+    assert result.iloc[0]["exclusion_reason"] == EXTENDED_NON_DRUG_REASON
+
+
+def test_exclusion_audit_excludes_unambiguous_placebo_arms():
+    interventions_df = pd.DataFrame([
+        _fake_interventions_row(
+            "NCT00000003", "Placebo", "placebo", "Placebo or Comparator",
+            "placebo/sham/vehicle-control arm", "rule_classification",
+        ),
+    ])
+    interventions_df["classification"] = "placebo_or_sham"
+    interventions_df["reason"] = "name indicates a placebo/sham/vehicle-control arm"
+    result = build_resolved_drugs_exclusion_audit_dataframe(interventions_df)
+    assert len(result) == 0
+
+
+def test_exclusion_audit_empty_input():
+    result = build_resolved_drugs_exclusion_audit_dataframe(pd.DataFrame())
+    assert list(result.columns) == [
+        "name", "clinicaltrials_intervention_type", "nct_ids", "trial_count",
+        "classification", "pipeline_scope", "exclusion_reason", "confidence",
+    ]
+    assert len(result) == 0
+
+
+def test_rollup_excludes_extended_net_matches_from_resolved_drugs_df():
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT206", "Some Sponsor", "transcranial magnetic stimulation",
+                        "investigational_therapeutic_unverified", "no_match", "medium", True,
+                        pipeline_scope="Non-Drug Intervention"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert len(result) == 0
+
+
 def test_scope_generic_diagnostic_test_type_still_gets_diagnostic_agent():
     # a DIAGNOSTIC_TEST-type name that ISN'T generic (e.g. a specific
     # named test) should be "Diagnostic Agent", not silently excluded
@@ -1882,19 +2057,21 @@ def test_rollup_excludes_records_whose_scope_is_placebo_or_comparator():
     assert len(result) == 0
 
 
-def test_rollup_keeps_non_therapeutic_scopes_for_the_optional_dashboard_filter():
-    # Diagnostic Agent / Non-Drug Intervention / Supportive Treatment /
-    # Needs Review MUST still get a resolved_drugs_df row (with their
-    # real scope recorded) so the dashboard's optional "reveal
-    # non-therapeutic records" filter has real data to show — only
-    # Exclude/Placebo or Comparator are dropped entirely.
-    trials_df = pd.DataFrame([
-        make_trial_row("NCT202", "Some Sponsor", "Retinal Fundus Photography", "investigational_therapeutic_unverified",
-                        "no_match", "medium", True, pipeline_scope="Diagnostic Agent"),
-    ])
-    result = build_resolved_drugs_dataframe(trials_df)
-    assert len(result) == 1
-    assert result.iloc[0]["pipeline_scope"] == "Diagnostic Agent"
+def test_rollup_excludes_non_therapeutic_scopes_entirely():
+    # A record only enters resolved_drugs_df if its primary
+    # investigational intervention resolved to "Therapeutic Drug"
+    # scope — Diagnostic Agent / Non-Drug Intervention / Supportive
+    # Treatment / Needs Review are excluded at the source now, not just
+    # hidden from the default view. The dashboard's "reveal non-
+    # therapeutic records" toggle still exists in the UI but has
+    # nothing left to reveal — an intentional consequence, not a bug.
+    for scope in ("Diagnostic Agent", "Non-Drug Intervention", "Supportive Treatment", "Needs Review"):
+        trials_df = pd.DataFrame([
+            make_trial_row("NCT202", "Some Sponsor", "Retinal Fundus Photography", "investigational_therapeutic_unverified",
+                            "no_match", "medium", True, pipeline_scope=scope),
+        ])
+        result = build_resolved_drugs_dataframe(trials_df)
+        assert len(result) == 0, f"expected scope {scope!r} to be excluded, got {len(result)} row(s)"
 
 
 def test_rollup_default_fixture_rows_stay_therapeutic_drug_scope():
@@ -1910,7 +2087,14 @@ def test_rollup_default_fixture_rows_stay_therapeutic_drug_scope():
     assert result.iloc[0]["pipeline_scope"] == "Therapeutic Drug"
 
 
-def test_rollup_scope_disagreement_across_trials_forces_needs_review():
+def test_rollup_non_therapeutic_sibling_trial_does_not_block_the_eligible_one():
+    # Two trials share a canonical drug name; one resolves Therapeutic
+    # Drug scope, the other Diagnostic Agent. The eligibility filter
+    # runs BEFORE grouping, so the non-therapeutic trial's row never
+    # reaches the group at all — the result reflects ONLY the eligible
+    # trial, not a "scope disagreement" (that mechanism is now
+    # unreachable in practice, since every row surviving the filter is
+    # already "Therapeutic Drug" by construction).
     trials_df = pd.DataFrame([
         make_trial_row("NCT204", "Sponsor A", "AmbiguousDrug", "investigational_therapeutic_unverified",
                         "no_match", "medium", True, pipeline_scope="Therapeutic Drug"),
@@ -1919,8 +2103,8 @@ def test_rollup_scope_disagreement_across_trials_forces_needs_review():
     ])
     result = build_resolved_drugs_dataframe(trials_df)
     assert len(result) == 1
-    assert result.iloc[0]["pipeline_scope"] == "Needs Review"
-    assert bool(result.iloc[0]["manual_review_required"]) is True
+    assert result.iloc[0]["pipeline_scope"] == "Therapeutic Drug"
+    assert result.iloc[0]["nct_id"] == "NCT204"
 
 
 def test_resolve_developed_drug_carries_scope_from_winning_intervention():
@@ -2138,9 +2322,9 @@ ALL_TESTS = [
     test_build_interventions_dataframe_applies_scope_overrides,
     test_rollup_excludes_records_whose_scope_is_excluded,
     test_rollup_excludes_records_whose_scope_is_placebo_or_comparator,
-    test_rollup_keeps_non_therapeutic_scopes_for_the_optional_dashboard_filter,
+    test_rollup_excludes_non_therapeutic_scopes_entirely,
     test_rollup_default_fixture_rows_stay_therapeutic_drug_scope,
-    test_rollup_scope_disagreement_across_trials_forces_needs_review,
+    test_rollup_non_therapeutic_sibling_trial_does_not_block_the_eligible_one,
     test_resolve_developed_drug_carries_scope_from_winning_intervention,
     test_build_scope_audit_dataframe_basic_structure,
     test_build_scope_audit_dataframe_empty_input,
@@ -2168,6 +2352,26 @@ ALL_TESTS = [
     test_build_diagnostic_agent_audit_dataframe_uncertain_case_flagged_low_confidence,
     test_build_diagnostic_agent_audit_dataframe_non_suspect_row_excluded,
     test_build_diagnostic_agent_audit_dataframe_aggregates_nct_ids_across_trials,
+    test_resolved_drugs_df_eligible_scopes_is_therapeutic_drug_only,
+    test_extended_net_catches_neuromodulation_device,
+    test_extended_net_catches_digital_app_intervention,
+    test_extended_net_catches_exercise_variants,
+    test_extended_net_catches_educational_intervention,
+    test_extended_net_catches_observational_monitoring,
+    test_extended_net_does_not_match_ordinary_drug_names,
+    test_extended_net_does_not_use_bare_therapy_token,
+    test_classify_intervention_vagus_nerve_stimulation_is_behavioral_non_drug,
+    test_classify_intervention_cognitive_stimulation_therapy_is_behavioral_non_drug,
+    test_scope_extended_net_match_becomes_non_drug_intervention,
+    test_has_known_therapeutic_evidence_true_for_curated_compound_substring,
+    test_has_known_therapeutic_evidence_false_for_unrelated_text,
+    test_classify_intervention_real_drug_combined_with_procedure_word_stays_therapeutic,
+    test_classify_intervention_aln_app_is_not_misread_as_an_application,
+    test_exclusion_audit_includes_scope_level_exclusion,
+    test_exclusion_audit_includes_extended_net_classification_level_exclusion,
+    test_exclusion_audit_excludes_unambiguous_placebo_arms,
+    test_exclusion_audit_empty_input,
+    test_rollup_excludes_extended_net_matches_from_resolved_drugs_df,
 ]
 
 

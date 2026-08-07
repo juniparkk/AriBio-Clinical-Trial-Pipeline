@@ -381,13 +381,16 @@ def test_pipeline_scope_field_present_on_every_table_row():
         }
 
 
-def test_non_therapeutic_scopes_present_in_table_data_for_optional_filter():
-    # the table's JSON payload must carry SOME non-"Therapeutic Drug"
-    # rows in the real dataset, or the "reveal non-therapeutic records"
-    # toggle would have nothing real to reveal
+def test_no_non_therapeutic_scopes_present_in_table_data():
+    # resolved_drugs_df (and therefore the table's JSON payload) now
+    # only ever contains "Therapeutic Drug" scope rows — a record only
+    # enters it if its primary investigational intervention resolved to
+    # a real drug/biologic. The "reveal non-therapeutic records" toggle
+    # still exists in the UI (unchanged) but has nothing left to
+    # reveal; that's an intentional consequence of this narrowing.
     non_therapeutic = [r for r in TABLE_ROWS if r["pipeline_scope"] != "Therapeutic Drug"]
-    assert len(non_therapeutic) > 0, "expected at least one non-therapeutic resolved record in the real dataset"
-    assert len(non_therapeutic) == len(TABLE_ROWS) - len(get_therapeutic_rows())
+    assert len(non_therapeutic) == 0, f"expected zero non-therapeutic rows, found {len(non_therapeutic)}"
+    assert len(TABLE_ROWS) == len(get_therapeutic_rows())
 
 
 def test_placebo_or_comparator_never_in_table_rows():
@@ -396,16 +399,16 @@ def test_placebo_or_comparator_never_in_table_rows():
             f"Placebo or Comparator must never appear in the table data, even under the optional filter: {row['display_name']!r}"
 
 
-def test_dietary_supplement_confirmed_leakage_examples_excluded_from_therapeutic_view():
-    therapeutic_names = {r["display_name"] for r in get_therapeutic_rows()}
-    # confirmed leakage examples from the Phase 1A audit — must NOT be
-    # in the default therapeutic-drug population, even though they ARE
-    # still present somewhere in the broader resolved_drugs_df/TABLE_ROWS
+def test_dietary_supplement_confirmed_leakage_examples_excluded_entirely():
+    # confirmed leakage examples from the Phase 1A audit — dietary
+    # supplements are neither DRUG nor BIOLOGICAL type, so they're now
+    # excluded from resolved_drugs_df/TABLE_ROWS entirely (not merely
+    # hidden from the default Therapeutic Drug view as before). Still
+    # fully auditable in pipeline_annotated.csv / pipeline_
+    # interventions.csv / outputs/non_drug_exclusion_audit.csv.
+    table_names = {r["display_name"] for r in TABLE_ROWS}
     for name in ["lutein/zeaxanthin", "Curcumin C3 Complex"]:
-        matches = [r for r in TABLE_ROWS if r["display_name"] == name]
-        if matches:  # present in this dataset snapshot
-            assert name not in therapeutic_names, f"{name!r} must not be in the default Therapeutic Drug view"
-            assert matches[0]["pipeline_scope"] != "Therapeutic Drug"
+        assert name not in table_names, f"{name!r} must not appear anywhere in resolved_drugs_df/TABLE_ROWS"
 
 
 def test_scope_toggle_control_present_in_html():
@@ -479,9 +482,9 @@ ALL_TESTS = [
     test_no_dashboard_calculation_references_legacy_drugs_df,
     test_drug_type_and_target_pies_read_resolved_drugs_df_not_raw_df,
     test_pipeline_scope_field_present_on_every_table_row,
-    test_non_therapeutic_scopes_present_in_table_data_for_optional_filter,
+    test_no_non_therapeutic_scopes_present_in_table_data,
     test_placebo_or_comparator_never_in_table_rows,
-    test_dietary_supplement_confirmed_leakage_examples_excluded_from_therapeutic_view,
+    test_dietary_supplement_confirmed_leakage_examples_excluded_entirely,
     test_scope_toggle_control_present_in_html,
     test_gap_audit_csv_exists_with_expected_columns,
     test_gap_audit_csv_flags_confirmed_leakage_examples_as_not_dashboard_eligible,

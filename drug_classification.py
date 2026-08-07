@@ -523,15 +523,103 @@ def _is_behavioral(itype_upper, normalized_name):
     return any(_contains_phrase(normalized_name, phrase) for phrase in _BEHAVIORAL_PHRASES)
 
 
+# --- Step 5.5: expanded non-drug activity/device net -----------------
+# Broader than the checks above: catches neuromodulation/electrical-
+# stimulation devices, digital/app-based interventions, and additional
+# cognitive/educational/exercise/observational-monitoring activities
+# that arrive with a non-DEVICE/non-BEHAVIORAL/non-PROCEDURE ct.gov
+# type (most commonly "OTHER") and so slip past every check above —
+# e.g. "Active transcutaneous vagus nerve stimulation..." (NCT04908358,
+# ct.gov type OTHER) was landing as an unverified therapeutic candidate
+# before this net existed.
+#
+# Deliberately consulted ONLY when the candidate name does NOT also
+# carry known-compound/dev-code evidence (see _has_known_therapeutic_
+# evidence and its call sites below) — protects a real drug that
+# happens to be described alongside a procedure/device word in the
+# same intervention string, e.g. "etanercept and repeated contrast
+# ultrasound" (etanercept is a real, KNOWN_COMPOUND_NAMES-listed
+# biologic; the trailing "ultrasound" must not exclude it).
+_EXTENDED_NON_DRUG_TOKENS = {
+    # neuromodulation / electrical stimulation devices
+    "tms", "rtms", "tdcs", "tacs", "dbs", "tvns", "neurostimulation", "neuromodulation",
+    # digital / app-based
+    "app", "smartphone", "ipad",
+    # observational / monitoring
+    "questionnaire", "questionnaires", "actigraphy", "sensor",
+    # extended cognitive/educational/exercise
+    "psychoeducation", "psychoeducational", "prehabilitation", "rehabilitation", "exercises",
+    # generic device
+    "device",
+}
+_EXTENDED_NON_DRUG_PHRASES = [
+    # neuromodulation / electrical stimulation
+    "transcranial magnetic stimulation", "repetitive transcranial magnetic stimulation",
+    "transcranial direct current stimulation", "transcranial alternating current stimulation",
+    "transcranial pulse stimulation", "transcranial ultrasound stimulation",
+    "vagus nerve stimulation", "vagal nerve stimulation", "deep brain stimulation",
+    "electrical stimulation", "auditory stimulation", "acoustic stimulation",
+    "sensory stimulation", "photobiomodulation",
+    # digital / app-based
+    "mobile application", "digital therapeutic", "digital platform", "digital health",
+    "mobile health", "digital table",
+    # extended cognitive/educational/exercise/therapy-modality (specific
+    # named non-drug modalities only — never the bare word "therapy" on
+    # its own, which would wrongly exclude real modalities like "Stem
+    # Cell Therapy" or "Gene Therapy")
+    "cognitive stimulation therapy", "cognitive rehabilitation", "memory training",
+    "brain training", "spaced retrieval training", "reminiscence therapy", "music therapy",
+    "laughter therapy", "art therapy", "occupational therapy", "physical therapy",
+    "speech therapy", "water immersion heat therapy", "heat therapy",
+    "patient education", "health education", "dementia education",
+    "educational materials", "educational intervention", "educational program",
+    "educational session", "psychoeducational intervention", "psychoeducational messages",
+    "physical activity", "adapted physical activity", "aerobic exercises",
+    "physical training", "strength training", "interval strength training",
+    "language adaptation rehabilitation", "neurofeedback training",
+    # observational / monitoring
+    "data collection", "activity monitoring", "remote monitoring", "video recording",
+    "physical exam", "monitoring system", "sensor system", "ambient sensor",
+    "supportive care",
+]
+
+
+def _is_extended_non_drug_activity(normalized_name):
+    tokens = set(normalized_name.split())
+    if tokens & _EXTENDED_NON_DRUG_TOKENS:
+        return True
+    return any(_contains_phrase(normalized_name, phrase) for phrase in _EXTENDED_NON_DRUG_PHRASES)
+
+
+# Shared with classify_intervention()'s Step 5.5 return AND
+# build_resolved_drugs_exclusion_audit_dataframe()'s filter below — a
+# single source of truth for "this record was caught by the expanded
+# non-drug net specifically" rather than duplicating the literal string.
+EXTENDED_NON_DRUG_REASON = (
+    "name indicates a neuromodulation/digital/educational/exercise/observational-monitoring "
+    "non-drug activity or device"
+)
+
+
+def _has_known_therapeutic_evidence(candidate_normalized):
+    """True if candidate_normalized contains a recognized investigational
+    compound name anywhere in it — the override guard for
+    _is_extended_non_drug_activity (see its docstring)."""
+    return bool(candidate_normalized) and any(
+        compound in candidate_normalized for compound in KNOWN_COMPOUND_NAMES
+    )
+
+
 def _passes_therapeutic_gate(itype, name):
     """
-    True if this single intervention survives steps 1-5 (i.e. it is not
-    placebo, not a non-therapeutic control arm, not a diagnostic
+    True if this single intervention survives steps 1-5.5 (i.e. it is
+    not placebo, not a non-therapeutic control arm, not a diagnostic
     tracer, not a procedure/radiation exam, not a device, not
-    behavioral) and is therefore still a candidate therapeutic. Used
-    both for the intervention being classified and for scanning its
-    siblings — this is also what keeps "No Intervention"/"Untreated"
-    from ever counting as a plausible therapeutic sibling.
+    behavioral, and not an expanded-net non-drug activity/device) and
+    is therefore still a candidate therapeutic. Used both for the
+    intervention being classified and for scanning its siblings — this
+    is also what keeps "No Intervention"/"Untreated" from ever counting
+    as a plausible therapeutic sibling.
     """
     normalized = normalize_text(name)
     itype_upper = (itype or "").strip().upper()
@@ -546,6 +634,9 @@ def _passes_therapeutic_gate(itype, name):
     if itype_upper == "DEVICE":
         return False
     if _is_behavioral(itype_upper, normalized):
+        return False
+    candidate_normalized = normalize_text(normalize_intervention_candidate_name(name))
+    if not _has_known_therapeutic_evidence(candidate_normalized) and _is_extended_non_drug_activity(normalized):
         return False
     return True
 
@@ -630,7 +721,7 @@ _KNOWN_COMPOUND_KEYS = [
     "hydromethylthionine", "tideglusib", "spg302", "apn-1607", "thk-5351",
     "thk5351", "trx0037", "abbv-1758", "asn51", "flortaucipir", "av-1451",
     "av1451", "gtp1", "mk-6240", "mk6240", "pi-2620", "pi2620", "mni-187",
-    "etanercept", "sargramostim", "minocycline", "al002", "al003", "pbr28",
+    "etanercept", "sargramostim", "minocycline", "al002", "al003", "aln-app", "pbr28",
     "fedaa1106", "dpa713", "xpro1595", "gsk2647544", "ntrx-07", "naproxen",
     "dimebon", "latrepirdine", "cerebrolysin", "t-817ma", "bryostatin",
     "posiphen", "buntanetap", "anavex2-73", "blarcamesine", "nilotinib",
@@ -832,6 +923,22 @@ def classify_intervention(intervention_type, intervention_name, sponsor, sibling
     # Step 5: behavioral
     if _is_behavioral(itype_upper, normalized_name):
         return result("behavioral", "intervention type or name indicates a behavioral/non-drug activity", "high")
+
+    # Step 5.5: expanded non-drug activity/device net (neuromodulation,
+    # digital/app, extended cognitive/educational/exercise/observational-
+    # monitoring) — see _is_extended_non_drug_activity's docstring.
+    # Skipped when the name also carries known-compound evidence, so a
+    # real drug incidentally described alongside a device/procedure word
+    # (e.g. "etanercept and repeated contrast ultrasound") is preserved.
+    if (
+        not _has_known_therapeutic_evidence(candidate_normalized)
+        and _is_extended_non_drug_activity(normalized_name)
+    ):
+        return result(
+            "behavioral",
+            EXTENDED_NON_DRUG_REASON,
+            "high",
+        )
 
     # Step 6: candidate therapeutic — official pipeline match takes
     # priority over everything below, for ANY drug-like name (even one
@@ -1230,28 +1337,28 @@ def build_resolved_drugs_dataframe(trials_df):
     Only trials classified sponsor_developed_therapeutic or
     investigational_therapeutic_unverified, with a non-blank
     developed_drug, NOT flagged multiple_candidates_unresolved, AND whose
-    Phase 1A pipeline_scope is one of RESOLVED_DRUGS_DF_ELIGIBLE_SCOPES
-    (Therapeutic Drug / Diagnostic Agent / Non-Drug Intervention /
-    Supportive Treatment / Needs Review) contribute a row. Everything
-    else (placebo/diagnostic-tracer/procedure/device/behavioral/
-    comparator/uncertain/no_therapeutic_candidate trials, trials with
-    unresolved multiple candidates, AND — Phase 1A — anything whose scope
-    resolved to "Exclude" or "Placebo or Comparator", e.g. a generic
-    "Blood Test"/"CSF Biomarkers" description that classify_intervention()
-    alone would have let through) produces NO drug row here — see
-    build_unresolved_trials_dataframe() for where the drug-identity-
-    ambiguous ones go instead, so nothing is silently dropped from the
-    dataset as a WHOLE (pipeline_annotated.csv / pipeline_interventions.csv
+    pipeline_scope is one of RESOLVED_DRUGS_DF_ELIGIBLE_SCOPES
+    (currently just "Therapeutic Drug" — a record only enters
+    resolved_drugs_df at all if its primary investigational
+    intervention resolved to a real drug/biologic) contribute a row.
+    Everything else (placebo/diagnostic-tracer/procedure/device/
+    behavioral/comparator/uncertain/no_therapeutic_candidate trials,
+    trials with unresolved multiple candidates, and anything whose
+    scope resolved to Diagnostic Agent/Non-Drug Intervention/Supportive
+    Treatment/Needs Review/Exclude/Placebo or Comparator) produces NO
+    drug row here — see build_unresolved_trials_dataframe() for where
+    the drug-identity-ambiguous ones go instead, so nothing is silently
+    dropped from the dataset as a WHOLE (pipeline_annotated.csv /
+    pipeline_interventions.csv / outputs/non_drug_exclusion_audit.csv
     still carry every trial/intervention regardless).
 
-    resolved_drugs_df is still the ONE drug-level source of truth for
-    every dashboard component (Phase 0) — Phase 1A does not split it into
-    a second dataframe. Instead every row carries pipeline_scope, and
-    dashboard components that must show ONLY real therapeutic drugs
-    filter resolved_drugs_df down to pipeline_scope == "Therapeutic Drug"
-    themselves (pipeline_viz.py's therapeutic_drugs_df); components that
-    intentionally offer an optional "reveal non-therapeutic records"
-    view read the unfiltered resolved_drugs_df.
+    resolved_drugs_df is the ONE drug-level source of truth every
+    dashboard component reads (main table, KPI counts, filters, charts,
+    competitive-attention scoring, Upcoming Milestones — everything).
+    Since it now only ever contains Therapeutic Drug scope rows, the
+    dashboard's "reveal non-therapeutic records" toggle still exists in
+    the UI but has nothing left to reveal — that's an intentional
+    consequence of this narrowing, not a bug.
 
     Grouped by developed_drug_normalized — NOT by drug + sponsor. This
     preserves the pre-existing dashboard behavior (one row per drug,
@@ -1565,16 +1672,25 @@ PIPELINE_SCOPE_LABELS = [
 # ("Therapeutic Drug") dashboard view.
 THERAPEUTIC_SCOPE = "Therapeutic Drug"
 
-# Records with these scopes still get a resolved_drugs_df row (so the
-# dashboard's optional "reveal non-therapeutic records" filter has
-# something real to show) — everything else (Exclude, Placebo or
-# Comparator) never becomes a resolved_drugs_df row at all, per the
-# requirement that placebo/comparator never appear in ordinary OR
-# optional dashboard views, and that generic/junk descriptions never
-# become a canonical "drug" of any kind.
+# resolved_drugs_df is the ONE source every dashboard component reads
+# (main table, KPI counts, filters, charts, competitive-attention
+# scoring, Upcoming Milestones — everything). A record enters it ONLY
+# if its primary investigational intervention resolved to "Therapeutic
+# Drug" scope, i.e. a real DRUG/BIOLOGICAL therapeutic candidate.
+#
+# Previously this also admitted Diagnostic Agent / Non-Drug
+# Intervention / Supportive Treatment / Needs Review, specifically so
+# the dashboard's optional "reveal non-therapeutic records" table
+# filter had real data to show. That toggle still exists in the UI
+# (unchanged, per requirement) but now has nothing extra to reveal —
+# every non-"Therapeutic Drug" record is excluded at the source instead
+# of merely hidden client-side. This is a deliberate, explicit
+# narrowing: excluded records remain fully auditable in
+# pipeline_annotated.csv / pipeline_interventions.csv / pipeline_
+# unresolved_trials.csv / outputs/non_drug_exclusion_audit.csv — they
+# just never become a resolved_drugs_df ("drug") row.
 RESOLVED_DRUGS_DF_ELIGIBLE_SCOPES = [
-    "Therapeutic Drug", "Diagnostic Agent", "Non-Drug Intervention",
-    "Supportive Treatment", "Needs Review",
+    "Therapeutic Drug",
 ]
 
 
@@ -2154,6 +2270,84 @@ def build_diagnostic_agent_audit_dataframe(interventions_df):
     return result.sort_values(
         ["previously_leaked_into_therapeutic_dashboard", "name"], ascending=[False, True]
     ).reset_index(drop=True)[columns]
+
+
+def build_resolved_drugs_exclusion_audit_dataframe(interventions_df):
+    """
+    outputs/non_drug_exclusion_audit.csv source: every intervention name
+    excluded from resolved_drugs_df that's worth a human's attention —
+    the union of two populations:
+
+      1. Interventions classify_intervention() marked
+         sponsor_developed_therapeutic/investigational_therapeutic_
+         unverified (i.e. eligible to be resolved as a trial's
+         developed_drug) but whose pipeline_scope ended up NOT
+         "Therapeutic Drug" — diagnostic agents, dietary supplements,
+         DIAGNOSTIC_TEST-typed records, generic descriptions, etc. This
+         is the population that used to leak into resolved_drugs_df
+         under the old, broader RESOLVED_DRUGS_DF_ELIGIBLE_SCOPES.
+
+      2. Interventions caught DIRECTLY by the expanded non-drug net
+         (_is_extended_non_drug_activity — neuromodulation/electrical
+         stimulation, digital/apps, extended cognitive/educational/
+         exercise/observational-monitoring), identified by
+         reason == EXTENDED_NON_DRUG_REASON. These are classified
+         "behavioral" from the start (never investigational_
+         therapeutic_unverified), so population 1's filter alone
+         would miss them entirely — e.g. a trial whose only two arms
+         are "Active transcutaneous vagus nerve stimulation..." and
+         "Sham transcutaneous vagus nerve stimulation..." now resolves
+         to NO developed_drug candidate at all (both arms are
+         correctly excluded), so it never reaches population 1's
+         classification filter, but is still exactly the kind of
+         record this audit exists to report.
+
+    Deliberately excludes unambiguous non-candidates (placebo_or_sham,
+    "other"/non-treatment-control arms) that were never going to be
+    mistaken for a drug — auditing every placebo arm in the dataset
+    would bury the genuinely useful rows in noise.
+
+    One row per distinct normalized_name, with every contributing NCT
+    ID. exclusion_reason prefers classify_intervention()'s own reason
+    for population 2 (more specific than the generic "behavioral/
+    non-drug activity" scope_reason it maps to) and scope_reason
+    otherwise.
+    """
+    columns = [
+        "name", "clinicaltrials_intervention_type", "nct_ids", "trial_count",
+        "classification", "pipeline_scope", "exclusion_reason", "confidence",
+    ]
+    if interventions_df.empty:
+        return pd.DataFrame(columns=columns)
+
+    was_therapeutic_candidate = interventions_df["classification"].isin(
+        ["sponsor_developed_therapeutic", "investigational_therapeutic_unverified"]
+    ) & (interventions_df["pipeline_scope"] != THERAPEUTIC_SCOPE)
+    caught_by_extended_net = interventions_df["reason"] == EXTENDED_NON_DRUG_REASON
+    candidate_rows = interventions_df[was_therapeutic_candidate | caught_by_extended_net]
+    if candidate_rows.empty:
+        return pd.DataFrame(columns=columns)
+
+    def summarize(g):
+        row = g.iloc[0]
+        exclusion_reason = row["reason"] if row["reason"] == EXTENDED_NON_DRUG_REASON else row["scope_reason"]
+        return pd.Series({
+            "name": row["original_name"],
+            "clinicaltrials_intervention_type": row["original_type"],
+            "nct_ids": "; ".join(sorted(set(g["nct_id"].dropna().astype(str)))),
+            "trial_count": g["nct_id"].nunique(),
+            "classification": row["classification"],
+            "pipeline_scope": row["pipeline_scope"],
+            "exclusion_reason": exclusion_reason,
+            "confidence": row["scope_confidence"],
+        })
+
+    result = (
+        candidate_rows.groupby("normalized_name", sort=False)
+        .apply(summarize, include_groups=False)
+        .reset_index(drop=True)
+    )
+    return result.sort_values(["pipeline_scope", "name"]).reset_index(drop=True)[columns]
 
 
 def build_scope_audit_dataframe(interventions_df):
