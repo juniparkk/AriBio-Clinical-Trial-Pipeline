@@ -45,6 +45,7 @@ from scientific_classification import (
     classify_pipeline_quadrant,
 )
 from competitive_intelligence import compute_relevance_score
+from competitive_attention_viz import COMPETITIVE_ATTENTION_CSS, PLACEHOLDER as COMPETITIVE_ATTENTION_PLACEHOLDER
 
 # ============================================================
 # AriBio brand colors + shade helpers — defined up front (rather than
@@ -1585,6 +1586,7 @@ html_template = f"""
     cursor: pointer; text-decoration: underline;
   }}
   @media (max-width: 860px) {{ .glance-grid {{ grid-template-columns: 1fr; }} }}
+  {COMPETITIVE_ATTENTION_CSS}
 </style>
 
 <script>{plotlyjs_lib}</script>
@@ -1630,6 +1632,8 @@ html_template = f"""
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 2']}">{phase2_agents}</div><div class="kpi-label">Phase 2 agents</div></div>
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 1']}">{phase1_agents}</div><div class="kpi-label">Phase 1 agents</div></div>
     </div>
+
+    {COMPETITIVE_ATTENTION_PLACEHOLDER}
 
     <div class="glance-grid">
       <div class="glance-panel">

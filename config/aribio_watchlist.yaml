@@ -1,0 +1,104 @@
+# ============================================================
+# ARIBIO COMPETITIVE WATCHLIST
+#
+# Configuration for competitive_attention.py's deterministic priority
+# scoring. Nothing in this file is scientific-accuracy guidance — it
+# only controls which factors the rule-based scorer treats as
+# "relevant to AriBio's competitive position" and how urgently a given
+# score should be flagged.
+#
+# Extensibility: this file is intentionally NOT AR1001-specific code.
+# aribio_assets is a LIST — add a second AriBio asset here and the
+# scorer picks it up automatically (the "primary" asset, used as the
+# competitive reference profile, is whichever entry has
+# is_primary: true). Every other section (priority_phases,
+# priority_modalities, ...) is a plain list a human can edit without
+# touching any Python.
+# ============================================================
+
+aribio_assets:
+  - name: "AR1001"
+    is_primary: true
+    sponsor: "AriBio Co., Ltd."
+    # Mirrors this drug's own already-computed profile in
+    # pipeline_drugs.csv (scientific_classification.py's resolved
+    # fields) as of this file's creation — not re-derived here, just
+    # recorded for readability/config-review purposes. The actual
+    # scoring reuses each drug's precomputed aribio_relevance_score
+    # column (see pipeline_viz.py STEP 3.73 / competitive_intelligence.py)
+    # rather than recomputing similarity from these fields directly.
+    modality: "Small Molecule"
+    target_pathways: ["Amyloid", "Tau", "Neuroprotection"]
+    therapeutic_purpose_class: "DTT"
+    phase_reached: "Phase 3"
+    # Route of administration is not currently produced by any
+    # upstream classification step (drug_classification.py /
+    # scientific_classification.py have no route field) — recorded
+    # here for future use, but competitive_attention.py's route-based
+    # scoring factor is a documented no-op until a real route data
+    # source exists. Never inferred from the drug name.
+    route: "Oral"
+    # Used only for the (deliberately modest) population-similarity
+    # factor: an exact match against a trial's own Sex/Age fields in
+    # trials.csv. Not a substitute for real eligibility-criteria
+    # comparison — just what's already available as structured data.
+    reference_sex: "ALL"
+    reference_age: "ADULT, OLDER_ADULT"
+
+# Absolute phase levels the scorer treats as inherently higher-priority,
+# regardless of which drug/trial they belong to. Order does not matter;
+# presence in this list is what matters. Phases not listed here (e.g.
+# "Phase 1", "NA", "Phase 4") still score, just at the lower baseline
+# level built into competitive_attention.py's PHASE_POINTS table.
+priority_phases:
+  - "Phase 3"
+  - "Phase 2"
+
+# Modalities that earn the small "matches a priority modality" bonus.
+priority_modalities:
+  - "Small Molecule"
+
+# Additional target pathways to watch for BEYOND whatever the primary
+# AriBio asset's own target_pathways already are (those are always
+# included automatically). Leave empty unless there's a second
+# pathway of strategic interest not already covered by an AriBio asset.
+priority_pathways: []
+
+# Routes of administration considered higher-priority when known.
+# See the route no-op note above — this list is read and ready, it
+# just has no data source to match against yet.
+priority_routes:
+  - "Oral"
+
+# Literal (case-insensitive) substrings matched against a trial's raw
+# Primary/Secondary/Other Outcome Measures text. Deliberately exact
+# substring matching, not fuzzy/semantic matching — a hit here is
+# real, verifiable text overlap, not an inferred similarity. Empty by
+# default: populate only with endpoint names you've actually verified
+# as relevant (e.g. "CDR-SB", "ADAS-Cog") — an empty list means this
+# factor never contributes points, which is the honest default until
+# someone deliberately curates it.
+priority_endpoints: []
+
+# Same mechanism as priority_endpoints, for biomarker names (e.g.
+# "amyloid PET", "p-tau217"). Empty by default for the same reason.
+priority_biomarkers: []
+
+# Optional: company names to call out explicitly in why_it_matters
+# text when they appear as a trial's sponsor. Empty means no company
+# gets special treatment — every sponsor is scored purely on the
+# trial/drug's own factors.
+competitor_companies: []
+
+# Thresholds driving priority_level bucketing and the "Upcoming
+# Competitive Milestones" dashboard section. All are plain integers so
+# they can be tuned without touching scoring code.
+alert_thresholds:
+  critical_score: 80
+  high_score: 60
+  medium_score: 35
+  primary_completion_imminent_days: 30   # "next 30 days" milestone bucket
+  primary_completion_soon_days: 90       # "next 90 days" milestone bucket
+  recently_completed_days: 30            # "recently completed" milestone bucket
+  major_delay_days: 90                   # completion-date push considered a "material" delay
+  low_confidence_score_penalty: 10       # flat points subtracted when classification_confidence == "low"

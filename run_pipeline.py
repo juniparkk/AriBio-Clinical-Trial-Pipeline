@@ -41,8 +41,16 @@
 # persist across GitHub Actions runs) — the git-tracked files are the
 # only state guaranteed to survive between CI runs.
 #
-# No AI "Needs Attention" summary yet — this phase is change
-# DETECTION only, per project scope.
+# After change detection, competitive_attention.py ranks which of
+# those changes deserve human attention at AriBio (a deterministic
+# competitive-priority score, NOT a scientific-accuracy judgment —
+# see that module's docstring) and writes
+# outputs/competitive_attention.csv. pipeline_overview.html's "Needs
+# Attention" / "Upcoming Competitive Milestones" sections are then
+# spliced in via a placeholder-token replacement (see
+# competitive_attention_viz.py) rather than re-running pipeline_viz.py
+# a second time, since that data necessarily depends on
+# pipeline_viz.py's own prior output.
 # ============================================================
 
 import os
@@ -53,6 +61,9 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
+import aribio_watchlist
+import competitive_attention
+import competitive_attention_viz
 import ctgov_changes
 import ctgov_client
 import ctgov_normalize
@@ -62,7 +73,9 @@ TRIALS_CSV = "trials.csv"
 TRIALS_CSV_BACKUP = "trials.csv.pre_refresh_backup"
 DRUGS_CSV = "pipeline_drugs.csv"
 ANNOTATED_CSV = "pipeline_annotated.csv"
+OVERVIEW_HTML = "pipeline_overview.html"
 CHANGES_CSV = os.path.join("outputs", "pipeline_changes.csv")
+ATTENTION_CSV = os.path.join("outputs", "competitive_attention.csv")
 
 TEST_FILES = [
     "test_classification.py",
@@ -72,6 +85,7 @@ TEST_FILES = [
     "test_scientific_classification.py",
     "test_ctgov_pipeline.py",
     "test_ctgov_changes.py",
+    "test_competitive_attention.py",
 ]
 
 
@@ -94,7 +108,7 @@ def run_refresh():
     run_id = _utc_now_compact()
     fetch_timestamp = datetime.now(timezone.utc).isoformat()
 
-    _print_header("STEP 1/7: Fetching ClinicalTrials.gov data (API v2)")
+    _print_header("STEP 1/8: Fetching ClinicalTrials.gov data (API v2)")
     ctgov_data_timestamp = ctgov_client.fetch_data_version()
     print(f"ct.gov data timestamp (from /api/v2/version): {ctgov_data_timestamp}")
 
@@ -117,11 +131,11 @@ def run_refresh():
         **fetch_meta,
     }
 
-    _print_header("STEP 2/7: Saving raw snapshot (audit trail)")
+    _print_header("STEP 2/8: Saving raw snapshot (audit trail)")
     raw_dir = ctgov_snapshot.write_raw_snapshot(studies, full_fetch_meta, run_id=run_id)
     print(f"Raw API response saved to: {raw_dir}")
 
-    _print_header("STEP 3/7: Normalizing to trials.csv schema")
+    _print_header("STEP 3/8: Normalizing to trials.csv schema")
     df = ctgov_normalize.normalize_studies(studies)
     print(f"Normalized row count: {len(df)}")
 
@@ -140,7 +154,7 @@ def run_refresh():
     else:
         print("No previous trials.csv found — this is the first run.")
 
-    _print_header("STEP 4/7: Validating")
+    _print_header("STEP 4/8: Validating")
     ok, errors = ctgov_snapshot.validate_dataframe(df, previous_row_count=previous_row_count)
     full_fetch_meta["validation_status"] = "passed" if ok else "failed"
     full_fetch_meta["validation_errors"] = errors
@@ -165,7 +179,7 @@ def run_refresh():
     snapshot_csv_path = ctgov_snapshot.write_validated_snapshot(df, full_fetch_meta, run_id=run_id)
     print(f"Validated snapshot written to: {snapshot_csv_path}")
 
-    _print_header("STEP 5/7: Rebuilding dashboard")
+    _print_header("STEP 5/8: Rebuilding dashboard")
     had_previous_trials_csv = old_trials_df is not None
     try:
         if had_previous_trials_csv:
@@ -198,7 +212,7 @@ def run_refresh():
         if os.path.exists(TRIALS_CSV_BACKUP):
             os.remove(TRIALS_CSV_BACKUP)
 
-    _print_header("STEP 6/7: Detecting changes vs. previous refresh")
+    _print_header("STEP 6/8: Detecting changes vs. previous refresh")
     new_drugs_df = _read_csv_if_exists(DRUGS_CSV)
     new_annotated_df = _read_csv_if_exists(ANNOTATED_CSV)
     detected_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -221,7 +235,42 @@ def run_refresh():
         importance_counts = changes_df["importance"].value_counts()
         print(f"  Importance: " + ", ".join(f"{k}={v}" for k, v in importance_counts.items()))
 
-    _print_header("STEP 7/7: Running tests")
+    _print_header("STEP 7/8: Scoring competitive attention")
+    try:
+        watchlist = aribio_watchlist.load_watchlist()
+        attention_df = competitive_attention.compute_attention(
+            changes_df, new_drugs_df, new_annotated_df, df, watchlist,
+        )
+        os.makedirs(os.path.dirname(ATTENTION_CSV) or ".", exist_ok=True)
+        attention_df.to_csv(ATTENTION_CSV, index=False)
+        print(f"{len(attention_df)} attention-worthy item(s), written to {ATTENTION_CSV}")
+        if len(attention_df):
+            level_counts = attention_df["priority_level"].value_counts()
+            print("  Priority levels: " + ", ".join(f"{k}={v}" for k, v in level_counts.items()))
+
+        milestones = competitive_attention.build_milestones(new_annotated_df, df, changes_df, watchlist)
+        for key, items in milestones.items():
+            print(f"  {key}: {len(items)}")
+
+        section_html = competitive_attention_viz.render_competitive_sections(attention_df, milestones)
+        with open(OVERVIEW_HTML) as f:
+            html_content = f.read()
+        if competitive_attention_viz.PLACEHOLDER not in html_content:
+            raise RuntimeError(f"{OVERVIEW_HTML} is missing the competitive-attention placeholder")
+        html_content = html_content.replace(competitive_attention_viz.PLACEHOLDER, section_html)
+        with open(OVERVIEW_HTML, "w") as f:
+            f.write(html_content)
+        print(f"{OVERVIEW_HTML} updated with Needs Attention / Upcoming Competitive Milestones sections.")
+    except Exception as e:
+        # Non-fatal: the core refresh (trials.csv, pipeline_drugs.csv,
+        # pipeline_changes.csv) is already valid and committable even if
+        # this additive scoring step has a bug — never roll back a good
+        # data refresh because of a problem in attention scoring/display.
+        print(f"\nCOMPETITIVE ATTENTION SCORING FAILED (non-fatal): {e}")
+        print(f"{ATTENTION_CSV} and the dashboard's attention sections were not updated this run.")
+        attention_df = pd.DataFrame()
+
+    _print_header("STEP 8/8: Running tests")
     all_passed = True
     for test_file in TEST_FILES:
         if not os.path.exists(test_file):
@@ -243,6 +292,7 @@ def run_refresh():
     print(f"Normalized row count:       {len(df)}")
     print(f"Snapshot filename:          {snapshot_csv_path}")
     print(f"Changes detected:           {len(changes_df)} ({CHANGES_CSV})")
+    print(f"Attention items scored:     {len(attention_df)} ({ATTENTION_CSV})")
     print(f"All tests passed:           {all_passed}")
 
     return 0 if all_passed else 1

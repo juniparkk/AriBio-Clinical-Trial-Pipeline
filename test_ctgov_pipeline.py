@@ -19,6 +19,7 @@ import tempfile
 
 import pandas as pd
 
+import competitive_attention_viz
 import ctgov_client
 import ctgov_normalize
 import ctgov_snapshot
@@ -374,11 +375,15 @@ class _RefreshSandbox:
         self._orig_drugs_csv = run_pipeline.DRUGS_CSV
         self._orig_annotated_csv = run_pipeline.ANNOTATED_CSV
         self._orig_changes_csv = run_pipeline.CHANGES_CSV
+        self._orig_attention_csv = run_pipeline.ATTENTION_CSV
+        self._orig_overview_html = run_pipeline.OVERVIEW_HTML
         run_pipeline.TRIALS_CSV = os.path.join(self.tmp, "trials.csv")
         run_pipeline.TRIALS_CSV_BACKUP = os.path.join(self.tmp, "trials.csv.bak")
         run_pipeline.DRUGS_CSV = os.path.join(self.tmp, "pipeline_drugs.csv")
         run_pipeline.ANNOTATED_CSV = os.path.join(self.tmp, "pipeline_annotated.csv")
         run_pipeline.CHANGES_CSV = os.path.join(self.tmp, "outputs", "pipeline_changes.csv")
+        run_pipeline.ATTENTION_CSV = os.path.join(self.tmp, "outputs", "competitive_attention.csv")
+        run_pipeline.OVERVIEW_HTML = os.path.join(self.tmp, "pipeline_overview.html")
 
         self._orig_fetch_all = ctgov_client.fetch_all_studies
         self._orig_fetch_version = ctgov_client.fetch_data_version
@@ -395,6 +400,8 @@ class _RefreshSandbox:
         run_pipeline.DRUGS_CSV = self._orig_drugs_csv
         run_pipeline.ANNOTATED_CSV = self._orig_annotated_csv
         run_pipeline.CHANGES_CSV = self._orig_changes_csv
+        run_pipeline.ATTENTION_CSV = self._orig_attention_csv
+        run_pipeline.OVERVIEW_HTML = self._orig_overview_html
         ctgov_client.fetch_all_studies = self._orig_fetch_all
         ctgov_client.fetch_data_version = self._orig_fetch_version
         run_pipeline.subprocess.run = self._orig_subprocess_run
@@ -433,6 +440,13 @@ def test_successful_refresh_writes_snapshot_and_updates_trials_csv():
 
         run_pipeline.subprocess.run = lambda *a, **k: _FakeCompleted()
 
+        # The mocked subprocess call stands in for pipeline_viz.py, which
+        # normally writes this file (with the placeholder token) itself —
+        # write a minimal stand-in so STEP 7's splice step has something
+        # real to operate on.
+        with open(run_pipeline.OVERVIEW_HTML, "w") as f:
+            f.write(f"<html><body>{competitive_attention_viz.PLACEHOLDER}</body></html>")
+
         exit_code = run_pipeline.run_refresh()
 
         assert exit_code == 0
@@ -442,6 +456,13 @@ def test_successful_refresh_writes_snapshot_and_updates_trials_csv():
 
         pointer = ctgov_snapshot.get_latest_snapshot_info()
         assert pointer["row_count"] == 5
+
+        with open(run_pipeline.OVERVIEW_HTML) as f:
+            overview_content = f.read()
+        assert competitive_attention_viz.PLACEHOLDER not in overview_content
+        assert "Needs Attention" in overview_content
+        assert "Upcoming Competitive Milestones" in overview_content
+        assert os.path.exists(run_pipeline.ATTENTION_CSV)
         assert not os.path.exists(run_pipeline.TRIALS_CSV_BACKUP)
 
 
