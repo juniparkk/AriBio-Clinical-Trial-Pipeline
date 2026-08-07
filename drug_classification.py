@@ -948,7 +948,12 @@ def build_interventions_dataframe(trials_df, pipeline_records, scope_overrides=N
     Expects trials_df to already have gone through pipeline_viz.py's
     column_map rename step, i.e. to have "nct_id", "sponsor", "title",
     and "interventions" columns (not the raw ClinicalTrials.gov export
-    header names).
+    header names). "Brief Summary" and "Study Design" are read under
+    their ORIGINAL raw trials.csv column names — column_map never
+    renames them, so they pass through unchanged — and are used only by
+    classify_pipeline_scope()'s isotope-labeled-tracer check; missing
+    either column degrades to "" (that check simply never fires, same
+    as any other optional evidence in this pipeline).
 
     For every trial, every one of its individual interventions is
     parsed (parse_interventions), classified (classify_intervention),
@@ -969,6 +974,8 @@ def build_interventions_dataframe(trials_df, pipeline_records, scope_overrides=N
         sponsor = trial.get("sponsor")
         title = trial.get("title")
         raw_interventions = trial.get("interventions")
+        brief_summary = trial.get("Brief Summary", "")
+        study_design = trial.get("Study Design", "")
 
         interventions = parse_interventions(raw_interventions)
         for i, interv in enumerate(interventions):
@@ -979,6 +986,7 @@ def build_interventions_dataframe(trials_df, pipeline_records, scope_overrides=N
             scoped = classify_pipeline_scope(
                 interv["type"], interv["name"], classified["classification"],
                 classified["verification_status"], overrides=scope_overrides,
+                brief_summary=brief_summary, study_title=title, study_design=study_design,
             )
             rows.append({
                 "nct_id": nct_id,
@@ -1074,7 +1082,7 @@ def resolve_developed_drug(classified_interventions):
     def summary(developed_drug, drug_classification, reason, confidence, needs_manual_review,
                 official_pipeline_match=False, official_source_url="", verification_status="",
                 pipeline_scope="Needs Review", scope_reason="", scope_method="rule_classification",
-                scope_confidence="low", manual_review_required=None):
+                scope_confidence="low", manual_review_required=None, diagnostic_subtype=""):
         return {
             "developed_drug": developed_drug,
             "developed_drug_normalized": normalize_text(developed_drug),
@@ -1095,6 +1103,7 @@ def resolve_developed_drug(classified_interventions):
             "scope_method": scope_method,
             "scope_confidence": scope_confidence,
             "manual_review_required": manual_review_required if manual_review_required is not None else needs_manual_review,
+            "diagnostic_subtype": diagnostic_subtype,
         }
 
     def scope_fields(r):
@@ -1104,6 +1113,7 @@ def resolve_developed_drug(classified_interventions):
             "scope_method": r.get("scope_method", "rule_classification"),
             "scope_confidence": r.get("scope_confidence", "low"),
             "manual_review_required": r.get("manual_review_required", False),
+            "diagnostic_subtype": r.get("diagnostic_subtype", ""),
         }
 
     # Rule 4 is checked ahead of rule 3 deliberately (see docstring).
@@ -1273,6 +1283,7 @@ def build_resolved_drugs_dataframe(trials_df):
         "classification_confidence", "needs_manual_review", "confirmed_trial_count", "unverified_trial_count",
         "official_source_url", "classification_reason", "nct_ids",
         "pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required",
+        "diagnostic_subtype",
     ]
     if eligible.empty:
         return pd.DataFrame(columns=empty_columns)
@@ -1345,14 +1356,17 @@ def build_resolved_drugs_dataframe(trials_df):
             scope_reason = f"contributing trials disagree on pipeline scope ({'; '.join(sorted(scopes_seen))}) for this canonical drug name"
             scope_method = "aggregation_conflict"
             scope_confidence = "low"
+            diagnostic_subtype = ""
         elif scopes_seen:
             pipeline_scope = scopes_seen.pop()
             scope_row = g[g["pipeline_scope"] == pipeline_scope].iloc[0]
             scope_reason = scope_row.get("scope_reason", "")
             scope_method = scope_row.get("scope_method", "")
             scope_confidence = scope_row.get("scope_confidence", "")
+            diagnostic_subtype = scope_row.get("diagnostic_subtype", "") if pipeline_scope == "Diagnostic Agent" else ""
         else:
             pipeline_scope, scope_reason, scope_method, scope_confidence = "Needs Review", "no scope information available", "rule_classification", "low"
+            diagnostic_subtype = ""
 
         manual_review_required = bool(g["manual_review_required"].any()) if "manual_review_required" in g.columns else False
         manual_review_required = manual_review_required or scope_disagreement
@@ -1381,6 +1395,7 @@ def build_resolved_drugs_dataframe(trials_df):
             "scope_method": scope_method,
             "scope_confidence": scope_confidence,
             "manual_review_required": manual_review_required,
+            "diagnostic_subtype": diagnostic_subtype,
         })
 
     return (
@@ -1675,7 +1690,147 @@ def _looks_like_genetic_testing(normalized_name):
     return any(_contains_phrase(normalized_name, phrase) for phrase in _GENETIC_TESTING_PHRASES)
 
 
-def classify_pipeline_scope(intervention_type, name, classification, verification_status="", overrides=None):
+# --- isotope-labeled PET/SPECT tracer leakage (uncurated names) -------
+#
+# _is_diagnostic_tracer() above only catches NAMED tracers on a curated
+# list — it can never be complete, since sponsors/investigators mint new
+# alphanumeric tracer codes (e.g. "[18F]MNI-1126", "11C-JNJ-63779586")
+# constantly, and a static list can't anticipate every one. This is a
+# SEPARATE, narrower net: an intervention whose own NAME carries
+# radiochemistry isotope-label notation (18F/F-18/11C/C-11 immediately
+# preceding a compound code, bracketed or not) is a CANDIDATE — never
+# reclassified on that basis alone (per requirement: don't assume
+# diagnostic solely from an unusual/isotope-looking name — a genuine
+# therapeutic radiopharmaceutical, or a compound code that merely
+# CONTAINS "11c"/"18f" as a coincidental substring — e.g. "SSR180711C" —
+# must not be swept in). The isotope-name match only fires this rule
+# when COMBINED with real study-level evidence: ct.gov's own Primary
+# Purpose field reading DIAGNOSTIC, or explicit PET/SPECT/radioligand/
+# imaging wording in the trial's own title or brief summary — i.e. the
+# same "intervention type, description, study purpose/title" evidence
+# classes named in the audit requirement, not name-guessing.
+#
+# The lookbehind requires the isotope token to start at a genuine word
+# boundary (string start, or right after a non-alphanumeric character —
+# space/hyphen/bracket/paren/slash), which is exactly what excludes
+# "SSR180711C" (its "11C" is embedded mid-code, immediately preceded by
+# the digit "0", not a boundary) while still matching "18FAV45" (no
+# lookahead requirement, so an isotope prefix fused directly onto a
+# compound code like "18F"+"AV45" still matches).
+_ISOTOPE_LABELED_NAME_RE = re.compile(
+    r"(?<![A-Za-z0-9])(?:\[\s*)?(?:18\s*F|F[\s-]?18|11\s*C|C[\s-]?11)", re.IGNORECASE
+)
+
+
+def _is_isotope_labeled_name(raw_name):
+    return bool(_ISOTOPE_LABELED_NAME_RE.search(str(raw_name or "")))
+
+
+# Study-level (not name-level) evidence that a trial's purpose is
+# diagnostic/imaging — checked against the trial's Brief Summary and
+# Study Title (both free text) plus its Study Design's "Primary
+# Purpose" field (ct.gov's own structured DESIGNATION, stored as plain
+# text in the "Study Design" column — see ctgov_normalize.py's
+# _format_study_design(), which always ends that string with
+# "Primary Purpose: <VALUE>"). ct.gov's Primary Purpose is a strong
+# signal WHEN present but is unreliable on its own — real tracer-
+# validation trials in this dataset are inconsistently tagged
+# TREATMENT/BASIC_SCIENCE/OTHER/blank instead of DIAGNOSTIC — so
+# explicit imaging/tracer wording in the title or summary is checked
+# as an equally-sufficient alternative, not a fallback of last resort.
+_DIAGNOSTIC_STUDY_CONTEXT_PHRASES = [
+    "pet imaging", "pet tracer", "pet ligand", "pet radioligand", "pet study",
+    "pet scan", "pet/ct", "spect imaging", "spect tracer", "spect ligand",
+    "radioligand", "radiotracer", "radiopharmaceutical", "imaging marker",
+    "imaging agent", "positron emission tomography", "biodistribution and dosimetry",
+    "biodistribution and radiation dosimetry",
+]
+# "biodistribution" alone (not just the longer phrases above) is checked
+# as a standalone token too — early-phase ("Phase 0") tracer-validation
+# studies are routinely titled/summarized around biodistribution and
+# absorbed-dose estimation without ever using the word "PET"/"imaging"
+# explicitly. Safe as a bare-token match ONLY because this function is
+# exclusively reached from a call site that already gated on the
+# intervention's own name carrying isotope-label notation — a
+# non-isotope-named therapeutic's unrelated PK/biodistribution study
+# never reaches this check at all.
+_DIAGNOSTIC_STUDY_CONTEXT_TOKENS = {"biodistribution"}
+
+
+def _has_diagnostic_study_context(brief_summary, study_title, study_design):
+    design_text = str(study_design or "")
+    purpose_match = re.search(r"Primary Purpose:\s*([A-Za-z_]+)", design_text)
+    if purpose_match and purpose_match.group(1).strip().upper() == "DIAGNOSTIC":
+        return True
+    combined = normalize_text(str(brief_summary or "") + " " + str(study_title or ""))
+    if set(combined.split()) & _DIAGNOSTIC_STUDY_CONTEXT_TOKENS:
+        return True
+    return any(_contains_phrase(combined, phrase) for phrase in _DIAGNOSTIC_STUDY_CONTEXT_PHRASES)
+
+
+# diagnostic_subtype: best-effort, evidence-based categorization for
+# CONFIRMED diagnostic agents only (never used to decide IF something
+# is diagnostic — only to label what KIND, once already confirmed).
+# Falls back to "" when no target-pathway keyword is found (a real,
+# honest "unknown subtype" rather than a forced guess) — the caller
+# still records "PET tracer" for anything confirmed diagnostic via the
+# isotope-name path even without a specific pathway match, since that
+# path only ever fires on PET/SPECT-imaging evidence.
+# Each set also includes the well-known BRAND/compound names for that
+# pathway (mirrors drug_classification.py's own _DIAGNOSTIC_TOKENS
+# categorization) — a name like "florbetapir" never literally contains
+# the word "amyloid", so the name-first priority in determine_
+# diagnostic_subtype() below would otherwise have no way to resolve it
+# without falling back to the (possibly sibling-contaminated) shared
+# trial summary text.
+_AMYLOID_SUBTYPE_TOKENS = {
+    "amyloid", "florbetapir", "amyvid", "av45", "florbetaben", "neuraceq",
+    "flutemetamol", "vizamyl", "pib", "nav4694", "azd4694",
+}
+_AMYLOID_SUBTYPE_PHRASES = ["beta amyloid", "a beta", "amyloid imaging", "amyloid deposition", "pittsburgh compound b"]
+_TAU_SUBTYPE_TOKENS = {
+    "tau", "tauopathy", "tauopathies", "flortaucipir", "tauvid", "av1451", "t807",
+    "mk6240", "pi2620", "ro948", "ro6958948", "gtp1", "pbb3", "apn1607",
+    "thk5317", "thk5351", "thk5117",
+}
+_TAU_SUBTYPE_PHRASES = ["tau imaging", "tau protein", "neurofibrillary tangle"]
+_TSPO_SUBTYPE_TOKENS = {
+    "tspo", "pbr", "pbr28", "pbr06", "pbr111", "microglia", "microglial",
+    "neuroinflammation", "dpa714", "feppa", "er176",
+}
+_TSPO_SUBTYPE_PHRASES = ["translocator protein", "microglial activation"]
+
+
+def _match_subtype(text):
+    tokens = set(text.split())
+    if tokens & _TAU_SUBTYPE_TOKENS or any(_contains_phrase(text, p) for p in _TAU_SUBTYPE_PHRASES):
+        return "Tau PET tracer"
+    if tokens & _TSPO_SUBTYPE_TOKENS or any(_contains_phrase(text, p) for p in _TSPO_SUBTYPE_PHRASES):
+        return "TSPO/neuroinflammation PET tracer"
+    if tokens & _AMYLOID_SUBTYPE_TOKENS or any(_contains_phrase(text, p) for p in _AMYLOID_SUBTYPE_PHRASES):
+        return "Amyloid PET tracer"
+    return ""
+
+
+def determine_diagnostic_subtype(name, brief_summary, study_title):
+    # The intervention's OWN name is checked first and, if it gives any
+    # pathway signal, wins outright — a trial can carry sibling
+    # interventions for different pathways (e.g. a tau tracer dosed
+    # alongside an amyloid tracer in the same protocol), and both would
+    # share the same trial-level Brief Summary/Title text, which could
+    # otherwise mislabel one tracer's subtype using wording that
+    # actually describes its sibling. The shared summary/title text is
+    # only consulted as a fallback for names that give no signal at all
+    # (common for opaque internal codes like "MNI-1126"/"W372").
+    name_match = _match_subtype(normalize_text(str(name or "")))
+    if name_match:
+        return name_match
+    combined = normalize_text(str(name or "") + " " + str(brief_summary or "") + " " + str(study_title or ""))
+    return _match_subtype(combined) or "PET tracer"
+
+
+def classify_pipeline_scope(intervention_type, name, classification, verification_status="", overrides=None,
+                             brief_summary="", study_title="", study_design=""):
     """
     Take ONE intervention's already-computed classify_intervention()
     output (classification, verification_status) plus its original
@@ -1686,12 +1841,20 @@ def classify_pipeline_scope(intervention_type, name, classification, verificatio
     Returns a dict: pipeline_scope (one of PIPELINE_SCOPE_LABELS),
     scope_reason, scope_method ("curated_override" | "rule_classification"
     | "rule_type" | "rule_keyword"), scope_confidence ("high"|"medium"|"low"),
-    manual_review_required (bool), canonical_name_override (str, usually "").
+    manual_review_required (bool), canonical_name_override (str, usually ""),
+    diagnostic_subtype (str, "" unless pipeline_scope == "Diagnostic Agent"
+    and evidence supports a specific PET-tracer category — see
+    determine_diagnostic_subtype()).
 
     overrides: dict from load_scope_overrides() (or an equivalent dict
     built directly for tests) — keyed by normalize_text(name). Checked
     FIRST and wins over every rule below, so a curated correction always
     takes precedence over the automatic type/keyword rules.
+
+    brief_summary/study_title/study_design: the intervention's trial's
+    own text fields, used ONLY by the isotope-labeled-tracer check below
+    (see _has_diagnostic_study_context) — optional, default "" so every
+    existing call site/test keeps working unchanged.
     """
     itype_upper = (intervention_type or "").strip().upper()
     normalized_name = normalize_text(name)
@@ -1699,7 +1862,8 @@ def classify_pipeline_scope(intervention_type, name, classification, verificatio
     candidate_normalized = normalize_text(candidate_name)
     overrides = overrides or {}
 
-    def result(scope, reason, method, confidence, manual_review_required=False, canonical_name_override=""):
+    def result(scope, reason, method, confidence, manual_review_required=False, canonical_name_override="",
+               diagnostic_subtype=""):
         return {
             "pipeline_scope": scope,
             "scope_reason": reason,
@@ -1707,6 +1871,7 @@ def classify_pipeline_scope(intervention_type, name, classification, verificatio
             "scope_confidence": confidence,
             "manual_review_required": manual_review_required,
             "canonical_name_override": canonical_name_override,
+            "diagnostic_subtype": diagnostic_subtype,
         }
 
     # Step 0: curated override always wins, whatever the automatic rules
@@ -1740,7 +1905,10 @@ def classify_pipeline_scope(intervention_type, name, classification, verificatio
             "rule_classification", "medium",
         )
     if classification == "diagnostic_or_imaging_agent":
-        return result("Diagnostic Agent", "matches a curated diagnostic/imaging tracer name", "rule_classification", "high")
+        return result(
+            "Diagnostic Agent", "matches a curated diagnostic/imaging tracer name", "rule_classification", "high",
+            diagnostic_subtype=determine_diagnostic_subtype(name, brief_summary, study_title),
+        )
     if classification == "device":
         return result("Non-Drug Intervention", "intervention type is DEVICE", "rule_type", "high")
     if classification == "behavioral":
@@ -1751,7 +1919,10 @@ def classify_pipeline_scope(intervention_type, name, classification, verificatio
         # itself is always non-drug (an exam/collection, not a product).
         if itype_upper == "RADIATION":
             if _is_diagnostic_tracer(normalized_name) or "scan" in normalized_name.split() or _contains_phrase(normalized_name, "imaging"):
-                return result("Diagnostic Agent", "RADIATION-type intervention with imaging/scan wording", "rule_keyword", "medium")
+                return result(
+                    "Diagnostic Agent", "RADIATION-type intervention with imaging/scan wording", "rule_keyword", "medium",
+                    diagnostic_subtype=determine_diagnostic_subtype(name, brief_summary, study_title),
+                )
             return result(
                 "Non-Drug Intervention",
                 "RADIATION-type intervention with no imaging evidence in its name — confirm manually",
@@ -1854,6 +2025,28 @@ def classify_pipeline_scope(intervention_type, name, classification, verificatio
             "rule_type", "low", manual_review_required=True,
         )
 
+    # Uncurated isotope-labeled PET/SPECT tracer leakage (see the block
+    # above _is_isotope_labeled_name for the full rationale). Runs after
+    # every itype-specific gate above and BEFORE the "uncertain"/
+    # therapeutic-fallback resolution below, since those are exactly the
+    # two outcomes this was silently falling into. Never applied to
+    # sponsor_developed_therapeutic — a confirmed official-pipeline match
+    # is real, verified evidence of a genuine therapeutic asset and is
+    # never second-guessed by a name/summary heuristic.
+    if (
+        classification != "sponsor_developed_therapeutic"
+        and _is_isotope_labeled_name(name)
+        and _has_diagnostic_study_context(brief_summary, study_title, study_design)
+    ):
+        return result(
+            "Diagnostic Agent",
+            "isotope-labeled tracer name (18F/11C-style notation) combined with diagnostic study context "
+            "(ClinicalTrials.gov Primary Purpose: DIAGNOSTIC and/or explicit PET/SPECT/radioligand/imaging "
+            "wording in the trial's title or brief summary)",
+            "rule_keyword", "high",
+            diagnostic_subtype=determine_diagnostic_subtype(name, brief_summary, study_title),
+        )
+
     if classification == "uncertain":
         return result(
             "Needs Review",
@@ -1875,6 +2068,92 @@ def classify_pipeline_scope(intervention_type, name, classification, verificatio
         "investigational therapeutic candidate; drug/biological intervention type with no disqualifying evidence found",
         "rule_classification", "medium", manual_review_required=True,
     )
+
+
+def build_diagnostic_agent_audit_dataframe(interventions_df):
+    """
+    outputs/diagnostic_agent_audit.csv source: every intervention name
+    that is EITHER already classified pipeline_scope == "Diagnostic
+    Agent" (confirmed, via any of the diagnostic detection paths in
+    classify_pipeline_scope() — curated name list, isotope-labeled name
+    + study context, RADIATION-type imaging wording, or DIAGNOSTIC_TEST
+    type) OR carries isotope-labeled name notation (18F/11C-style) but
+    was NOT reclassified because supporting study context couldn't be
+    confirmed — the "uncertain, needs manual review" bucket. One row
+    per distinct normalized_name, so a name repeated across many trials
+    produces one auditable row with every contributing NCT ID.
+
+    previously_leaked_into_therapeutic_dashboard is True exactly when
+    scope_method/scope_reason indicate the NEW isotope-name-plus-context
+    rule is what classified this row — i.e. before that rule existed,
+    this intervention fell through to the generic "Therapeutic Drug"
+    fallback (see classify_pipeline_scope()'s final fallback) and would
+    have counted toward Therapeutic Drug KPIs/heatmaps/charts.
+    Pre-existing correctly-classified diagnostic agents (curated list,
+    RADIATION-imaging, DIAGNOSTIC_TEST type) were already excluded
+    before this phase, so that flag is False for them.
+
+    Expects interventions_df to carry classify_intervention()'s and
+    classify_pipeline_scope()'s columns, i.e. the dataframe
+    build_interventions_dataframe() returns.
+    """
+    columns = [
+        "name", "nct_ids", "trial_count", "evidence_used",
+        "previous_pipeline_scope", "new_pipeline_scope", "diagnostic_subtype",
+        "confidence", "previously_leaked_into_therapeutic_dashboard",
+    ]
+    if interventions_df.empty:
+        return pd.DataFrame(columns=columns)
+
+    df = interventions_df.copy()
+    df["_isotope_named"] = df["original_name"].apply(_is_isotope_labeled_name)
+    is_diagnostic = df["pipeline_scope"] == "Diagnostic Agent"
+    is_uncertain_candidate = df["_isotope_named"] & ~is_diagnostic
+    audit_rows = df[is_diagnostic | is_uncertain_candidate]
+    if audit_rows.empty:
+        return pd.DataFrame(columns=columns)
+
+    def summarize(g):
+        row = g.iloc[0]
+        current_scope = row["pipeline_scope"]
+        newly_caught = row["scope_method"] == "rule_keyword" and "isotope-labeled" in str(row["scope_reason"])
+
+        if current_scope == "Diagnostic Agent":
+            previous_scope = "Therapeutic Drug" if newly_caught else "Diagnostic Agent"
+            evidence_used = row["scope_reason"]
+            confidence = row["scope_confidence"]
+        else:
+            # isotope-named but not (yet) reclassified — flagged for a
+            # human to review, scope is left exactly as classify_
+            # pipeline_scope() already decided it (no silent change).
+            previous_scope = current_scope
+            evidence_used = (
+                "isotope-labeled name pattern (18F/11C-style notation) present, but no confirmed "
+                "diagnostic study context (ClinicalTrials.gov Primary Purpose, or PET/imaging/"
+                "radioligand wording in title or brief summary) was found — needs manual review"
+            )
+            confidence = "low"
+
+        return pd.Series({
+            "name": row["original_name"],
+            "nct_ids": "; ".join(sorted(set(g["nct_id"].dropna().astype(str)))),
+            "trial_count": g["nct_id"].nunique(),
+            "evidence_used": evidence_used,
+            "previous_pipeline_scope": previous_scope,
+            "new_pipeline_scope": current_scope,
+            "diagnostic_subtype": row.get("diagnostic_subtype", "") or "",
+            "confidence": confidence,
+            "previously_leaked_into_therapeutic_dashboard": bool(newly_caught or (current_scope == "Therapeutic Drug")),
+        })
+
+    result = (
+        audit_rows.groupby("normalized_name", sort=False)
+        .apply(summarize, include_groups=False)
+        .reset_index(drop=True)
+    )
+    return result.sort_values(
+        ["previously_leaked_into_therapeutic_dashboard", "name"], ascending=[False, True]
+    ).reset_index(drop=True)[columns]
 
 
 def build_scope_audit_dataframe(interventions_df):

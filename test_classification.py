@@ -44,6 +44,9 @@ from drug_classification import (
     build_scope_audit_dataframe,
     PIPELINE_SCOPE_LABELS,
     build_drug_date_rollup,
+    _is_isotope_labeled_name,
+    determine_diagnostic_subtype,
+    build_diagnostic_agent_audit_dataframe,
 )
 
 PIPELINE_CSV_PATH = os.path.join(os.path.dirname(__file__), "data", "official_pipeline.csv")
@@ -1443,6 +1446,245 @@ def test_scope_radiation_without_imaging_wording_is_non_drug_and_flagged():
     assert r["manual_review_required"] is True
 
 
+# ------------------------------------------------------------
+# Uncurated isotope-labeled PET/SPECT tracer leakage
+# (diagnostic_agent_audit.csv fix — see drug_classification.py's
+# _is_isotope_labeled_name / _has_diagnostic_study_context)
+# ------------------------------------------------------------
+
+def test_isotope_labeled_name_matches_bracketed_18f():
+    assert _is_isotope_labeled_name("[F-18]Flornaptitril") is True
+
+
+def test_isotope_labeled_name_matches_bracketed_11c():
+    assert _is_isotope_labeled_name("[11C]MK-6884") is True
+
+
+def test_isotope_labeled_name_matches_prefix_without_brackets():
+    assert _is_isotope_labeled_name("11C-ER176") is True
+    assert _is_isotope_labeled_name("18F-92") is True
+
+
+def test_isotope_labeled_name_matches_fused_no_separator():
+    # "18F" immediately fused onto a compound code with no hyphen/space/
+    # bracket at all -- the real trials.csv example that first exposed
+    # the gap (18F + AV45, AV45 already a known amyloid tracer token,
+    # but the fused single token "18fav45" doesn't equal "av45").
+    assert _is_isotope_labeled_name("18FAV45") is True
+
+
+def test_isotope_labeled_name_false_positive_guard_embedded_digits():
+    # SSR180711C is a real, unrelated investigational therapeutic (a
+    # nicotinic alpha7 agonist) -- its "11C" is embedded mid-code
+    # (immediately preceded by "0", not a word boundary), not a
+    # radiochemistry isotope label. This is the exact case the audit
+    # requirement calls out: don't assume diagnostic from name alone.
+    assert _is_isotope_labeled_name("SSR180711C") is False
+
+
+def test_isotope_labeled_name_false_positive_guard_ordinary_names():
+    for name in ("Donepezil", "AR1001", "Lecanemab", "BMS-708163", "Memantine"):
+        assert _is_isotope_labeled_name(name) is False, name
+
+
+def test_scope_isotope_name_with_diagnostic_primary_purpose_is_diagnostic_agent():
+    design = "Allocation: NA | Intervention Model: SINGLE_GROUP | Masking: NONE () | Primary Purpose: DIAGNOSTIC"
+    r = classify_pipeline_scope(
+        "DRUG", "18F-92", "investigational_therapeutic_unverified", "no_match",
+        brief_summary="18F-92 molecular probe is a novel molecularly targeted imaging agent for amyloid-beta.",
+        study_title="Amyloid-beta PET Imaging With 18F-92 in Alzheimer's Disease",
+        study_design=design,
+    )
+    assert r["pipeline_scope"] == "Diagnostic Agent"
+    assert r["diagnostic_subtype"] == "Amyloid PET tracer"
+
+
+def test_scope_isotope_name_with_pet_wording_in_summary_is_diagnostic_agent_even_without_diagnostic_purpose():
+    # Real dataset finding: ct.gov's own Primary Purpose is inconsistently
+    # tagged (BASIC_SCIENCE/OTHER/TREATMENT/blank) for genuine tracer-
+    # validation trials -- explicit PET/radioligand wording in the title
+    # or summary must be an equally-sufficient signal, not a fallback.
+    r = classify_pipeline_scope(
+        "DRUG", "[11C]MK-6884", "investigational_therapeutic_unverified", "no_match",
+        brief_summary="investigate the safety and efficacy of [11C]MK-6884 as a positron emission "
+                       "tomography (PET) imaging agent for quantifying muscarinic 4 (M4) receptors",
+        study_title="[11C]MK-6884 Positron Emission Tomography (PET) Tracer Validation Trial",
+        study_design="Allocation: NA | Intervention Model: SINGLE_GROUP | Masking: NONE () | Primary Purpose: BASIC_SCIENCE",
+    )
+    assert r["pipeline_scope"] == "Diagnostic Agent"
+
+
+def test_scope_isotope_name_with_biodistribution_wording_is_diagnostic_agent():
+    r = classify_pipeline_scope(
+        "DRUG", "[11C]MPC6827", "investigational_therapeutic_unverified", "no_match",
+        brief_summary="This is a phase 0 study that will enable an assessment of biodistribution and "
+                       "estimation of absorbed dose in humans based on data collected from five healthy volunteers",
+        study_title="Exploratory Evaluation of [11C]MPC6827",
+        study_design="Allocation: NA | Intervention Model: SINGLE_GROUP | Masking: NONE () | Primary Purpose: BASIC_SCIENCE",
+    )
+    assert r["pipeline_scope"] == "Diagnostic Agent"
+
+
+def test_scope_isotope_name_without_any_diagnostic_context_is_not_reclassified():
+    # Isotope-looking name alone, with NO corroborating study-level
+    # evidence at all, must NOT be swept into Diagnostic Agent --
+    # exactly the "don't assume diagnostic solely from name" rule.
+    r = classify_pipeline_scope(
+        "DRUG", "18F-92", "investigational_therapeutic_unverified", "no_match",
+        brief_summary="", study_title="", study_design="",
+    )
+    assert r["pipeline_scope"] == "Therapeutic Drug"
+
+
+def test_scope_ssr180711c_stays_therapeutic_despite_embedded_11c_substring():
+    r = classify_pipeline_scope(
+        "DRUG", "SSR180711C", "investigational_therapeutic_unverified", "no_match",
+        brief_summary="assess the effect of 3 doses of SSR180711C on cognitive performance in patients "
+                       "with mild Alzheimer's Disease",
+        study_title="Effect on Cognitive Performance and Safety/Tolerability of SSR180711C in Mild Alzheimer's Disease",
+        study_design="Allocation: RANDOMIZED | Intervention Model: PARALLEL | Masking: QUADRUPLE (PARTICIPANT, "
+                      "CARE_PROVIDER, INVESTIGATOR, OUTCOMES_ASSESSOR) | Primary Purpose: TREATMENT",
+    )
+    assert r["pipeline_scope"] == "Therapeutic Drug"
+
+
+def test_scope_sponsor_developed_therapeutic_never_overridden_by_isotope_check():
+    # An official-pipeline-confirmed match is real, verified evidence --
+    # never second-guessed by a name/summary heuristic, even if the name
+    # happens to carry isotope notation and the trial looks diagnostic.
+    r = classify_pipeline_scope(
+        "DRUG", "18F-SomeConfirmedAsset", "sponsor_developed_therapeutic", "confirmed_official_match",
+        brief_summary="a PET imaging agent", study_title="PET imaging study",
+        study_design="Primary Purpose: DIAGNOSTIC",
+    )
+    assert r["pipeline_scope"] == "Therapeutic Drug"
+
+
+def test_diagnostic_subtype_amyloid():
+    assert determine_diagnostic_subtype("18F-92", "amyloid-beta imaging probe", "Amyloid PET") == "Amyloid PET tracer"
+
+
+def test_diagnostic_subtype_tau():
+    assert determine_diagnostic_subtype("F-18 PMPBB3", "a tau targeted radiopharmaceutical", "Tau PET") == "Tau PET tracer"
+
+
+def test_diagnostic_subtype_tspo():
+    assert determine_diagnostic_subtype("11C-PBR28", "TSPO binding, neuroinflammation", "Imaging Inflammation") == "TSPO/neuroinflammation PET tracer"
+
+
+def test_diagnostic_subtype_generic_fallback():
+    assert determine_diagnostic_subtype("[18F]MNI-1126", "assess synaptic density loss", "Imaging Marker") == "PET tracer"
+
+
+def test_diagnostic_subtype_prioritizes_own_name_over_shared_trial_summary():
+    # A trial can dose sibling tracers for different pathways in the
+    # same protocol; the shared Brief Summary must not leak one
+    # sibling's pathway wording onto the other's subtype.
+    subtype = determine_diagnostic_subtype(
+        "18F-Florbetapir",  # amyloid tracer by name
+        "Evaluation of a tau radioligand alongside an amyloid tracer in the same cohort",
+        "Dual tau and amyloid PET imaging study",
+    )
+    assert subtype == "Amyloid PET tracer"
+
+
+def test_build_diagnostic_agent_audit_dataframe_empty_input():
+    result = build_diagnostic_agent_audit_dataframe(pd.DataFrame())
+    assert list(result.columns) == [
+        "name", "nct_ids", "trial_count", "evidence_used",
+        "previous_pipeline_scope", "new_pipeline_scope", "diagnostic_subtype",
+        "confidence", "previously_leaked_into_therapeutic_dashboard",
+    ]
+    assert len(result) == 0
+
+
+def _fake_interventions_row(nct_id, name, normalized_name, pipeline_scope, scope_reason, scope_method,
+                             scope_confidence="high", diagnostic_subtype=""):
+    return {
+        "nct_id": nct_id, "original_name": name, "normalized_name": normalized_name,
+        "pipeline_scope": pipeline_scope, "scope_reason": scope_reason, "scope_method": scope_method,
+        "scope_confidence": scope_confidence, "diagnostic_subtype": diagnostic_subtype,
+    }
+
+
+def test_build_diagnostic_agent_audit_dataframe_flags_newly_caught_as_leaked():
+    interventions_df = pd.DataFrame([
+        _fake_interventions_row(
+            "NCT00000001", "18F-92", "18f 92", "Diagnostic Agent",
+            "isotope-labeled tracer name (18F/11C-style notation) combined with diagnostic study context",
+            "rule_keyword", diagnostic_subtype="Amyloid PET tracer",
+        ),
+    ])
+    result = build_diagnostic_agent_audit_dataframe(interventions_df)
+    assert len(result) == 1
+    row = result.iloc[0]
+    assert row["previous_pipeline_scope"] == "Therapeutic Drug"
+    assert row["new_pipeline_scope"] == "Diagnostic Agent"
+    assert row["previously_leaked_into_therapeutic_dashboard"] == True
+    assert row["diagnostic_subtype"] == "Amyloid PET tracer"
+
+
+def test_build_diagnostic_agent_audit_dataframe_pre_existing_diagnostic_agent_not_flagged_as_leaked():
+    interventions_df = pd.DataFrame([
+        _fake_interventions_row(
+            "NCT00000002", "Florbetapir F18", "florbetapir f18", "Diagnostic Agent",
+            "matches a curated diagnostic/imaging tracer name", "rule_classification",
+        ),
+    ])
+    result = build_diagnostic_agent_audit_dataframe(interventions_df)
+    assert len(result) == 1
+    row = result.iloc[0]
+    assert row["previous_pipeline_scope"] == "Diagnostic Agent"
+    assert row["previously_leaked_into_therapeutic_dashboard"] == False
+
+
+def test_build_diagnostic_agent_audit_dataframe_uncertain_case_flagged_low_confidence():
+    interventions_df = pd.DataFrame([
+        _fake_interventions_row(
+            "NCT00000003", "[11C]SomeNewCode", "11c somenewcode", "Therapeutic Drug",
+            "investigational therapeutic candidate; drug/biological intervention type with no disqualifying evidence found",
+            "rule_classification",
+        ),
+    ])
+    result = build_diagnostic_agent_audit_dataframe(interventions_df)
+    assert len(result) == 1
+    row = result.iloc[0]
+    assert row["confidence"] == "low"
+    assert row["previous_pipeline_scope"] == row["new_pipeline_scope"] == "Therapeutic Drug"
+    assert row["previously_leaked_into_therapeutic_dashboard"] == True
+    assert "needs manual review" in row["evidence_used"]
+
+
+def test_build_diagnostic_agent_audit_dataframe_non_suspect_row_excluded():
+    interventions_df = pd.DataFrame([
+        _fake_interventions_row(
+            "NCT00000004", "Donepezil", "donepezil", "Therapeutic Drug",
+            "confirmed or unsourced official sponsor-pipeline match", "rule_classification",
+        ),
+    ])
+    result = build_diagnostic_agent_audit_dataframe(interventions_df)
+    assert len(result) == 0
+
+
+def test_build_diagnostic_agent_audit_dataframe_aggregates_nct_ids_across_trials():
+    interventions_df = pd.DataFrame([
+        _fake_interventions_row(
+            "NCT00000001", "11C-PBR28", "11c pbr28", "Diagnostic Agent",
+            "isotope-labeled tracer name (18F/11C-style notation) combined with diagnostic study context",
+            "rule_keyword", diagnostic_subtype="TSPO/neuroinflammation PET tracer",
+        ),
+        _fake_interventions_row(
+            "NCT00000002", "11C-PBR28", "11c pbr28", "Diagnostic Agent",
+            "isotope-labeled tracer name (18F/11C-style notation) combined with diagnostic study context",
+            "rule_keyword", diagnostic_subtype="TSPO/neuroinflammation PET tracer",
+        ),
+    ])
+    result = build_diagnostic_agent_audit_dataframe(interventions_df)
+    assert len(result) == 1
+    assert result.iloc[0]["trial_count"] == 2
+    assert result.iloc[0]["nct_ids"] == "NCT00000001; NCT00000002"
+
+
 def test_scope_generic_diagnostic_test_type_still_gets_diagnostic_agent():
     # a DIAGNOSTIC_TEST-type name that ISN'T generic (e.g. a specific
     # named test) should be "Diagnostic Agent", not silently excluded
@@ -1903,6 +2145,29 @@ ALL_TESTS = [
     test_build_scope_audit_dataframe_basic_structure,
     test_build_scope_audit_dataframe_empty_input,
     test_build_scope_audit_dataframe_dashboard_eligible_matches_therapeutic_scope,
+    test_isotope_labeled_name_matches_bracketed_18f,
+    test_isotope_labeled_name_matches_bracketed_11c,
+    test_isotope_labeled_name_matches_prefix_without_brackets,
+    test_isotope_labeled_name_matches_fused_no_separator,
+    test_isotope_labeled_name_false_positive_guard_embedded_digits,
+    test_isotope_labeled_name_false_positive_guard_ordinary_names,
+    test_scope_isotope_name_with_diagnostic_primary_purpose_is_diagnostic_agent,
+    test_scope_isotope_name_with_pet_wording_in_summary_is_diagnostic_agent_even_without_diagnostic_purpose,
+    test_scope_isotope_name_with_biodistribution_wording_is_diagnostic_agent,
+    test_scope_isotope_name_without_any_diagnostic_context_is_not_reclassified,
+    test_scope_ssr180711c_stays_therapeutic_despite_embedded_11c_substring,
+    test_scope_sponsor_developed_therapeutic_never_overridden_by_isotope_check,
+    test_diagnostic_subtype_amyloid,
+    test_diagnostic_subtype_tau,
+    test_diagnostic_subtype_tspo,
+    test_diagnostic_subtype_generic_fallback,
+    test_diagnostic_subtype_prioritizes_own_name_over_shared_trial_summary,
+    test_build_diagnostic_agent_audit_dataframe_empty_input,
+    test_build_diagnostic_agent_audit_dataframe_flags_newly_caught_as_leaked,
+    test_build_diagnostic_agent_audit_dataframe_pre_existing_diagnostic_agent_not_flagged_as_leaked,
+    test_build_diagnostic_agent_audit_dataframe_uncertain_case_flagged_low_confidence,
+    test_build_diagnostic_agent_audit_dataframe_non_suspect_row_excluded,
+    test_build_diagnostic_agent_audit_dataframe_aggregates_nct_ids_across_trials,
 ]
 
 

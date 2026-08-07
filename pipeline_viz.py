@@ -31,6 +31,7 @@ from drug_classification import (
     build_drug_date_rollup,
     load_scope_overrides,
     build_scope_audit_dataframe,
+    build_diagnostic_agent_audit_dataframe,
     THERAPEUTIC_SCOPE,
     normalize_text,
 )
@@ -488,6 +489,7 @@ _NEW_COLUMN_DEFAULTS = {
     "scope_method": "rule_type",
     "scope_confidence": "high",
     "manual_review_required": False,
+    "diagnostic_subtype": "",
 }
 for _col, _default in _NEW_COLUMN_DEFAULTS.items():
     df[_col] = df[_col].fillna(_default)
@@ -857,6 +859,13 @@ scope_audit_df = build_scope_audit_dataframe(interventions_df)
 os.makedirs("outputs", exist_ok=True)
 scope_audit_df.to_csv("outputs/classification_gap_audit.csv", index=False)
 print(f"=== SAVED: outputs/classification_gap_audit.csv ({len(scope_audit_df)} distinct intervention name/type records) ===")
+print()
+
+diagnostic_agent_audit_df = build_diagnostic_agent_audit_dataframe(interventions_df)
+diagnostic_agent_audit_df.to_csv("outputs/diagnostic_agent_audit.csv", index=False)
+_leaked_count = int(diagnostic_agent_audit_df["previously_leaked_into_therapeutic_dashboard"].sum()) if len(diagnostic_agent_audit_df) else 0
+print(f"=== SAVED: outputs/diagnostic_agent_audit.csv ({len(diagnostic_agent_audit_df)} suspected imaging/radiotracer records, "
+      f"{_leaked_count} currently/previously leaking into the therapeutic view) ===")
 print()
 
 # ============================================================
@@ -2097,6 +2106,7 @@ review_cols = [
     # picked as this trial's developed_drug (see resolve_developed_drug()'s
     # scope_fields() helper in drug_classification.py).
     "pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required",
+    "diagnostic_subtype",
 ]
 review_cols = [c for c in review_cols if c in df.columns]
 df[review_cols].to_csv("pipeline_annotated.csv", index=False)
@@ -2119,6 +2129,7 @@ drug_review_cols = [
     "verification_status", "classification_confidence", "needs_manual_review",
     "confirmed_trial_count", "unverified_trial_count",
     "pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required",
+    "diagnostic_subtype",
     # Phase 2 — scientific classification (drug_type/target above are
     # now SOURCED from this resolution; these columns carry the full
     # provenance for review in Excel)
@@ -2181,6 +2192,7 @@ interventions_output = interventions_df.rename(columns={
     # this is the traceability record for records that never reach
     # resolved_drugs_df at all (e.g. Exclude/Placebo or Comparator scope).
     "pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required",
+    "diagnostic_subtype",
 ]]
 interventions_output.to_csv("pipeline_interventions.csv", index=False)
 print("=== SAVED: pipeline_interventions.csv (per-intervention detail) ===")
