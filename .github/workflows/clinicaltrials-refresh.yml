@@ -65,11 +65,11 @@ jobs:
 
       - name: Checkout repository
         if: steps.tzcheck.outputs.proceed == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
         if: steps.tzcheck.outputs.proceed == 'true'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.14"
 
