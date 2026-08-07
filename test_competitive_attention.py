@@ -570,7 +570,15 @@ def test_render_ar1001_relevance_section_shows_drug_and_score():
     html = cav.render_ar1001_relevance_section(ranking)
     assert "Aducanumab" in html
     assert "Biogen" in html
-    assert "72/100" in html
+    assert ">72<" in html  # bare score, big/bold tile display -- no "/100" suffix in the visible tile
+
+
+def test_render_ar1001_relevance_section_renders_tiles_in_one_row_container():
+    drugs = _drugs_df([_drug_row(f"Drug{i}", aribio_relevance_score=90 - i) for i in range(10)])
+    ranking = ca.build_ar1001_relevance_ranking(drugs, WATCHLIST)
+    html = cav.render_ar1001_relevance_section(ranking)
+    assert html.count("ar1001-tile-score") == 10
+    assert '<div class="ar1001-row">' in html
 
 
 # ------------------------------------------------------------
@@ -693,6 +701,7 @@ ALL_TESTS = [
     test_ar1001_relevance_ranking_empty_input,
     test_render_ar1001_relevance_section_handles_empty_dataframe,
     test_render_ar1001_relevance_section_shows_drug_and_score,
+    test_render_ar1001_relevance_section_renders_tiles_in_one_row_container,
     test_describe_change_produces_factual_text_without_scored_factors,
     test_prepare_recent_changes_adds_description_column,
     test_prepare_recent_changes_sorts_high_importance_first,

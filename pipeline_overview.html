@@ -327,9 +327,21 @@
   .attention-company { font-size: 12.5px; font-weight: 400; color: #666; margin-left: 8px; }
   .attention-change { font-size: 13px; color: #333; margin-top: 3px; }
   .attention-factors { font-size: 11.5px; color: #999; margin-top: 3px; }
-  .attention-ar1001 { font-size: 12px; color: #666; margin-top: 5px; font-weight: 600; }
-  .attention-ar1001 span { font-weight: 700; }
   .attention-side { font-size: 12.5px; white-space: nowrap; }
+  .ar1001-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .ar1001-tile {
+    flex: 1 1 90px; min-width: 90px; text-align: center; padding: 12px 6px;
+    border-radius: 8px; background: #f6f7f9; cursor: default;
+  }
+  .ar1001-tile-score { font-size: 24px; font-weight: 800; line-height: 1; letter-spacing: -0.01em; }
+  .ar1001-tile-name {
+    font-size: 11.5px; font-weight: 700; color: #1a1a1a; margin-top: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ar1001-tile-sub {
+    font-size: 10px; color: #888; margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
   .attention-link { color: #2e5fa3; text-decoration: none; font-weight: 600; }
   .attention-link:hover { text-decoration: underline; }
   .attention-link--none { color: #aaa; font-weight: 400; }
@@ -4278,87 +4290,57 @@ return Plotly;
         <div class="attention-panel-title">AR1001 Relevance</div>
         <div class="attention-panel-note">top 10 of 10 resolved drugs &middot; ranked by deterministic similarity score (pathway/modality/phase), not AI judgment</div>
       </div>
-      
-            <div class="attention-card">
-              <div class="attention-badge" style="background:#204272"><span style="color:#204272">85/100</span></div>
-              <div class="attention-main">
-                <div class="attention-title">3APS<span class="attention-company">Bellus Health Inc. - a GSK company</span></div>
-                <div class="attention-change">Phase 3</div>
-                <div class="attention-factors">Shares target pathway(s): Amyloid; Same modality: Small Molecule; Same phase: Phase 3</div>
-              </div>
+      <div class="ar1001-row">
+            <div class="ar1001-tile" title="3APS — Bellus Health Inc. - a GSK company — Phase 3 — Shares target pathway(s): Amyloid; Same modality: Small Molecule; Same phase: Phase 3">
+              <div class="ar1001-tile-score" style="color:#204272">85</div>
+              <div class="ar1001-tile-name">3APS</div>
+              <div class="ar1001-tile-sub">Bellus Health Inc. - a GSK company</div>
             </div>
-            <div class="attention-card">
-              <div class="attention-badge" style="background:#204272"><span style="color:#204272">85/100</span></div>
-              <div class="attention-main">
-                <div class="attention-title">AG10<span class="attention-company">Eidos Therapeutics, a BridgeBio company</span></div>
-                <div class="attention-change">Phase 3</div>
-                <div class="attention-factors">Shares target pathway(s): Amyloid; Same modality: Small Molecule; Same phase: Phase 3</div>
-              </div>
+            <div class="ar1001-tile" title="AG10 — Eidos Therapeutics, a BridgeBio company — Phase 3 — Shares target pathway(s): Amyloid; Same modality: Small Molecule; Same phase: Phase 3">
+              <div class="ar1001-tile-score" style="color:#204272">85</div>
+              <div class="ar1001-tile-name">AG10</div>
+              <div class="ar1001-tile-sub">Eidos Therapeutics, a BridgeBio company</div>
             </div>
-            <div class="attention-card">
-              <div class="attention-badge" style="background:#204272"><span style="color:#204272">85/100</span></div>
-              <div class="attention-main">
-                <div class="attention-title">Acoramidis<span class="attention-company">Eidos Therapeutics, a BridgeBio company</span></div>
-                <div class="attention-change">Phase 3</div>
-                <div class="attention-factors">Shares target pathway(s): Amyloid; Same modality: Small Molecule; Same phase: Phase 3</div>
-              </div>
+            <div class="ar1001-tile" title="Acoramidis — Eidos Therapeutics, a BridgeBio company — Phase 3 — Shares target pathway(s): Amyloid; Same modality: Small Molecule; Same phase: Phase 3">
+              <div class="ar1001-tile-score" style="color:#204272">85</div>
+              <div class="ar1001-tile-name">Acoramidis</div>
+              <div class="ar1001-tile-sub">Eidos Therapeutics, a BridgeBio company</div>
             </div>
-            <div class="attention-card">
-              <div class="attention-badge" style="background:#204272"><span style="color:#204272">85/100</span></div>
-              <div class="attention-main">
-                <div class="attention-title">Azeliragon<span class="attention-company">vTv Therapeutics</span></div>
-                <div class="attention-change">Phase 3</div>
-                <div class="attention-factors">Shares target pathway(s): Amyloid; Same modality: Small Molecule; Same phase: Phase 3</div>
-              </div>
+            <div class="ar1001-tile" title="Azeliragon — vTv Therapeutics — Phase 3 — Shares target pathway(s): Amyloid; Same modality: Small Molecule; Same phase: Phase 3">
+              <div class="ar1001-tile-score" style="color:#204272">85</div>
+              <div class="ar1001-tile-name">Azeliragon</div>
+              <div class="ar1001-tile-sub">vTv Therapeutics</div>
             </div>
-            <div class="attention-card">
-              <div class="attention-badge" style="background:#204272"><span style="color:#204272">85/100</span></div>
-              <div class="attention-main">
-                <div class="attention-title">Buntanetap/Posiphen<span class="attention-company">Annovis Bio Inc.</span></div>
-                <div class="attention-change">Phase 3</div>
-                <div class="attention-factors">Shares target pathway(s): Neuroprotection; Same modality: Small Molecule; Same phase: Phase 3</div>
-              </div>
+            <div class="ar1001-tile" title="Buntanetap/Posiphen — Annovis Bio Inc. — Phase 3 — Shares target pathway(s): Neuroprotection; Same modality: Small Molecule; Same phase: Phase 3">
+              <div class="ar1001-tile-score" style="color:#204272">85</div>
+              <div class="ar1001-tile-name">Buntanetap/Posiphen</div>
+              <div class="ar1001-tile-sub">Annovis Bio Inc.</div>
             </div>
-            <div class="attention-card">
-              <div class="attention-badge" style="background:#204272"><span style="color:#204272">85/100</span></div>
-              <div class="attention-main">
-                <div class="attention-title">DMB-I (INN: Latrepirdine)<span class="attention-company">Bigespas LTD</span></div>
-                <div class="attention-change">Phase 3</div>
-                <div class="attention-factors">Shares target pathway(s): Neuroprotection; Same modality: Small Molecule; Same phase: Phase 3</div>
-              </div>
+            <div class="ar1001-tile" title="DMB-I (INN: Latrepirdine) — Bigespas LTD — Phase 3 — Shares target pathway(s): Neuroprotection; Same modality: Small Molecule; Same phase: Phase 3">
+              <div class="ar1001-tile-score" style="color:#204272">85</div>
+              <div class="ar1001-tile-name">DMB-I (INN: Latrepirdine)</div>
+              <div class="ar1001-tile-sub">Bigespas LTD</div>
             </div>
-            <div class="attention-card">
-              <div class="attention-badge" style="background:#204272"><span style="color:#204272">85/100</span></div>
-              <div class="attention-main">
-                <div class="attention-title">Dimebon<span class="attention-company">Medivation, Inc.; Pfizer</span></div>
-                <div class="attention-change">Phase 3</div>
-                <div class="attention-factors">Shares target pathway(s): Neuroprotection; Same modality: Small Molecule; Same phase: Phase 3</div>
-              </div>
+            <div class="ar1001-tile" title="Dimebon — Medivation, Inc.; Pfizer — Phase 3 — Shares target pathway(s): Neuroprotection; Same modality: Small Molecule; Same phase: Phase 3">
+              <div class="ar1001-tile-score" style="color:#204272">85</div>
+              <div class="ar1001-tile-name">Dimebon</div>
+              <div class="ar1001-tile-sub">Medivation, Inc.; Pfizer</div>
             </div>
-            <div class="attention-card">
-              <div class="attention-badge" style="background:#204272"><span style="color:#204272">85/100</span></div>
-              <div class="attention-main">
-                <div class="attention-title">Dimebon (latrepirdine)<span class="attention-company">Medivation, Inc.</span></div>
-                <div class="attention-change">Phase 3</div>
-                <div class="attention-factors">Shares target pathway(s): Neuroprotection; Same modality: Small Molecule; Same phase: Phase 3</div>
-              </div>
+            <div class="ar1001-tile" title="Dimebon (latrepirdine) — Medivation, Inc. — Phase 3 — Shares target pathway(s): Neuroprotection; Same modality: Small Molecule; Same phase: Phase 3">
+              <div class="ar1001-tile-score" style="color:#204272">85</div>
+              <div class="ar1001-tile-name">Dimebon (latrepirdine)</div>
+              <div class="ar1001-tile-sub">Medivation, Inc.</div>
             </div>
-            <div class="attention-card">
-              <div class="attention-badge" style="background:#204272"><span style="color:#204272">85/100</span></div>
-              <div class="attention-main">
-                <div class="attention-title">Dimebon for administration<span class="attention-company">Pfizer</span></div>
-                <div class="attention-change">Phase 3</div>
-                <div class="attention-factors">Shares target pathway(s): Neuroprotection; Same modality: Small Molecule; Same phase: Phase 3</div>
-              </div>
+            <div class="ar1001-tile" title="Dimebon for administration — Pfizer — Phase 3 — Shares target pathway(s): Neuroprotection; Same modality: Small Molecule; Same phase: Phase 3">
+              <div class="ar1001-tile-score" style="color:#204272">85</div>
+              <div class="ar1001-tile-name">Dimebon for administration</div>
+              <div class="ar1001-tile-sub">Pfizer</div>
             </div>
-            <div class="attention-card">
-              <div class="attention-badge" style="background:#204272"><span style="color:#204272">85/100</span></div>
-              <div class="attention-main">
-                <div class="attention-title">Elenbecestat<span class="attention-company">Eisai Co., Ltd.</span></div>
-                <div class="attention-change">Phase 3</div>
-                <div class="attention-factors">Shares target pathway(s): Amyloid; Same modality: Small Molecule; Same phase: Phase 3</div>
-              </div>
-            </div>
+            <div class="ar1001-tile" title="Elenbecestat — Eisai Co., Ltd. — Phase 3 — Shares target pathway(s): Amyloid; Same modality: Small Molecule; Same phase: Phase 3">
+              <div class="ar1001-tile-score" style="color:#204272">85</div>
+              <div class="ar1001-tile-name">Elenbecestat</div>
+              <div class="ar1001-tile-sub">Eisai Co., Ltd.</div>
+            </div></div>
     </div>
     <div class="attention-panel" style="border-radius:12px; box-shadow:0 1px 3px rgba(20, 40, 70, 0.09); margin-top:16px;">
       <div class="attention-panel-header">
