@@ -1213,14 +1213,25 @@ def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_
 
 relevance_matrix_fig = build_relevance_matrix_figure(therapeutic_drugs_df)
 
-# --- Phase 3 leaderboard: same drug-level data, sorted by target ---
+# --- Phase 3 leaderboard: same drug-level data. phase3_df itself stays
+# sorted by target (used for the "Show all N Phase 3 agents" count/link
+# below, which reflects the FULL Phase 3 population including AR1001).
 # Phase 0: built from resolved_drugs_df (was legacy_drugs_df). Phase 1A:
 # narrowed to therapeutic_drugs_df, per the requirement that the
 # leaderboard show only real drugs.
 phase3_df = therapeutic_drugs_df[therapeutic_drugs_df["phase_reached"] == "Phase 3"].sort_values(
     ["target", "is_aribio", "display_name"], ascending=[True, False, True]
 )
-PHASE3_PREVIEW_N = 8
+PHASE3_PREVIEW_N = 10
+# The PREVIEW table (unlike phase3_df/the "show all" link above) ranks
+# by AR1001 relevance score instead -- top N Phase 3 competitors most
+# relevant to AR1001, not just alphabetized by target. AR1001 itself is
+# excluded (its own self-score isn't a meaningful "how relevant" rank),
+# same convention as build_ar1001_relevance_ranking()/
+# build_relevance_matrix() elsewhere on this dashboard.
+phase3_top_relevant_df = phase3_df[~phase3_df["is_aribio"]].sort_values(
+    ["aribio_relevance_score", "display_name"], ascending=[False, True]
+)
 
 print("=== PER-DRUG TABLE PREVIEW (therapeutic_drugs_df, first 30 rows, sorted by phase) ===")
 preview = therapeutic_drugs_df.sort_values("phase_reached", ascending=False)
@@ -1305,6 +1316,14 @@ total_resolved_records = len(resolved_drugs_df)
 phase3_agents = int((therapeutic_drugs_df["phase_reached"] == "Phase 3").sum())
 phase2_agents = int((therapeutic_drugs_df["phase_reached"] == "Phase 2").sum())
 phase1_agents = int((therapeutic_drugs_df["phase_reached"] == "Phase 1").sum())
+# Reuses the same RELEVANCE_Y_DIVIDER (70) the AR1001 Competitive
+# Landscape chart's quadrant split is built on -- one consistent "high
+# relevance" threshold across the dashboard. AR1001 itself is excluded
+# (its own self-score is never a meaningful "how relevant is this
+# competitor" count).
+high_relevance_agents = int((
+    (therapeutic_drugs_df["aribio_relevance_score"] >= RELEVANCE_Y_DIVIDER) & (~therapeutic_drugs_df["is_aribio"])
+).sum())
 
 plotlyjs_lib = pyo.get_plotlyjs()  # loaded once at the top of the page; every figure below skips its own copy
 pies_html = pio.to_html(fig, include_plotlyjs=False, full_html=False, div_id="pieDiv")
@@ -1338,14 +1357,23 @@ def phase3_row_html(row):
     else:
         name_html = name
     dot_color = STATUS_COLORS.get(row["status_summary"], "#999")
+    score = row.get("aribio_relevance_score")
+    if pd.notna(score):
+        score = int(score)
+        if score >= 65:
+            score_color = RELEVANCE_HIGH_COLOR
+        elif score >= 35:
+            score_color = RELEVANCE_MID_COLOR
+        else:
+            score_color = RELEVANCE_LOW_COLOR
+        score_html = f'<span style="color:{score_color};font-weight:700;">{score}</span>'
+    else:
+        score_html = "&mdash;"
     return (
         f'<tr><td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;'
         f'background:{dot_color};margin-right:8px;"></span>{name_html}</td>'
-        f'<td>{row["drug_type"]}</td><td>{row["target"]}</td><td>{status_text(row["status_summary"])}</td></tr>'
+        f'<td>{row["target"]}</td><td>{status_text(row["status_summary"])}</td><td>{score_html}</td></tr>'
     )
-
-phase3_rows_html = "".join(phase3_row_html(r) for _, r in phase3_df.head(PHASE3_PREVIEW_N).iterrows())
-phase3_shown = min(PHASE3_PREVIEW_N, len(phase3_df))
 
 header_cells = "".join(
     f'<th data-key="{key}" style="width:{width}%" onclick="sortTable(\'{key}\')">{label} <span class="sort-arrow" id="arrow-{key}"></span></th>'
@@ -1441,6 +1469,10 @@ confidence_colors_js = json.dumps(CONFIDENCE_COLORS)
 RELEVANCE_HIGH_COLOR = darken(ARIBIO_BLUE, 0.30)
 RELEVANCE_MID_COLOR = ARIBIO_BLUE
 RELEVANCE_LOW_COLOR = "#9e9e9e"
+
+phase3_rows_html = "".join(phase3_row_html(r) for _, r in phase3_top_relevant_df.head(PHASE3_PREVIEW_N).iterrows())
+phase3_shown = min(PHASE3_PREVIEW_N, len(phase3_top_relevant_df))
+
 records_js = json.dumps(table_records)
 table_column_count = len(TABLE_COLUMNS)
 
@@ -1493,7 +1525,9 @@ html_template = f"""
   }}
   .spotlight b {{ color: {ARIBIO_ACCENT}; }}
 
-  .kpi-row {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }}
+  .kpi-row {{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px; }}
+  @media (max-width: 1000px) {{ .kpi-row {{ grid-template-columns: repeat(3, 1fr); }} }}
+  @media (max-width: 640px) {{ .kpi-row {{ grid-template-columns: repeat(2, 1fr); }} }}
   .kpi-tile {{
     background: white; border-radius: {CARD_RADIUS}; border-top: 3px solid {ARIBIO_BLUE};
     padding: 16px 18px; box-shadow: {CARD_SHADOW};
@@ -1815,6 +1849,7 @@ html_template = f"""
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 3']}">{phase3_agents}</div><div class="kpi-label">Phase 3 agents</div></div>
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 2']}">{phase2_agents}</div><div class="kpi-label">Phase 2 agents</div></div>
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 1']}">{phase1_agents}</div><div class="kpi-label">Phase 1 agents</div></div>
+      <div class="kpi-tile"><div class="kpi-value" style="color:{ARIBIO_ACCENT}">{high_relevance_agents}</div><div class="kpi-label">High relevance to AR1001 (&ge;{RELEVANCE_Y_DIVIDER})</div></div>
     </div>
 
     {COMPETITIVE_ATTENTION_PLACEHOLDER}
@@ -1829,11 +1864,11 @@ html_template = f"""
         <div class="section-hint">Darker = more drugs. Click a cell to filter the table below.</div>
       </div>
       <div class="glance-panel">
-        <div class="glance-panel-title">Phase 3 agents &mdash; sorted by target
-          <span style="font-weight:400;font-size:12px;color:#999;">(showing {phase3_shown} of {len(phase3_df)})</span>
+        <div class="glance-panel-title">Phase 3 agents &mdash; top by AR1001 relevance
+          <span style="font-weight:400;font-size:12px;color:#999;">(showing top {phase3_shown} of {len(phase3_top_relevant_df)} competitors)</span>
         </div>
         <table class="phase3-table">
-          <thead><tr><th>Drug</th><th>Type</th><th>Target</th><th>Status</th></tr></thead>
+          <thead><tr><th>Drug</th><th>Target</th><th>Status</th><th>Relevance</th></tr></thead>
           <tbody>{phase3_rows_html}</tbody>
         </table>
         <span id="show-all-phase3" onclick="showAllPhase3()">Show all {len(phase3_df)} Phase 3 agents in the table below &darr;</span>

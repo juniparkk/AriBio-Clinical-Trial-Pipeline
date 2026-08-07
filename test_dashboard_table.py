@@ -217,18 +217,23 @@ def test_kpi_total_drugs_equals_resolved_drugs_df_length():
 
 def test_kpi_phase_counts_computed_from_resolved_drugs_df():
     therapeutic_rows = get_therapeutic_rows()
+    # 4 colored numeric KPI tiles: Phase 3/2/1 agents + High relevance.
     phase_kpi_matches = re.findall(r'<div class="kpi-value" style="color:[^"]*">(\d+)</div>', HTML_SOURCE)
-    assert len(phase_kpi_matches) == 3, "expected exactly 3 colored KPI tiles (Phase 3/2/1 agents)"
-    phase3_kpi, phase2_kpi, phase1_kpi = (int(v) for v in phase_kpi_matches)
+    assert len(phase_kpi_matches) == 4, "expected 4 colored numeric KPI tiles (Phase 3/2/1 agents + High relevance)"
+    phase3_kpi, phase2_kpi, phase1_kpi, high_relevance_kpi = (int(v) for v in phase_kpi_matches)
 
     phase_counts = {"Phase 1": 0, "Phase 2": 0, "Phase 3": 0}
+    high_relevance_count = 0
     for row in therapeutic_rows:
         if row["phase_reached"] in phase_counts:
             phase_counts[row["phase_reached"]] += 1
+        if row["aribio_relevance_score"] >= 70 and not row["is_aribio"]:
+            high_relevance_count += 1
 
     assert phase3_kpi == phase_counts["Phase 3"]
     assert phase2_kpi == phase_counts["Phase 2"]
     assert phase1_kpi == phase_counts["Phase 1"]
+    assert high_relevance_kpi == high_relevance_count
 
 
 TARGET_ORDER = ["Amyloid", "Tau", "Inflammation", "Neuroprotection", "Metabolism", "Symptomatic", "Neuropsychiatric"]
@@ -272,6 +277,25 @@ def test_phase3_leaderboard_names_are_subset_of_resolved_drugs_df():
         # star suffix added by phase3_row_html) — strip it before comparing
         clean_name = name.replace(" ★", "").strip()
         assert clean_name in resolved_names, f"leaderboard name {clean_name!r} not found in resolved_drugs_df"
+
+
+def test_phase3_leaderboard_sorted_by_relevance_and_excludes_ar1001():
+    table_match = re.search(r'<table class="phase3-table">.*?<tbody>(.*?)</tbody>', HTML_SOURCE, re.DOTALL)
+    assert table_match, "could not find the Phase 3 leaderboard table body"
+    row_html_blocks = re.findall(r'<tr>(.*?)</tr>', table_match.group(1), re.DOTALL)
+    assert len(row_html_blocks) > 0, "expected at least one Phase 3 leaderboard row in the real dataset"
+
+    names = []
+    scores = []
+    for block in row_html_blocks:
+        name_match = re.search(r'<a href="[^"]*"[^>]*>([^<]+)</a>', block)
+        names.append(name_match.group(1).strip())
+        score_match = re.search(r'font-weight:700;">(\d+)</span>', block)
+        assert score_match, f"expected a numeric relevance score cell in leaderboard row: {block!r}"
+        scores.append(int(score_match.group(1)))
+
+    assert "AR1001" not in names, "AR1001 itself should not appear in its own relevance ranking"
+    assert scores == sorted(scores, reverse=True), "leaderboard rows must be sorted by relevance score descending"
 
 
 def test_pipeline_table_names_are_subset_of_pipeline_drugs_csv():
@@ -475,6 +499,7 @@ ALL_TESTS = [
     test_kpi_phase_counts_computed_from_resolved_drugs_df,
     test_heatmap_all_tab_reconciles_to_resolved_drug_counts,
     test_phase3_leaderboard_names_are_subset_of_resolved_drugs_df,
+    test_phase3_leaderboard_sorted_by_relevance_and_excludes_ar1001,
     test_pipeline_table_names_are_subset_of_pipeline_drugs_csv,
     test_drug_type_pie_reconciles_with_resolved_drugs_df,
     test_target_pie_reconciles_with_resolved_drugs_df,
