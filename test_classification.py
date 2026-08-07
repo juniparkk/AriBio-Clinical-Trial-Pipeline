@@ -52,6 +52,8 @@ from drug_classification import (
     build_resolved_drugs_exclusion_audit_dataframe,
     RESOLVED_DRUGS_DF_ELIGIBLE_SCOPES,
     EXTENDED_NON_DRUG_REASON,
+    _is_diagnostic_challenge_or_probe_purpose,
+    _is_deprescribing_or_procedural_support,
 )
 
 PIPELINE_CSV_PATH = os.path.join(os.path.dirname(__file__), "data", "official_pipeline.csv")
@@ -1860,6 +1862,188 @@ def test_rollup_excludes_extended_net_matches_from_resolved_drugs_df():
     assert len(result) == 0
 
 
+# ------------------------------------------------------------
+# Non-therapeutic DRUG PURPOSE — a real drug/biologic used only for a
+# pharmacological challenge/probe, diagnostic-tool/contrast-imaging
+# development, or deprescribing/procedural-support role within a
+# specific trial, not as an investigational AD treatment. Every
+# "should exclude" case below is a real ClinicalTrials.gov example
+# found during this fix's data audit; every "should keep" case is a
+# real genuine investigational-drug Phase 1 study that must NOT be
+# swept in just because it happens to also carry Primary Purpose:
+# DIAGNOSTIC (ct.gov's own field is not reliable enough alone — see
+# _is_diagnostic_challenge_or_probe_purpose's module docstring).
+# ------------------------------------------------------------
+
+def test_isotope_labeled_name_matches_123i_notation():
+    for name in ("[123I] AV 39", "[123I]AV94", "123-I MNI-340", "123-I MNI-187", "[123I]CLINDE"):
+        assert _is_isotope_labeled_name(name), name
+
+
+def test_diagnostic_challenge_probe_pramlintide_challenge_test():
+    r = _is_diagnostic_challenge_or_probe_purpose(
+        "Pramlintide challenge test",
+        "a simple blood-based test for early detection of Alzheimer's disease...single injection of Pramlintide",
+        "Multi-Center Development of a Novel Diagnostic Test for Alzheimer's Disease",
+        "Primary Purpose: DIAGNOSTIC",
+    )
+    assert r is True
+
+
+def test_diagnostic_challenge_probe_scopolamine_eeg_diagnostic_tool():
+    r = _is_diagnostic_challenge_or_probe_purpose(
+        "Scopolamine",
+        "compare EEG responses...to scopolamine...to develop a diagnostic tool for AD",
+        "The Use of EEG in Alzheimer's Disease, With and Without Scopolamine - A Pilot Study",
+        "Primary Purpose: DIAGNOSTIC",
+    )
+    assert r is True
+
+
+def test_diagnostic_challenge_probe_pet_imaging_with_challenge_in_title():
+    r = _is_diagnostic_challenge_or_probe_purpose(
+        "LPS",
+        "examine the differences in the capacity to activate microglia",
+        "Peripheral Benzodiazepine Receptors (PBR28) Brain PET Imaging With Lipopolysaccharide "
+        "Challenge for the Study of Microglia Function in Alzheimer's Disease",
+        "Primary Purpose: DIAGNOSTIC",
+    )
+    assert r is True
+
+
+def test_diagnostic_challenge_probe_contrast_imaging_agent():
+    r = _is_diagnostic_challenge_or_probe_purpose(
+        "DSPE-DOTA-Gd Liposomal Injection",
+        "establish safety of ADx-001 in healthy volunteers...developed for use in contrast-enabled "
+        "MR imaging of amyloid plaques",
+        "Proof-of-concept Study of New Imaging Diagnostic in Patients With Suspected Alzheimer's Disease",
+        "Primary Purpose: DIAGNOSTIC",
+    )
+    assert r is True
+
+
+def test_diagnostic_challenge_probe_requires_diagnostic_purpose_not_just_a_token_match():
+    # "challenge"/"probe" bare tokens are only consulted AFTER Primary
+    # Purpose: DIAGNOSTIC already gates the check -- without that gate,
+    # unrelated context mentioning "challenge" must NOT trigger exclusion.
+    r = _is_diagnostic_challenge_or_probe_purpose(
+        "SomeRealDrug", "this trial presents a real challenge for patients", "A Study of SomeRealDrug",
+        "Primary Purpose: TREATMENT",
+    )
+    assert r is False
+
+
+def test_diagnostic_challenge_probe_name_alone_is_sufficient_without_context():
+    # "challenge test" in the intervention's OWN name is unambiguous on
+    # its own -- no Primary Purpose/context corroboration required.
+    r = _is_diagnostic_challenge_or_probe_purpose("Pramlintide challenge test", "", "", "")
+    assert r is True
+
+
+def test_diagnostic_challenge_probe_protects_real_investigational_drug_phase1_studies():
+    # Real Phase 1 safety/PK/immunogenicity studies of genuine
+    # investigational AD candidates must NOT be excluded, even though
+    # some of them are (apparently inconsistently) tagged Primary
+    # Purpose: DIAGNOSTIC in ct.gov's own data.
+    cases = [
+        ("LY450139 dihydrate",
+         "safety of LY450139 dihydrate...how much should be given...effect on a protein found in blood, called A beta",
+         "Effects of LY450139 Dihydrate on Subjects With Mild to Moderate Alzheimer's Disease"),
+        ("TC-5619",
+         "Phase 1 study to examine the safety, tolerability and pharmacokinetics of TC-5619",
+         "Multiple Ascending Dose Study of TC-5619 in Healthy Elderly Subjects and Subjects With Alzheimer's Disease"),
+        ("AMDX-2011P",
+         "assess safety, tolerability, plasma pharmacokinetics and biologic activity of a single intravenous dose",
+         "A Study of AMDX-2011P in Participants With Alzheimer's Disease"),
+        ("V950",
+         "test the safety, tolerability and the immune response to an investigational vaccine",
+         "A Study of V950 in People With Alzheimer Disease"),
+    ]
+    for name, summary, title in cases:
+        r = _is_diagnostic_challenge_or_probe_purpose(name, summary, title, "Primary Purpose: DIAGNOSTIC")
+        assert r is False, name
+
+
+def test_diagnostic_challenge_probe_protects_real_drug_administered_as_treatment_within_diagnostic_study():
+    # Reminyl retard (galantamine, a real FDA-approved AD drug)
+    # administered AS TREATMENT while an MRI technique monitors
+    # response -- the "diagnostic" framing describes the imaging
+    # methodology, not the drug's own role. Must not be excluded.
+    r = _is_diagnostic_challenge_or_probe_purpose(
+        "Reminyl retard",
+        "Examination of the correlation between the cerebral bloodflow and the clinical change under "
+        "treatment with Reminyl retard",
+        "Continuous Arterial Spin Labeling (CASL) MRI for Monitoring and Prediction of Drug Therapy in "
+        "Alzheimers Disease",
+        "Primary Purpose: DIAGNOSTIC",
+    )
+    assert r is False
+
+
+def test_deprescribing_name_token_detected():
+    assert _is_deprescribing_or_procedural_support(normalize_text("Deprescribing of target anticholinergics"))
+
+
+def test_deprescribing_phrases_detected():
+    for phrase in ("medication withdrawal", "drug discontinuation", "dose tapering"):
+        assert _is_deprescribing_or_procedural_support(normalize_text(phrase))
+
+
+def test_procedural_support_sedation_phrases_detected():
+    for phrase in ("procedural sedation", "conscious sedation"):
+        assert _is_deprescribing_or_procedural_support(normalize_text(phrase))
+
+
+def test_deprescribing_does_not_match_ordinary_drug_names():
+    for name in ("Donepezil", "AR1001", "Lecanemab"):
+        assert not _is_deprescribing_or_procedural_support(normalize_text(name))
+
+
+def test_scope_pramlintide_challenge_test_becomes_diagnostic_agent():
+    c = classify_intervention("DRUG", "Pramlintide challenge test", "Some Sponsor", [], [])
+    s = classify_pipeline_scope(
+        "DRUG", "Pramlintide challenge test", c["classification"], c["verification_status"],
+        brief_summary="a simple blood-based test for early detection...single injection of Pramlintide",
+        study_title="Multi-Center Development of a Novel Diagnostic Test for Alzheimer's Disease",
+        study_design="Primary Purpose: DIAGNOSTIC",
+    )
+    assert s["pipeline_scope"] == "Diagnostic Agent"
+
+
+def test_scope_deprescribing_becomes_non_drug_intervention():
+    c = classify_intervention("OTHER", "Deprescribing of target anticholinergics", "Some Sponsor", [], [])
+    s = classify_pipeline_scope(
+        "OTHER", "Deprescribing of target anticholinergics", c["classification"], c["verification_status"],
+        brief_summary="evaluate the impact of a deprescribing intervention on cognitive and safety outcomes",
+        study_title="Reducing Risk of Dementia Through Deprescribing",
+        study_design="Primary Purpose: PREVENTION",
+    )
+    assert s["pipeline_scope"] == "Non-Drug Intervention"
+
+
+def test_scope_sponsor_developed_therapeutic_never_overridden_by_diagnostic_purpose_check():
+    r = classify_pipeline_scope(
+        "DRUG", "SomeConfirmedAsset challenge test", "sponsor_developed_therapeutic", "confirmed_official_match",
+        brief_summary="a diagnostic challenge test", study_title="Diagnostic study",
+        study_design="Primary Purpose: DIAGNOSTIC",
+    )
+    assert r["pipeline_scope"] == "Therapeutic Drug"
+
+
+def test_flyer_excluded_via_extended_net():
+    assert _is_extended_non_drug_activity(normalize_text("Flyer"))
+
+
+def test_classify_intervention_flyer_is_behavioral_non_drug():
+    r = classify_intervention("OTHER", "Flyer", "Some Sponsor", [], [])
+    assert r["classification"] == "behavioral"
+
+
+def test_blood_withdrawal_is_a_procedure():
+    from drug_classification import _is_procedure
+    assert _is_procedure("OTHER", normalize_text("blood withdrawal"))
+
+
 def test_scope_generic_diagnostic_test_type_still_gets_diagnostic_agent():
     # a DIAGNOSTIC_TEST-type name that ISN'T generic (e.g. a specific
     # named test) should be "Diagnostic Agent", not silently excluded
@@ -2372,6 +2556,25 @@ ALL_TESTS = [
     test_exclusion_audit_excludes_unambiguous_placebo_arms,
     test_exclusion_audit_empty_input,
     test_rollup_excludes_extended_net_matches_from_resolved_drugs_df,
+    test_isotope_labeled_name_matches_123i_notation,
+    test_diagnostic_challenge_probe_pramlintide_challenge_test,
+    test_diagnostic_challenge_probe_scopolamine_eeg_diagnostic_tool,
+    test_diagnostic_challenge_probe_pet_imaging_with_challenge_in_title,
+    test_diagnostic_challenge_probe_contrast_imaging_agent,
+    test_diagnostic_challenge_probe_requires_diagnostic_purpose_not_just_a_token_match,
+    test_diagnostic_challenge_probe_name_alone_is_sufficient_without_context,
+    test_diagnostic_challenge_probe_protects_real_investigational_drug_phase1_studies,
+    test_diagnostic_challenge_probe_protects_real_drug_administered_as_treatment_within_diagnostic_study,
+    test_deprescribing_name_token_detected,
+    test_deprescribing_phrases_detected,
+    test_procedural_support_sedation_phrases_detected,
+    test_deprescribing_does_not_match_ordinary_drug_names,
+    test_scope_pramlintide_challenge_test_becomes_diagnostic_agent,
+    test_scope_deprescribing_becomes_non_drug_intervention,
+    test_scope_sponsor_developed_therapeutic_never_overridden_by_diagnostic_purpose_check,
+    test_flyer_excluded_via_extended_net,
+    test_classify_intervention_flyer_is_behavioral_non_drug,
+    test_blood_withdrawal_is_a_procedure,
 ]
 
 

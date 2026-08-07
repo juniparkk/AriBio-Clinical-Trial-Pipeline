@@ -497,7 +497,9 @@ _PROCEDURE_TYPES = {"PROCEDURE", "RADIATION"}
 # matching (used for the phrases below) already prevents that class of
 # false positive, and this token set uses the same whole-word principle.
 _PROCEDURE_TOKENS = {"mri", "biopsy", "spect"}
-_PROCEDURE_PHRASES = ["pet scan", "ct scan", "lumbar puncture", "blood draw", "radiation procedure"]
+_PROCEDURE_PHRASES = [
+    "pet scan", "ct scan", "lumbar puncture", "blood draw", "blood withdrawal", "radiation procedure",
+]
 
 
 def _is_procedure(itype_upper, normalized_name):
@@ -551,6 +553,12 @@ _EXTENDED_NON_DRUG_TOKENS = {
     "psychoeducation", "psychoeducational", "prehabilitation", "rehabilitation", "exercises",
     # generic device
     "device",
+    # recruitment/informational material or simple equipment name, not a
+    # drug — confirmed via real-data audit: "Flyer" (NCT07334392) is the
+    # sole surviving "candidate" in a trial whose only other
+    # interventions are named exercise programs, itself ct.gov-typed
+    # OTHER, with no known-compound/dev-code match of its own.
+    "flyer",
 }
 _EXTENDED_NON_DRUG_PHRASES = [
     # neuromodulation / electrical stimulation
@@ -1813,8 +1821,9 @@ def _looks_like_genetic_testing(normalized_name):
 # alphanumeric tracer codes (e.g. "[18F]MNI-1126", "11C-JNJ-63779586")
 # constantly, and a static list can't anticipate every one. This is a
 # SEPARATE, narrower net: an intervention whose own NAME carries
-# radiochemistry isotope-label notation (18F/F-18/11C/C-11 immediately
-# preceding a compound code, bracketed or not) is a CANDIDATE — never
+# radiochemistry isotope-label notation (18F/F-18/11C/C-11/123I/I-123
+# immediately preceding a compound code, bracketed or not) is a
+# CANDIDATE — never
 # reclassified on that basis alone (per requirement: don't assume
 # diagnostic solely from an unusual/isotope-looking name — a genuine
 # therapeutic radiopharmaceutical, or a compound code that merely
@@ -1834,7 +1843,8 @@ def _looks_like_genetic_testing(normalized_name):
 # lookahead requirement, so an isotope prefix fused directly onto a
 # compound code like "18F"+"AV45" still matches).
 _ISOTOPE_LABELED_NAME_RE = re.compile(
-    r"(?<![A-Za-z0-9])(?:\[\s*)?(?:18\s*F|F[\s-]?18|11\s*C|C[\s-]?11)", re.IGNORECASE
+    r"(?<![A-Za-z0-9])(?:\[\s*)?(?:18[\s-]?F|F[\s-]?18|11[\s-]?C|C[\s-]?11|123[\s-]?I|I[\s-]?123)",
+    re.IGNORECASE,
 )
 
 
@@ -1943,6 +1953,106 @@ def determine_diagnostic_subtype(name, brief_summary, study_title):
         return name_match
     combined = normalize_text(str(name or "") + " " + str(brief_summary or "") + " " + str(study_title or ""))
     return _match_subtype(combined) or "PET tracer"
+
+
+# ============================================================
+# NON-THERAPEUTIC DRUG PURPOSE — a REAL drug/biologic (survives every
+# check above) can still not belong in the therapeutic-drug population
+# if the TRIAL is using it for a non-treatment purpose: as a
+# pharmacological challenge/probe agent, a diagnostic-tool-development
+# substance, a contrast/imaging agent (non-isotope-labeled — the
+# isotope-name path above already covers PET/SPECT tracers), or a
+# deprescribing/withdrawal target.
+#
+# Real-data audit finding: "safety, tolerability, [and] pharmacokinetics"
+# language is NOT a reliable protective signal on its own — genuine
+# diagnostic-agent Phase 1 studies (e.g. a novel imaging contrast agent)
+# routinely discuss "safety" too. What actually separates the two
+# classes in this dataset is whether the text describes the SUBSTANCE's
+# own role as diagnostic/imaging/challenge/probe (e.g. "diagnostic
+# potential of X", "developed for use in contrast-enabled imaging",
+# "PET imaging with X ... challenge") versus ordinary investigational-
+# drug development framing (safety/PK/dose-escalation/immune response
+# in AD patients, with no diagnostic-role language at all). So this
+# check requires ct.gov's own Primary Purpose reading DIAGNOSTIC AND a
+# SPECIFIC phrase describing the substance's diagnostic/imaging/
+# challenge/probe role — never a bare "safety" or "biomarker" mention,
+# which are far too common in genuine therapeutic Phase 1 trials to be
+# useful signals (a real AD candidate's Phase 1 trial routinely reports
+# effects on a CSF/plasma biomarker as an OUTCOME, without the drug
+# itself being a diagnostic tool).
+#
+# Verified against real data during this fix: correctly excludes
+# Pramlintide ("challenge test" + Primary Purpose DIAGNOSTIC),
+# Scopolamine ("develop a diagnostic tool for AD"), BAY1006578
+# ("diagnostic potential of ... radiation dosimetry"), Aftobetin-HCl
+# ("fluorescence detection"), DSPE-DOTA-Gd Liposomal ("contrast-enabled
+# ... imaging"), and LPS ("Lipopolysaccharide Challenge") — while
+# correctly PRESERVING LY450139 dihydrate/semagacestat, TC-5619,
+# AMDX-2011P, and V950 (all genuine Phase 1 safety/PK/immunogenicity
+# studies of real investigational AD candidates, none of which mention
+# any diagnostic/imaging/challenge role for the drug itself).
+_DIAGNOSTIC_CHALLENGE_PROBE_NAME_PHRASES = [
+    "challenge test", "pharmacological challenge", "provocation test",
+]
+_DIAGNOSTIC_CHALLENGE_PROBE_CONTEXT_PHRASES = [
+    "challenge test", "pharmacological challenge", "provocation test", "challenge for the study",
+    "diagnostic potential", "diagnostic tool", "diagnostic biomarker", "novel diagnostic",
+    "imaging diagnostic", "blood-based test",
+    "contrast-enabled", "contrast agent", "for use in contrast",
+    "fluorescence detection", "radiation dosimetry",
+    "molecular probe", "research probe", "diagnostic probe", "imaging probe",
+]
+# Bare-word fallback for the context check — deliberately only ever
+# consulted AFTER the Primary Purpose: DIAGNOSTIC gate already passed
+# (see the caller), which is what makes a single distinctive word safe
+# here: a genuinely diagnostic-purpose trial mentioning "challenge" or
+# "probe" anywhere in its title/summary is real signal, not noise, in a
+# way it would NOT be if checked ungated against every trial.
+_DIAGNOSTIC_CHALLENGE_PROBE_CONTEXT_TOKENS = {"challenge", "probe"}
+
+
+def _is_diagnostic_challenge_or_probe_purpose(name, brief_summary, study_title, study_design):
+    normalized_name = normalize_text(name)
+    # The intervention's own name can be unambiguous on its own (e.g.
+    # "Pramlintide challenge test") without needing trial-context
+    # corroboration — "challenge test"/"pharmacological challenge"/
+    # "provocation test" as part of a drug's OWN listed name is not
+    # something a genuine therapeutic candidate's name would ever say.
+    if any(_contains_phrase(normalized_name, phrase) for phrase in _DIAGNOSTIC_CHALLENGE_PROBE_NAME_PHRASES):
+        return True
+
+    design_text = str(study_design or "")
+    purpose_match = re.search(r"Primary Purpose:\s*([A-Za-z_]+)", design_text)
+    is_diagnostic_purpose = bool(purpose_match and purpose_match.group(1).strip().upper() == "DIAGNOSTIC")
+    if not is_diagnostic_purpose:
+        return False
+
+    combined = normalize_text(str(name or "") + " " + str(brief_summary or "") + " " + str(study_title or ""))
+    if set(combined.split()) & _DIAGNOSTIC_CHALLENGE_PROBE_CONTEXT_TOKENS:
+        return True
+    return any(_contains_phrase(combined, phrase) for phrase in _DIAGNOSTIC_CHALLENGE_PROBE_CONTEXT_PHRASES)
+
+
+# --- deprescribing/medication withdrawal + procedural support -------
+# Name-level only (no trial-context lookup needed) — these read
+# unambiguously from the intervention's own name in every real example
+# found in this dataset, e.g. "Deprescribing of target anticholinergics"
+# (NCT04270474, ct.gov-typed OTHER — not even a DRUG-typed row; the
+# WITHDRAWAL PROCESS is the intervention, not an administered drug).
+_DEPRESCRIBING_OR_PROCEDURAL_SUPPORT_TOKENS = {"deprescribing"}
+_DEPRESCRIBING_OR_PROCEDURAL_SUPPORT_PHRASES = [
+    "medication withdrawal", "drug withdrawal", "drug discontinuation",
+    "medication discontinuation", "dose tapering", "deprescribing intervention",
+    "procedural sedation", "conscious sedation", "sedation for imaging", "anesthesia for imaging",
+]
+
+
+def _is_deprescribing_or_procedural_support(normalized_name):
+    tokens = set(normalized_name.split())
+    if tokens & _DEPRESCRIBING_OR_PROCEDURAL_SUPPORT_TOKENS:
+        return True
+    return any(_contains_phrase(normalized_name, phrase) for phrase in _DEPRESCRIBING_OR_PROCEDURAL_SUPPORT_PHRASES)
 
 
 def classify_pipeline_scope(intervention_type, name, classification, verification_status="", overrides=None,
@@ -2161,6 +2271,40 @@ def classify_pipeline_scope(intervention_type, name, classification, verificatio
             "wording in the trial's title or brief summary)",
             "rule_keyword", "high",
             diagnostic_subtype=determine_diagnostic_subtype(name, brief_summary, study_title),
+        )
+
+    # A real drug/biologic used for a non-treatment purpose within THIS
+    # trial (pharmacological challenge/testing, diagnostic-tool
+    # development, contrast/imaging agent use, experimental probe) —
+    # see _is_diagnostic_challenge_or_probe_purpose's docstring for the
+    # evidence bar and the real examples that calibrated it. Same
+    # sponsor_developed_therapeutic protection as the isotope check above.
+    if (
+        classification != "sponsor_developed_therapeutic"
+        and _is_diagnostic_challenge_or_probe_purpose(name, brief_summary, study_title, study_design)
+    ):
+        return result(
+            "Diagnostic Agent",
+            "drug/biologic used as a pharmacological challenge/probe agent or for diagnostic-tool/"
+            "contrast-imaging development in this trial, not as an investigational AD treatment",
+            "rule_keyword", "high",
+            diagnostic_subtype=determine_diagnostic_subtype(name, brief_summary, study_title),
+        )
+
+    # Deprescribing/medication-withdrawal interventions and drugs whose
+    # role in this trial is procedural support (e.g. sedation to enable
+    # an imaging exam) — not an administered investigational treatment
+    # candidate. Name-level only; see _is_deprescribing_or_procedural_
+    # support's docstring.
+    if (
+        classification != "sponsor_developed_therapeutic"
+        and _is_deprescribing_or_procedural_support(normalized_name)
+    ):
+        return result(
+            "Non-Drug Intervention",
+            "name indicates a deprescribing/medication-withdrawal intervention or a drug used only for "
+            "procedural support, not an investigational AD treatment",
+            "rule_keyword", "high",
         )
 
     if classification == "uncertain":
