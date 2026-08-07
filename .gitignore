@@ -2,3 +2,12 @@
 __pycache__/
 *.pyc
 .DS_Store
+
+# ClinicalTrials.gov refresh pipeline (run_pipeline.py --refresh):
+# raw API JSON (~40MB/fetch) and dated snapshot CSVs (~15MB/fetch)
+# both regenerate on demand and would balloon repo size fast under a
+# daily refresh cadence. trials.csv (the "current" working dataset)
+# stays tracked as before — only the raw/dated archive is ignored.
+data/raw/
+data/snapshots/
+trials.csv.pre_refresh_backup
