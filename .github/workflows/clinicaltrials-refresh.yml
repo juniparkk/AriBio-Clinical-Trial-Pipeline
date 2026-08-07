@@ -1,0 +1,114 @@
+name: ClinicalTrials Refresh
+
+# Runs run_pipeline.py --refresh automatically on weekday mornings and
+# on demand (Actions tab -> "Run workflow"). Every step after the
+# local-time gate only proceeds if the pre-refresh test suite passes,
+# the ct.gov fetch + validation succeeds, and pipeline_viz.py rebuilds
+# cleanly — trials.csv and the dashboard outputs are only committed
+# after ALL of that succeeds. See run_pipeline.py's own docstring for
+# the underlying fetch/validate/rebuild safety contract; this workflow
+# adds nothing to that contract beyond scheduling + the commit/push.
+#
+# Does NOT implement competitive-change detection — automatic
+# ingestion + safe rebuild only, per project scope.
+
+on:
+  schedule:
+    # GitHub Actions cron always runs in UTC and does NOT shift for
+    # daylight saving time, so "6:30 AM America/Los_Angeles" maps to
+    # two different UTC times across the year:
+    #   - PDT (UTC-7, roughly mid-Mar to early-Nov): 13:30 UTC
+    #   - PST (UTC-8, roughly early-Nov to mid-Mar):  14:30 UTC
+    # Both crons fire every weekday; the "Check target local time"
+    # step below inspects the actual America/Los_Angeles wall-clock
+    # hour at runtime and skips the rest of the job unless it's
+    # really the 6 AM hour locally, so only the DST-correct trigger
+    # ever does real work on any given day.
+    - cron: "30 13 * * 1-5" # ~6:30 AM PDT
+    - cron: "30 14 * * 1-5" # ~6:30 AM PST
+  workflow_dispatch: {}
+
+# Prevents two refreshes from running (and both trying to commit)
+# at the same time. A run triggered while one is already in progress
+# waits its turn rather than being dropped, but cancel-in-progress
+# stays false so a fetch/validate/commit already underway is never
+# torn down mid-way.
+concurrency:
+  group: clinicaltrials-refresh
+  cancel-in-progress: false
+
+# Needed so the final step can push the commit back to the repo using
+# the repo's own built-in GITHUB_TOKEN — no personal access token or
+# secret setup required.
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check target local time (America/Los_Angeles)
+        id: tzcheck
+        run: |
+          LOCAL_HOUR=$(TZ='America/Los_Angeles' date +%H)
+          echo "Current America/Los_Angeles hour: $LOCAL_HOUR"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manually triggered — running regardless of local time."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          elif [ "$LOCAL_HOUR" = "06" ]; then
+            echo "This is the DST-correct 6:30 AM local trigger — proceeding."
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Not the DST-correct trigger for 6:30 AM local — skipping the rest of this run."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout repository
+        if: steps.tzcheck.outputs.proceed == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        if: steps.tzcheck.outputs.proceed == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        if: steps.tzcheck.outputs.proceed == 'true'
+        run: pip install -r requirements.txt
+
+      - name: Run full test suite (pre-refresh baseline check)
+        if: steps.tzcheck.outputs.proceed == 'true'
+        run: |
+          for f in test_*.py; do
+            echo "=== $f ==="
+            python3 "$f"
+          done
+
+      - name: Refresh ClinicalTrials.gov data and rebuild dashboard
+        if: steps.tzcheck.outputs.proceed == 'true'
+        run: python3 run_pipeline.py --refresh
+
+      - name: Commit and push validated outputs
+        if: steps.tzcheck.outputs.proceed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add trials.csv pipeline_annotated.csv pipeline_drugs.csv \
+                  pipeline_interventions.csv pipeline_unresolved_trials.csv \
+                  pipeline_overview.html outputs/classification_conflicts.csv \
+                  outputs/classification_gap_audit.csv
+          if git diff --staged --quiet; then
+            echo "No changes to commit — ClinicalTrials.gov data was already up to date."
+          else
+            git commit -m "Automated ClinicalTrials.gov refresh ($(TZ='America/Los_Angeles' date +%Y-%m-%d))"
+            git push
+          fi
+
+      # data/raw/ (raw API JSON) and data/snapshots/ (dated,
+      # validated snapshot CSVs) are both .gitignore'd (see the
+      # previous phase's git-hygiene decision: ~40MB and ~15MB per
+      # fetch respectively — committing those daily would balloon
+      # the repo). They still exist on this runner's disk for the
+      # duration of the job for debugging via the step logs above,
+      # but are discarded when the runner is torn down.
