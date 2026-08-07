@@ -462,33 +462,6 @@ def compute_attention(changes_df, drugs_df, annotated_df, trials_df, watchlist, 
     return result
 
 
-AR1001_RANKING_COLUMNS = ["display_name", "sponsor", "phase_reached", "aribio_relevance_score", "aribio_relevance_reasons"]
-
-
-def build_ar1001_relevance_ranking(drugs_df, watchlist, top_n=10):
-    """Top-N drugs by aribio_relevance_score (competitive_intelligence.py's
-    existing rule-based 0-100 similarity-to-AR1001 score, already
-    computed into pipeline_drugs.csv) — the primary AriBio asset itself
-    is excluded.
-
-    Unlike Needs Attention, this is STATIC — it doesn't depend on
-    anything having changed since the last refresh, so it's always
-    populated as long as resolved_drugs_df has rows at all.
-    """
-    if drugs_df is None or drugs_df.empty or "aribio_relevance_score" not in drugs_df.columns:
-        return pd.DataFrame(columns=AR1001_RANKING_COLUMNS)
-
-    primary_asset = aribio_watchlist.get_primary_asset(watchlist)
-    primary_name = primary_asset.get("name", "")
-
-    ranking = drugs_df[drugs_df["display_name"] != primary_name].copy()
-    ranking["aribio_relevance_score"] = pd.to_numeric(ranking["aribio_relevance_score"], errors="coerce").fillna(0)
-    if "aribio_relevance_reasons" not in ranking.columns:
-        ranking["aribio_relevance_reasons"] = ""
-    ranking = ranking.sort_values(["aribio_relevance_score", "display_name"], ascending=[False, True])
-    return ranking[AR1001_RANKING_COLUMNS].head(top_n).reset_index(drop=True)
-
-
 def describe_change(change_row):
     """Plain factual one-line description of a single pipeline_changes.csv
     row, with NO scoring involved — used by the unscored "Recent

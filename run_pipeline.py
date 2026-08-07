@@ -252,11 +252,10 @@ def run_refresh():
         for key, items in milestones.items():
             print(f"  {key}: {len(items)}")
 
-        ar1001_ranking_df = competitive_attention.build_ar1001_relevance_ranking(new_drugs_df, watchlist)
         recent_changes_df = competitive_attention.prepare_recent_changes(changes_df)
 
         section_html = competitive_attention_viz.render_competitive_sections(
-            ar1001_ranking_df, recent_changes_df, attention_df, milestones,
+            recent_changes_df, attention_df, milestones,
         )
         with open(OVERVIEW_HTML) as f:
             html_content = f.read()
@@ -265,7 +264,7 @@ def run_refresh():
         html_content = html_content.replace(competitive_attention_viz.PLACEHOLDER, section_html)
         with open(OVERVIEW_HTML, "w") as f:
             f.write(html_content)
-        print(f"{OVERVIEW_HTML} updated with AR1001 Relevance / Recent Changes / Needs Attention / "
+        print(f"{OVERVIEW_HTML} updated with Recent Changes / Needs Attention / "
               f"Upcoming Competitive Milestones sections.")
     except Exception as e:
         # Non-fatal: the core refresh (trials.csv, pipeline_drugs.csv,

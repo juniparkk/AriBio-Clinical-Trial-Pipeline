@@ -1062,8 +1062,8 @@ def build_heatmap(sub_df):
 heatmap_figs = {label: build_heatmap(sub) for label, sub in HEATMAP_TABS}
 
 # --- "AR1001 Competitive Landscape" — a 2x2 executive-summary view of
-# the same per-drug relevance data the AR1001 Relevance list already
-# ranks: one bubble per top-N competitor (by aribio_relevance_score),
+# per-drug AR1001 relevance data: one bubble per top-N competitor (by
+# aribio_relevance_score),
 # x=development maturity (Early Phase 1 -> Phase 4), y=AR1001 relevance
 # score, color=target pathway (reuses TARGET_COLORS). Divider lines
 # split the plot into four labeled quadrants at fixed, deterministic
@@ -1227,8 +1227,7 @@ PHASE3_PREVIEW_N = 10
 # by AR1001 relevance score instead -- top N Phase 3 competitors most
 # relevant to AR1001, not just alphabetized by target. AR1001 itself is
 # excluded (its own self-score isn't a meaningful "how relevant" rank),
-# same convention as build_ar1001_relevance_ranking()/
-# build_relevance_matrix() elsewhere on this dashboard.
+# same convention as build_relevance_matrix() elsewhere on this dashboard.
 phase3_top_relevant_df = phase3_df[~phase3_df["is_aribio"]].sort_values(
     ["aribio_relevance_score", "display_name"], ascending=[False, True]
 )
@@ -1262,11 +1261,10 @@ TABLE_COLUMNS = [
     # (which changes the visible row set) reshuffles column widths on
     # every click. Fixed layout + explicit widths means columns are set
     # once and never move again regardless of what's filtered.
-    # AR1001 Relevance removed from this table (now surfaced in the
-    # "Needs Attention" section instead, for the items that section
-    # actually ranks — full score + reasons still available via each
-    # row's detail-panel "Compare to AR1001" button). Drug/Sponsor
-    # absorb the freed-up width.
+    # AR1001 Relevance removed from this table — full score + reasons
+    # still available via each row's detail-panel "Compare to AR1001"
+    # button, the Phase 3 leaderboard, and the AR1001 Competitive
+    # Landscape chart. Drug/Sponsor absorb the freed-up width.
     ("display_name", "Drug", 24),
     ("sponsor", "Sponsor", 21),
     ("phase_reached", "Highest Phase", 10),

@@ -35,8 +35,6 @@
 
 import html
 
-import pandas as pd
-
 PLACEHOLDER = "<!--COMPETITIVE_ATTENTION_SECTION-->"
 
 PRIORITY_ORDER = ["Critical", "High", "Medium", "Low"]
@@ -65,73 +63,9 @@ _PRIORITY_COLORS = {
     "Low": "#9e9e9e",
 }
 
-# Mirrors pipeline_viz.py's own relevanceColor() JS thresholds exactly
-# (same blue-ramp convention, not a separate palette) — kept here as a
-# narrow, intentional duplication for the same reason as every other
-# mirrored constant in this file (see PLACEHOLDER/ARIBIO_BLUE above).
-_RELEVANCE_HIGH_COLOR = _darken(ARIBIO_BLUE, 0.30)
-_RELEVANCE_MID_COLOR = ARIBIO_BLUE
-_RELEVANCE_LOW_COLOR = "#9e9e9e"
-
-
-def _relevance_color(score):
-    if score is None or pd.isna(score):
-        return _RELEVANCE_LOW_COLOR
-    if score >= 65:
-        return _RELEVANCE_HIGH_COLOR
-    if score >= 35:
-        return _RELEVANCE_MID_COLOR
-    return _RELEVANCE_LOW_COLOR
-
-
 def _study_url(nct_id):
     nct_id = str(nct_id or "").strip()
     return f"https://clinicaltrials.gov/study/{nct_id}" if nct_id else ""
-
-
-def render_ar1001_relevance_section(ranking_df, top_n=10):
-    """STATIC top-N drugs by similarity to AR1001 (competitive_
-    intelligence.py's rule-based 0-100 score) — always populated as
-    long as resolved_drugs_df has rows, unlike Needs Attention/Recent
-    Changes beside it, which depend on something having changed.
-
-    Rendered as a vertical stacked list (same .attention-card pattern
-    as the other two panels) since all three now sit side by side in
-    a single row — a narrow column has no room for a horizontal tile
-    strip."""
-    if ranking_df is None or ranking_df.empty:
-        body = '<div class="attention-empty">No other drugs are currently resolved to compare against AR1001.</div>'
-        count_note = "0 drugs"
-    else:
-        top = ranking_df.head(top_n)
-        count_note = f"top {len(top)} of {len(ranking_df)} resolved drugs"
-        rows_html = []
-        for _, row in top.iterrows():
-            score = pd.to_numeric(row.get("aribio_relevance_score"), errors="coerce")
-            score_text = str(int(score)) if pd.notna(score) else "&mdash;"
-            color = _relevance_color(score)
-            name = _esc(row.get("display_name") or "")
-            sponsor = _esc(row.get("sponsor") or "")
-            phase = _esc(row.get("phase_reached") or "Phase not reported")
-            reasons = _esc(row.get("aribio_relevance_reasons") or phase)
-            rows_html.append(f"""
-            <div class="attention-card">
-              <div class="attention-badge" style="background:{color}">{score_text}</div>
-              <div class="attention-main">
-                <div class="attention-title">{name}<span class="attention-company">{sponsor}</span></div>
-                <div class="attention-change">{reasons}</div>
-              </div>
-            </div>""")
-        body = "".join(rows_html)
-
-    return f"""
-    <div class="attention-panel" style="border-radius:{CARD_RADIUS}; box-shadow:{CARD_SHADOW}">
-      <div class="attention-panel-header">
-        <div class="attention-panel-title">AR1001 Relevance</div>
-        <div class="attention-panel-note">{count_note} &middot; ranked by deterministic similarity score (pathway/modality/phase), not AI judgment</div>
-      </div>
-      {body}
-    </div>"""
 
 
 def render_recent_changes_section(changes_df, top_n=15):
@@ -296,7 +230,7 @@ COMPETITIVE_ATTENTION_CSS = """
   .attention-change { font-size: 13px; color: #333; margin-top: 3px; }
   .attention-factors { font-size: 11.5px; color: #999; margin-top: 3px; }
   .attention-side { font-size: 12.5px; white-space: nowrap; }
-  .attention-row { display: grid; grid-template-columns: repeat(3, 1fr); align-items: stretch; gap: 16px; margin-bottom: 20px; }
+  .attention-row { display: grid; grid-template-columns: repeat(2, 1fr); align-items: stretch; gap: 16px; margin-bottom: 20px; }
   .attention-row .attention-panel { margin-bottom: 0; }
   @media (max-width: 1100px) { .attention-row { grid-template-columns: 1fr; } }
   .attention-link { color: #2e5fa3; text-decoration: none; font-weight: 600; }
@@ -316,11 +250,10 @@ COMPETITIVE_ATTENTION_CSS = """
 """
 
 
-def render_competitive_sections(ar1001_ranking_df, recent_changes_df, attention_df, milestones,
-                                 ar1001_top_n=10, changes_top_n=15, attention_top_n=8):
+def render_competitive_sections(recent_changes_df, attention_df, milestones,
+                                 changes_top_n=15, attention_top_n=8):
     row_html = f"""
     <div class="attention-row">
-      {render_ar1001_relevance_section(ar1001_ranking_df, ar1001_top_n)}
       {render_recent_changes_section(recent_changes_df, changes_top_n)}
       {render_needs_attention_section(attention_df, attention_top_n)}
     </div>"""

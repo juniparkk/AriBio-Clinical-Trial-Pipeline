@@ -509,75 +509,14 @@ def test_render_needs_attention_section_respects_top_n():
 
 
 def test_render_needs_attention_section_no_longer_shows_ar1001_relevance_inline():
-    # AR1001 Relevance now has its own dedicated section (see
-    # test_ar1001_relevance_ranking_* below) -- the Needs Attention
-    # card itself must stay a pure, auditable point-sum display, with
-    # no per-card AR1001 relevance line duplicating that section.
+    # The Needs Attention card itself must stay a pure, auditable
+    # point-sum display, with no per-card AR1001 relevance line.
     row = {**{c: "" for c in ca.ATTENTION_COLUMNS}, "relevance_score": 63, "priority_level": "High",
            "aribio_relevance_score": 60, "canonical_drug_name": "bapineuzumab", "nct_id": "NCT00663026"}
     df = pd.DataFrame([row], columns=ca.ATTENTION_COLUMNS)
     html = cav.render_needs_attention_section(df)
     assert "attention-ar1001" not in html
     assert "AR1001 Relevance" not in html
-
-
-# ------------------------------------------------------------
-# AR1001 Relevance ranking (static, always-populated section)
-# ------------------------------------------------------------
-
-def test_ar1001_relevance_ranking_excludes_primary_asset_itself():
-    drugs = _drugs_df([
-        _drug_row("AR1001", aribio_relevance_score=100),
-        _drug_row("OtherDrug", aribio_relevance_score=60),
-    ])
-    ranking = ca.build_ar1001_relevance_ranking(drugs, WATCHLIST)
-    assert "AR1001" not in set(ranking["display_name"])
-    assert "OtherDrug" in set(ranking["display_name"])
-
-
-def test_ar1001_relevance_ranking_sorted_descending_by_score():
-    drugs = _drugs_df([
-        _drug_row("Low", aribio_relevance_score=20),
-        _drug_row("High", aribio_relevance_score=80),
-        _drug_row("Mid", aribio_relevance_score=50),
-    ])
-    ranking = ca.build_ar1001_relevance_ranking(drugs, WATCHLIST)
-    assert list(ranking["display_name"]) == ["High", "Mid", "Low"]
-
-
-def test_ar1001_relevance_ranking_respects_top_n():
-    drugs = _drugs_df([_drug_row(f"Drug{i}", aribio_relevance_score=i) for i in range(15)])
-    ranking = ca.build_ar1001_relevance_ranking(drugs, WATCHLIST, top_n=5)
-    assert len(ranking) == 5
-    assert ranking.iloc[0]["display_name"] == "Drug14"
-
-
-def test_ar1001_relevance_ranking_empty_input():
-    ranking = ca.build_ar1001_relevance_ranking(None, WATCHLIST)
-    assert len(ranking) == 0
-    assert list(ranking.columns) == ca.AR1001_RANKING_COLUMNS
-
-
-def test_render_ar1001_relevance_section_handles_empty_dataframe():
-    html = cav.render_ar1001_relevance_section(pd.DataFrame(columns=ca.AR1001_RANKING_COLUMNS))
-    assert "AR1001 Relevance" in html
-    assert "No other drugs are currently resolved" in html
-
-
-def test_render_ar1001_relevance_section_shows_drug_and_score():
-    drugs = _drugs_df([_drug_row("Aducanumab", aribio_relevance_score=72, sponsor="Biogen", phase_reached="Phase 3")])
-    ranking = ca.build_ar1001_relevance_ranking(drugs, WATCHLIST)
-    html = cav.render_ar1001_relevance_section(ranking)
-    assert "Aducanumab" in html
-    assert "Biogen" in html
-    assert ">72<" in html  # bare score, badge display -- no "/100" suffix
-
-
-def test_render_ar1001_relevance_section_renders_vertical_stacked_list():
-    drugs = _drugs_df([_drug_row(f"Drug{i}", aribio_relevance_score=90 - i) for i in range(10)])
-    ranking = ca.build_ar1001_relevance_ranking(drugs, WATCHLIST)
-    html = cav.render_ar1001_relevance_section(ranking)
-    assert html.count("attention-card") == 10
 
 
 # ------------------------------------------------------------
@@ -646,30 +585,28 @@ def test_render_recent_changes_section_respects_top_n():
 def test_render_competitive_sections_includes_placeholder_replaceable_content():
     empty_milestones = {"next_30_days": [], "next_90_days": [], "recently_completed": [], "materially_delayed": []}
     html = cav.render_competitive_sections(
-        pd.DataFrame(columns=ca.AR1001_RANKING_COLUMNS),
         pd.DataFrame(columns=ca.ATTENTION_COLUMNS),
         pd.DataFrame(columns=ca.ATTENTION_COLUMNS),
         empty_milestones,
     )
-    assert "AR1001 Relevance" in html
+    assert "AR1001 Relevance" not in html  # removed section must not reappear
     assert "Recent Changes" in html
     assert "Needs Attention" in html
     assert "Upcoming Competitive Milestones" in html
     assert cav.PLACEHOLDER not in html  # the rendered section itself must not contain the raw token
 
 
-def test_render_competitive_sections_puts_first_three_panels_in_one_row():
-    # AR1001 Relevance, Recent Changes, and Needs Attention sit side by
-    # side in a single row; Milestones stays full-width below it.
+def test_render_competitive_sections_puts_first_two_panels_in_one_row():
+    # Recent Changes and Needs Attention sit side by side in a single
+    # row (AR1001 Relevance removed); Milestones stays full-width below.
     empty_milestones = {"next_30_days": [], "next_90_days": [], "recently_completed": [], "materially_delayed": []}
     html = cav.render_competitive_sections(
-        pd.DataFrame(columns=ca.AR1001_RANKING_COLUMNS),
         pd.DataFrame(columns=ca.ATTENTION_COLUMNS),
         pd.DataFrame(columns=ca.ATTENTION_COLUMNS),
         empty_milestones,
     )
     row_start = html.index('<div class="attention-row">')
-    assert row_start < html.index("AR1001 Relevance") < html.index("Recent Changes") < html.index("Needs Attention")
+    assert row_start < html.index("Recent Changes") < html.index("Needs Attention")
     assert html.index("Upcoming Competitive Milestones") > html.index("Needs Attention")
 
 
@@ -709,13 +646,6 @@ ALL_TESTS = [
     test_render_needs_attention_section_handles_empty_dataframe,
     test_render_needs_attention_section_respects_top_n,
     test_render_needs_attention_section_no_longer_shows_ar1001_relevance_inline,
-    test_ar1001_relevance_ranking_excludes_primary_asset_itself,
-    test_ar1001_relevance_ranking_sorted_descending_by_score,
-    test_ar1001_relevance_ranking_respects_top_n,
-    test_ar1001_relevance_ranking_empty_input,
-    test_render_ar1001_relevance_section_handles_empty_dataframe,
-    test_render_ar1001_relevance_section_shows_drug_and_score,
-    test_render_ar1001_relevance_section_renders_vertical_stacked_list,
     test_describe_change_produces_factual_text_without_scored_factors,
     test_prepare_recent_changes_adds_description_column,
     test_prepare_recent_changes_sorts_high_importance_first,
@@ -724,7 +654,7 @@ ALL_TESTS = [
     test_render_recent_changes_section_shows_change_and_drug,
     test_render_recent_changes_section_respects_top_n,
     test_render_competitive_sections_includes_placeholder_replaceable_content,
-    test_render_competitive_sections_puts_first_three_panels_in_one_row,
+    test_render_competitive_sections_puts_first_two_panels_in_one_row,
 ]
 
 
