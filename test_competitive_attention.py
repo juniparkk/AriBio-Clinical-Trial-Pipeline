@@ -570,15 +570,14 @@ def test_render_ar1001_relevance_section_shows_drug_and_score():
     html = cav.render_ar1001_relevance_section(ranking)
     assert "Aducanumab" in html
     assert "Biogen" in html
-    assert ">72<" in html  # bare score, big/bold tile display -- no "/100" suffix in the visible tile
+    assert ">72<" in html  # bare score, badge display -- no "/100" suffix
 
 
-def test_render_ar1001_relevance_section_renders_tiles_in_one_row_container():
+def test_render_ar1001_relevance_section_renders_vertical_stacked_list():
     drugs = _drugs_df([_drug_row(f"Drug{i}", aribio_relevance_score=90 - i) for i in range(10)])
     ranking = ca.build_ar1001_relevance_ranking(drugs, WATCHLIST)
     html = cav.render_ar1001_relevance_section(ranking)
-    assert html.count("ar1001-tile-score") == 10
-    assert '<div class="ar1001-row">' in html
+    assert html.count("attention-card") == 10
 
 
 # ------------------------------------------------------------
@@ -659,6 +658,21 @@ def test_render_competitive_sections_includes_placeholder_replaceable_content():
     assert cav.PLACEHOLDER not in html  # the rendered section itself must not contain the raw token
 
 
+def test_render_competitive_sections_puts_first_three_panels_in_one_row():
+    # AR1001 Relevance, Recent Changes, and Needs Attention sit side by
+    # side in a single row; Milestones stays full-width below it.
+    empty_milestones = {"next_30_days": [], "next_90_days": [], "recently_completed": [], "materially_delayed": []}
+    html = cav.render_competitive_sections(
+        pd.DataFrame(columns=ca.AR1001_RANKING_COLUMNS),
+        pd.DataFrame(columns=ca.ATTENTION_COLUMNS),
+        pd.DataFrame(columns=ca.ATTENTION_COLUMNS),
+        empty_milestones,
+    )
+    row_start = html.index('<div class="attention-row">')
+    assert row_start < html.index("AR1001 Relevance") < html.index("Recent Changes") < html.index("Needs Attention")
+    assert html.index("Upcoming Competitive Milestones") > html.index("Needs Attention")
+
+
 ALL_TESTS = [
     test_phase_3_scores_higher_than_phase_1_for_otherwise_identical_changes,
     test_new_phase_3_trial_ranks_critical_or_high,
@@ -701,7 +715,7 @@ ALL_TESTS = [
     test_ar1001_relevance_ranking_empty_input,
     test_render_ar1001_relevance_section_handles_empty_dataframe,
     test_render_ar1001_relevance_section_shows_drug_and_score,
-    test_render_ar1001_relevance_section_renders_tiles_in_one_row_container,
+    test_render_ar1001_relevance_section_renders_vertical_stacked_list,
     test_describe_change_produces_factual_text_without_scored_factors,
     test_prepare_recent_changes_adds_description_column,
     test_prepare_recent_changes_sorts_high_importance_first,
@@ -710,6 +724,7 @@ ALL_TESTS = [
     test_render_recent_changes_section_shows_change_and_drug,
     test_render_recent_changes_section_respects_top_n,
     test_render_competitive_sections_includes_placeholder_replaceable_content,
+    test_render_competitive_sections_puts_first_three_panels_in_one_row,
 ]
 
 

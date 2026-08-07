@@ -93,19 +93,19 @@ def render_ar1001_relevance_section(ranking_df, top_n=10):
     """STATIC top-N drugs by similarity to AR1001 (competitive_
     intelligence.py's rule-based 0-100 score) — always populated as
     long as resolved_drugs_df has rows, unlike Needs Attention/Recent
-    Changes below it, which depend on something having changed.
+    Changes beside it, which depend on something having changed.
 
-    Rendered as one horizontal row of compact tiles (score first,
-    biggest and boldest — mirrors the dashboard's own .kpi-tile
-    pattern) so all top_n scores are visible side by side at a glance,
-    rather than a scrolling vertical list."""
+    Rendered as a vertical stacked list (same .attention-card pattern
+    as the other two panels) since all three now sit side by side in
+    a single row — a narrow column has no room for a horizontal tile
+    strip."""
     if ranking_df is None or ranking_df.empty:
         body = '<div class="attention-empty">No other drugs are currently resolved to compare against AR1001.</div>'
         count_note = "0 drugs"
     else:
         top = ranking_df.head(top_n)
         count_note = f"top {len(top)} of {len(ranking_df)} resolved drugs"
-        tiles_html = []
+        rows_html = []
         for _, row in top.iterrows():
             score = pd.to_numeric(row.get("aribio_relevance_score"), errors="coerce")
             score_text = str(int(score)) if pd.notna(score) else "&mdash;"
@@ -113,16 +113,16 @@ def render_ar1001_relevance_section(ranking_df, top_n=10):
             name = _esc(row.get("display_name") or "")
             sponsor = _esc(row.get("sponsor") or "")
             phase = _esc(row.get("phase_reached") or "Phase not reported")
-            reasons = _esc(row.get("aribio_relevance_reasons") or "")
-            tooltip = _esc(f"{row.get('display_name') or ''} — {row.get('sponsor') or ''} — {phase}"
-                            + (f" — {row.get('aribio_relevance_reasons')}" if row.get("aribio_relevance_reasons") else ""))
-            tiles_html.append(f"""
-            <div class="ar1001-tile" title="{tooltip}">
-              <div class="ar1001-tile-score" style="color:{color}">{score_text}</div>
-              <div class="ar1001-tile-name">{name}</div>
-              <div class="ar1001-tile-sub">{sponsor or phase}</div>
+            reasons = _esc(row.get("aribio_relevance_reasons") or phase)
+            rows_html.append(f"""
+            <div class="attention-card">
+              <div class="attention-badge" style="background:{color}">{score_text}</div>
+              <div class="attention-main">
+                <div class="attention-title">{name}<span class="attention-company">{sponsor}</span></div>
+                <div class="attention-change">{reasons}</div>
+              </div>
             </div>""")
-        body = f'<div class="ar1001-row">{"".join(tiles_html)}</div>'
+        body = "".join(rows_html)
 
     return f"""
     <div class="attention-panel" style="border-radius:{CARD_RADIUS}; box-shadow:{CARD_SHADOW}">
@@ -169,7 +169,7 @@ def render_recent_changes_section(changes_df, top_n=15):
         body = "".join(rows_html)
 
     return f"""
-    <div class="attention-panel" style="border-radius:{CARD_RADIUS}; box-shadow:{CARD_SHADOW}; margin-top:16px;">
+    <div class="attention-panel" style="border-radius:{CARD_RADIUS}; box-shadow:{CARD_SHADOW}">
       <div class="attention-panel-header">
         <div class="attention-panel-title">Recent Changes</div>
         <div class="attention-panel-note">{count_note} &middot; every detected change, unranked &mdash; see Needs Attention below for competitive priority</div>
@@ -210,7 +210,7 @@ def render_needs_attention_section(attention_df, top_n=8):
         body = "".join(rows_html)
 
     return f"""
-    <div class="attention-panel" style="border-radius:{CARD_RADIUS}; box-shadow:{CARD_SHADOW}; margin-top:16px;">
+    <div class="attention-panel" style="border-radius:{CARD_RADIUS}; box-shadow:{CARD_SHADOW}">
       <div class="attention-panel-header">
         <div class="attention-panel-title">Needs Attention</div>
         <div class="attention-panel-note">{count_note} &middot; ranked by deterministic competitive-priority score, not AI judgment</div>
@@ -296,20 +296,9 @@ COMPETITIVE_ATTENTION_CSS = """
   .attention-change { font-size: 13px; color: #333; margin-top: 3px; }
   .attention-factors { font-size: 11.5px; color: #999; margin-top: 3px; }
   .attention-side { font-size: 12.5px; white-space: nowrap; }
-  .ar1001-row { display: flex; flex-wrap: wrap; gap: 10px; }
-  .ar1001-tile {
-    flex: 1 1 90px; min-width: 90px; text-align: center; padding: 12px 6px;
-    border-radius: 8px; background: #f6f7f9; cursor: default;
-  }
-  .ar1001-tile-score { font-size: 24px; font-weight: 800; line-height: 1; letter-spacing: -0.01em; }
-  .ar1001-tile-name {
-    font-size: 11.5px; font-weight: 700; color: #1a1a1a; margin-top: 6px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .ar1001-tile-sub {
-    font-size: 10px; color: #888; margin-top: 2px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
+  .attention-row { display: grid; grid-template-columns: repeat(3, 1fr); align-items: stretch; gap: 16px; margin-bottom: 20px; }
+  .attention-row .attention-panel { margin-bottom: 0; }
+  @media (max-width: 1100px) { .attention-row { grid-template-columns: 1fr; } }
   .attention-link { color: #2e5fa3; text-decoration: none; font-weight: 600; }
   .attention-link:hover { text-decoration: underline; }
   .attention-link--none { color: #aaa; font-weight: 400; }
@@ -329,9 +318,10 @@ COMPETITIVE_ATTENTION_CSS = """
 
 def render_competitive_sections(ar1001_ranking_df, recent_changes_df, attention_df, milestones,
                                  ar1001_top_n=10, changes_top_n=15, attention_top_n=8):
-    return (
-        render_ar1001_relevance_section(ar1001_ranking_df, ar1001_top_n)
-        + render_recent_changes_section(recent_changes_df, changes_top_n)
-        + render_needs_attention_section(attention_df, attention_top_n)
-        + render_milestones_section(milestones)
-    )
+    row_html = f"""
+    <div class="attention-row">
+      {render_ar1001_relevance_section(ar1001_ranking_df, ar1001_top_n)}
+      {render_recent_changes_section(recent_changes_df, changes_top_n)}
+      {render_needs_attention_section(attention_df, attention_top_n)}
+    </div>"""
+    return row_html + render_milestones_section(milestones)
