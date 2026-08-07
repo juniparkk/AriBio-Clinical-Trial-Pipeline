@@ -371,8 +371,14 @@ class _RefreshSandbox:
 
         self._orig_trials_csv = run_pipeline.TRIALS_CSV
         self._orig_backup = run_pipeline.TRIALS_CSV_BACKUP
+        self._orig_drugs_csv = run_pipeline.DRUGS_CSV
+        self._orig_annotated_csv = run_pipeline.ANNOTATED_CSV
+        self._orig_changes_csv = run_pipeline.CHANGES_CSV
         run_pipeline.TRIALS_CSV = os.path.join(self.tmp, "trials.csv")
         run_pipeline.TRIALS_CSV_BACKUP = os.path.join(self.tmp, "trials.csv.bak")
+        run_pipeline.DRUGS_CSV = os.path.join(self.tmp, "pipeline_drugs.csv")
+        run_pipeline.ANNOTATED_CSV = os.path.join(self.tmp, "pipeline_annotated.csv")
+        run_pipeline.CHANGES_CSV = os.path.join(self.tmp, "outputs", "pipeline_changes.csv")
 
         self._orig_fetch_all = ctgov_client.fetch_all_studies
         self._orig_fetch_version = ctgov_client.fetch_data_version
@@ -386,6 +392,9 @@ class _RefreshSandbox:
         ctgov_snapshot.LATEST_POINTER_PATH = self._orig_pointer
         run_pipeline.TRIALS_CSV = self._orig_trials_csv
         run_pipeline.TRIALS_CSV_BACKUP = self._orig_backup
+        run_pipeline.DRUGS_CSV = self._orig_drugs_csv
+        run_pipeline.ANNOTATED_CSV = self._orig_annotated_csv
+        run_pipeline.CHANGES_CSV = self._orig_changes_csv
         ctgov_client.fetch_all_studies = self._orig_fetch_all
         ctgov_client.fetch_data_version = self._orig_fetch_version
         run_pipeline.subprocess.run = self._orig_subprocess_run
@@ -486,8 +495,11 @@ def test_refresh_aborts_before_rebuild_on_validation_failure():
 
 def test_refresh_rolls_back_trials_csv_if_dashboard_rebuild_fails():
     with _RefreshSandbox() as sb:
+        # 5 old rows so the 5-study canned fetch below passes the
+        # row-count sanity check and this test can reach the dashboard
+        # rebuild stage it's actually testing.
         with open(run_pipeline.TRIALS_CSV, "w") as f:
-            f.write("NCT Number\nNCT00000001\n")
+            f.write("NCT Number\n" + "\n".join(f"NCT{i:08d}" for i in range(5)) + "\n")
 
         studies = _canned_studies(5)
         ctgov_client.fetch_all_studies = lambda: (
@@ -509,11 +521,12 @@ def test_refresh_rolls_back_trials_csv_if_dashboard_rebuild_fails():
 
         run_pipeline.subprocess.run = lambda *a, **k: _FailingCompleted()
 
+        original_content = "NCT Number\n" + "\n".join(f"NCT{i:08d}" for i in range(5)) + "\n"
         exit_code = run_pipeline.run_refresh()
 
         assert exit_code == 1
         with open(run_pipeline.TRIALS_CSV) as f:
-            assert f.read() == "NCT Number\nNCT00000001\n"
+            assert f.read() == original_content
         # the new snapshot must still exist for inspection even though
         # it wasn't promoted to trials.csv
         assert ctgov_snapshot.get_latest_snapshot_info()["row_count"] == 5

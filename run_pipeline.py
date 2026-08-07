@@ -8,7 +8,9 @@
 # into the exact schema trials.csv already uses, validates it, and
 # only THEN rebuilds the dashboard (pipeline_drugs.csv,
 # pipeline_overview.html, etc.) by re-running the existing
-# pipeline_viz.py unchanged. Runs the full test suite afterward.
+# pipeline_viz.py unchanged. Detects meaningful changes against the
+# previous refresh (outputs/pipeline_changes.csv) and runs the full
+# test suite afterward.
 #
 # Scope preserved exactly as-is (see ctgov_client.py): Alzheimer
 # Disease condition, interventional studies only, every status
@@ -28,11 +30,19 @@
 #     immutably to data/snapshots/ first.
 #   - If pipeline_viz.py itself fails on the new data (a rebuild bug,
 #     not a data problem), trials.csv is rolled back to what it was
-#     before this run.
+#     before this run, and pipeline_changes.csv is left untouched
+#     (never regenerated from a failed/partial rebuild).
 #
-# This phase is ONLY automatic ingestion + safe rebuild — no
-# competitive-change detection, no GitHub Actions (both explicitly
-# out of scope; see project conversation history).
+# Change detection (ctgov_changes.py) compares trials.csv /
+# pipeline_drugs.csv / pipeline_annotated.csv as they existed on disk
+# BEFORE this refresh (i.e. whatever the LAST successful refresh
+# committed to git) against the freshly rebuilt versions. This is
+# deliberately NOT based on data/snapshots/ (.gitignore'd, does not
+# persist across GitHub Actions runs) — the git-tracked files are the
+# only state guaranteed to survive between CI runs.
+#
+# No AI "Needs Attention" summary yet — this phase is change
+# DETECTION only, per project scope.
 # ============================================================
 
 import os
@@ -41,12 +51,18 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
+import pandas as pd
+
+import ctgov_changes
 import ctgov_client
 import ctgov_normalize
 import ctgov_snapshot
 
 TRIALS_CSV = "trials.csv"
 TRIALS_CSV_BACKUP = "trials.csv.pre_refresh_backup"
+DRUGS_CSV = "pipeline_drugs.csv"
+ANNOTATED_CSV = "pipeline_annotated.csv"
+CHANGES_CSV = os.path.join("outputs", "pipeline_changes.csv")
 
 TEST_FILES = [
     "test_classification.py",
@@ -55,6 +71,7 @@ TEST_FILES = [
     "test_nih_reference.py",
     "test_scientific_classification.py",
     "test_ctgov_pipeline.py",
+    "test_ctgov_changes.py",
 ]
 
 
@@ -69,11 +86,15 @@ def _utc_now_compact():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
 
 
+def _read_csv_if_exists(path):
+    return pd.read_csv(path, low_memory=False) if os.path.exists(path) else None
+
+
 def run_refresh():
     run_id = _utc_now_compact()
     fetch_timestamp = datetime.now(timezone.utc).isoformat()
 
-    _print_header("STEP 1/6: Fetching ClinicalTrials.gov data (API v2)")
+    _print_header("STEP 1/7: Fetching ClinicalTrials.gov data (API v2)")
     ctgov_data_timestamp = ctgov_client.fetch_data_version()
     print(f"ct.gov data timestamp (from /api/v2/version): {ctgov_data_timestamp}")
 
@@ -96,22 +117,30 @@ def run_refresh():
         **fetch_meta,
     }
 
-    _print_header("STEP 2/6: Saving raw snapshot (audit trail)")
+    _print_header("STEP 2/7: Saving raw snapshot (audit trail)")
     raw_dir = ctgov_snapshot.write_raw_snapshot(studies, full_fetch_meta, run_id=run_id)
     print(f"Raw API response saved to: {raw_dir}")
 
-    _print_header("STEP 3/6: Normalizing to trials.csv schema")
+    _print_header("STEP 3/7: Normalizing to trials.csv schema")
     df = ctgov_normalize.normalize_studies(studies)
     print(f"Normalized row count: {len(df)}")
 
-    previous = ctgov_snapshot.get_latest_snapshot_info()
-    previous_row_count = previous["row_count"] if previous else None
-    if previous:
-        print(f"Previous validated snapshot: {previous['snapshot_filename']} ({previous_row_count} rows)")
-    else:
-        print("No previous validated snapshot found — this is the first run.")
+    # The "previous" state for BOTH the row-count sanity check below and
+    # change detection later is whatever trials.csv/pipeline_drugs.csv/
+    # pipeline_annotated.csv already contain on disk right now — i.e.
+    # the git-tracked output of the last successful refresh. This is
+    # read ONCE, up front, before anything overwrites those files.
+    old_trials_df = _read_csv_if_exists(TRIALS_CSV)
+    old_drugs_df = _read_csv_if_exists(DRUGS_CSV)
+    old_annotated_df = _read_csv_if_exists(ANNOTATED_CSV)
 
-    _print_header("STEP 4/6: Validating")
+    previous_row_count = len(old_trials_df) if old_trials_df is not None else None
+    if old_trials_df is not None:
+        print(f"Previous trials.csv on disk: {previous_row_count} rows")
+    else:
+        print("No previous trials.csv found — this is the first run.")
+
+    _print_header("STEP 4/7: Validating")
     ok, errors = ctgov_snapshot.validate_dataframe(df, previous_row_count=previous_row_count)
     full_fetch_meta["validation_status"] = "passed" if ok else "failed"
     full_fetch_meta["validation_errors"] = errors
@@ -131,15 +160,14 @@ def run_refresh():
     print("Validation passed:")
     print(f"  - Required columns present: yes")
     print(f"  - NCT IDs valid and unique: yes")
-    print(f"  - Row count within expected range of previous snapshot: yes")
+    print(f"  - Row count within expected range of previous trials.csv: yes")
 
     snapshot_csv_path = ctgov_snapshot.write_validated_snapshot(df, full_fetch_meta, run_id=run_id)
     print(f"Validated snapshot written to: {snapshot_csv_path}")
 
-    _print_header("STEP 5/6: Rebuilding dashboard")
-    had_previous_trials_csv = False
+    _print_header("STEP 5/7: Rebuilding dashboard")
+    had_previous_trials_csv = old_trials_df is not None
     try:
-        had_previous_trials_csv = os.path.exists(TRIALS_CSV)
         if had_previous_trials_csv:
             shutil.copy2(TRIALS_CSV, TRIALS_CSV_BACKUP)
 
@@ -163,13 +191,37 @@ def run_refresh():
             shutil.copy2(TRIALS_CSV_BACKUP, TRIALS_CSV)
             print(f"{TRIALS_CSV} rolled back to its pre-refresh state.")
         print("The new snapshot remains saved in data/snapshots/ for inspection, "
-              "but was NOT promoted to production trials.csv.")
+              "but was NOT promoted to production trials.csv. outputs/pipeline_changes.csv "
+              "was NOT regenerated.")
         return 1
     finally:
         if os.path.exists(TRIALS_CSV_BACKUP):
             os.remove(TRIALS_CSV_BACKUP)
 
-    _print_header("STEP 6/6: Running tests")
+    _print_header("STEP 6/7: Detecting changes vs. previous refresh")
+    new_drugs_df = _read_csv_if_exists(DRUGS_CSV)
+    new_annotated_df = _read_csv_if_exists(ANNOTATED_CSV)
+    detected_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    change_source = f"ClinicalTrials.gov API v2 (snapshot {run_id})"
+
+    changes_df = ctgov_changes.detect_changes(
+        old_trials_df, df, old_drugs_df, new_drugs_df, old_annotated_df, new_annotated_df,
+        detected_date=detected_date, source=change_source,
+    )
+    os.makedirs(os.path.dirname(CHANGES_CSV) or ".", exist_ok=True)
+    changes_df.to_csv(CHANGES_CSV, index=False)
+
+    if old_trials_df is None:
+        print("No previous trials.csv — change detection skipped (nothing to compare against).")
+    print(f"{len(changes_df)} change(s) detected, written to {CHANGES_CSV}")
+    if len(changes_df):
+        counts = changes_df["change_type"].value_counts()
+        for change_type, count in counts.items():
+            print(f"  - {change_type}: {count}")
+        importance_counts = changes_df["importance"].value_counts()
+        print(f"  Importance: " + ", ".join(f"{k}={v}" for k, v in importance_counts.items()))
+
+    _print_header("STEP 7/7: Running tests")
     all_passed = True
     for test_file in TEST_FILES:
         if not os.path.exists(test_file):
@@ -190,6 +242,7 @@ def run_refresh():
     print(f"API records retrieved:      {fetch_meta['api_records_retrieved']}")
     print(f"Normalized row count:       {len(df)}")
     print(f"Snapshot filename:          {snapshot_csv_path}")
+    print(f"Changes detected:           {len(changes_df)} ({CHANGES_CSV})")
     print(f"All tests passed:           {all_passed}")
 
     return 0 if all_passed else 1
