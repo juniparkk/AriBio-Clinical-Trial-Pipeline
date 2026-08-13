@@ -1953,7 +1953,15 @@ html_template = f"""
     display: inline-block; margin-top: 10px; font-size: 12.5px; color: {ARIBIO_BLUE};
     cursor: pointer; text-decoration: underline;
   }}
-  @media (max-width: 860px) {{ .glance-grid {{ grid-template-columns: 1fr; }} }}
+  /* Breakpoint is intentionally high (not just "phone-width") -- the
+     fixed sidebar (276px) plus main's 96px right padding eat a lot of
+     the viewport before the heatmap/table columns even start, so a
+     narrower embed context (e.g. a ClickUp "Any website" panel) can
+     still be well over 860px wide while the actual content column is
+     too tight for an 8-phase heatmap with diagonal labels next to a
+     multi-column table -- both stack to full width well before that
+     point actually gets cramped. */
+  @media (max-width: 1500px) {{ .glance-grid {{ grid-template-columns: 1fr; }} }}
   {COMPETITIVE_ATTENTION_CSS}
   {NAV_CSS}
 </style>
