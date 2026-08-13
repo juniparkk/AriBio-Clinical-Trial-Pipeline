@@ -52,12 +52,6 @@ def render_nav_bar(active):
     """
     active: one of the keys in _TABS ("home"/"pipeline"/"biomarker"),
     or None if this page isn't one of the three tabs.
-
-    Self-hides when the page is loaded inside dashboard.html's own tab
-    shell (an <iframe>) — the shell already shows its own copy of this
-    same bar, so without this a tabbed view would show two stacked nav
-    bars. Opening any of these three files directly (not through the
-    shell) still shows the bar normally.
     """
     links = "".join(
         f'<a href="{href}"{" class=\"active\"" if key == active else ""}>{label}</a>'
@@ -66,9 +60,4 @@ def render_nav_bar(active):
     return f"""<nav class="dash-nav">
       <span class="dash-nav-brand">AriBio Alzheimer's Intelligence</span>
       {links}
-    </nav>
-    <script>
-      if (window.self !== window.top) {{
-        document.currentScript.previousElementSibling.style.display = 'none';
-      }}
-    </script>"""
+    </nav>"""
