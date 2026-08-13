@@ -357,6 +357,62 @@ def test_milestone_next_30_days_bucket():
     assert len(m["next_90_days"]) == 0
 
 
+def test_milestone_item_carries_phase_from_annotated_df():
+    trials = _trials_df([_trial_row("NCT00000001", status="RECRUITING", primary_completion="2026-08-20", completion="2026-09-01")])
+    annotated = _annotated_df([_annotated_row("NCT00000001", status_clean="Recruiting", phase_clean="Phase 3")])
+    m = ca.build_milestones(annotated, trials, None, WATCHLIST, today=TODAY)
+    assert m["next_30_days"][0]["phase"] == "Phase 3"
+
+
+def test_milestone_item_carries_drug_type_when_drugs_df_given():
+    trials = _trials_df([_trial_row("NCT00000001", status="RECRUITING", primary_completion="2026-08-20", completion="2026-09-01")])
+    annotated = _annotated_df([_annotated_row("NCT00000001", status_clean="Recruiting", developed_drug="TestDrug")])
+    drugs = pd.DataFrame([{"display_name": "TestDrug", "drug_type": "Disease-Targeted Small Molecule"}])
+    m = ca.build_milestones(annotated, trials, None, WATCHLIST, today=TODAY, drugs_df=drugs)
+    assert m["next_30_days"][0]["drug_type"] == "Disease-Targeted Small Molecule"
+
+
+def test_milestone_item_drug_type_blank_when_drugs_df_not_given():
+    # drugs_df is optional -- must degrade gracefully, not error, when
+    # the caller doesn't have it on hand.
+    trials = _trials_df([_trial_row("NCT00000001", status="RECRUITING", primary_completion="2026-08-20", completion="2026-09-01")])
+    annotated = _annotated_df([_annotated_row("NCT00000001", status_clean="Recruiting")])
+    m = ca.build_milestones(annotated, trials, None, WATCHLIST, today=TODAY)
+    assert m["next_30_days"][0]["drug_type"] == ""
+
+
+def test_materially_delayed_milestone_item_carries_phase_and_drug_type():
+    trials = _trials_df([_trial_row("NCT00000001")])
+    annotated = _annotated_df([_annotated_row("NCT00000001", phase_clean="Phase 2", developed_drug="TestDrug")])
+    drugs = pd.DataFrame([{"display_name": "TestDrug", "drug_type": "Biologic"}])
+    changes = _changes_df([
+        _change_row(nct_id="NCT00000001", change_type="primary_completion_date_change",
+                    old_value="2026-01-01", new_value="2026-12-31", importance="Medium"),
+    ])
+    m = ca.build_milestones(annotated, trials, changes, WATCHLIST, today=TODAY, drugs_df=drugs)
+    assert m["materially_delayed"][0]["phase"] == "Phase 2"
+    assert m["materially_delayed"][0]["drug_type"] == "Biologic"
+
+
+def test_render_milestones_section_shows_phase_and_drug_type():
+    trials = _trials_df([_trial_row("NCT00000001", status="RECRUITING", primary_completion="2026-08-20", completion="2026-09-01")])
+    annotated = _annotated_df([_annotated_row("NCT00000001", status_clean="Recruiting", phase_clean="Phase 3", developed_drug="TestDrug")])
+    drugs = pd.DataFrame([{"display_name": "TestDrug", "drug_type": "Disease-Targeted Small Molecule"}])
+    m = ca.build_milestones(annotated, trials, None, WATCHLIST, today=TODAY, drugs_df=drugs)
+    html = cav.render_milestones_section(m)
+    assert "Phase 3" in html
+    assert "Disease-Targeted Small Molecule" in html
+    assert "milestone-meta" in html
+
+
+def test_render_milestones_section_omits_meta_line_when_both_blank():
+    trials = _trials_df([_trial_row("NCT00000001", status="RECRUITING", primary_completion="2026-08-20", completion="2026-09-01")])
+    annotated = _annotated_df([_annotated_row("NCT00000001", status_clean="Recruiting", phase_clean="")])
+    m = ca.build_milestones(annotated, trials, None, WATCHLIST, today=TODAY)
+    html = cav.render_milestones_section(m)
+    assert '<span class="milestone-meta">' not in html
+
+
 def test_milestone_item_carries_resolved_drug_name():
     trials = _trials_df([_trial_row("NCT00000001", status="RECRUITING", primary_completion="2026-08-20", completion="2026-09-01")])
     annotated = _annotated_df([_annotated_row("NCT00000001", status_clean="Recruiting", developed_drug="Wonderdrug")])
@@ -494,7 +550,7 @@ def test_milestone_notes_use_careful_non_promissory_wording():
 def test_render_needs_attention_section_handles_empty_dataframe():
     html = cav.render_needs_attention_section(pd.DataFrame(columns=ca.ATTENTION_COLUMNS))
     assert "Needs Attention" in html
-    assert "No pipeline changes currently need attention" in html
+    assert "No drug-related pipeline changes currently need attention" in html
 
 
 def test_render_needs_attention_section_respects_top_n():
@@ -506,6 +562,37 @@ def test_render_needs_attention_section_respects_top_n():
     df = pd.DataFrame(rows, columns=ca.ATTENTION_COLUMNS)
     html = cav.render_needs_attention_section(df, top_n=5)
     assert "showing top 5 of 12" in html
+
+
+def test_render_needs_attention_section_filters_out_unresolved_drug_items():
+    # Needs Attention is drug-only: an item whose drug couldn't be
+    # resolved to a name is dropped from the feed entirely rather than
+    # shown labeled by NCT ID or "(unresolved)".
+    unresolved = {**{c: "" for c in ca.ATTENTION_COLUMNS}, "relevance_score": 63, "priority_level": "High",
+                  "canonical_drug_name": "", "nct_id": "NCT00663026"}
+    resolved = {**{c: "" for c in ca.ATTENTION_COLUMNS}, "relevance_score": 50, "priority_level": "Medium",
+                "canonical_drug_name": "bapineuzumab", "nct_id": "NCT00000002"}
+    df = pd.DataFrame([unresolved, resolved], columns=ca.ATTENTION_COLUMNS)
+    html = cav.render_needs_attention_section(df)
+    assert "(unresolved)" not in html
+    assert "NCT00663026" not in html
+    assert "bapineuzumab" in html
+    assert "showing top 1 of 1" in html
+
+
+def test_render_needs_attention_section_handles_nan_fields_without_literal_nan():
+    # A blank cell that round-tripped through CSV reads back as pandas
+    # float NaN (truthy in Python) -- confirms a row that DOES have a
+    # resolved drug name (and so survives the drug-only filter) still
+    # never renders the literal word "nan" for any other blank field.
+    row = {**{c: float("nan") for c in ca.ATTENTION_COLUMNS}, "relevance_score": 63, "priority_level": "High",
+           "canonical_drug_name": "bapineuzumab", "nct_id": "NCT00663026"}
+    df = pd.DataFrame([row], columns=ca.ATTENTION_COLUMNS)
+    html = cav.render_needs_attention_section(df)
+    assert "nan" not in html.lower()
+    assert "(unresolved)" not in html
+    assert "NCT00663026" in html
+    assert "bapineuzumab" in html
 
 
 def test_render_needs_attention_section_no_longer_shows_ar1001_relevance_inline():
@@ -533,43 +620,240 @@ def test_describe_change_produces_factual_text_without_scored_factors():
         assert phrase not in text.lower()
 
 
+def test_describe_change_handles_nan_drug_name_without_rendering_literal_nan():
+    # A blank cell that round-tripped through CSV (e.g. via
+    # update_changes_history()'s accumulated history file) reads back
+    # as pandas' float NaN, which is truthy in Python -- a naive
+    # `value or ""` fallback would keep NaN and str() it into the
+    # literal text "nan" showing up in the rendered description.
+    row = _change_row(change_type="new_trial", canonical_drug_name=float("nan"))
+    text = ca.describe_change(row)
+    assert "nan" not in text.lower()
+    assert text == "A new trial was registered."
+
+
 def test_prepare_recent_changes_adds_description_column():
     changes = _changes_df([_change_row(change_type="results_posted", old_value="NO", new_value="YES")])
-    prepared = ca.prepare_recent_changes(changes)
+    prepared = ca.prepare_recent_changes(changes, today=TODAY)
     assert "description" in prepared.columns
     assert len(prepared.iloc[0]["description"]) > 0
 
 
-def test_prepare_recent_changes_sorts_high_importance_first():
+def test_prepare_recent_changes_sorts_by_date_most_recent_first():
     changes = _changes_df([
-        _change_row(nct_id="NCT00000001", change_type="enrollment_change", importance="Low"),
-        _change_row(nct_id="NCT00000002", change_type="results_posted", importance="High"),
-        _change_row(nct_id="NCT00000003", change_type="status_change", importance="Medium"),
+        _change_row(nct_id="NCT00000001", change_type="enrollment_change", importance="High") | {"detected_date": "2026-08-01"},
+        _change_row(nct_id="NCT00000002", change_type="results_posted", importance="Low") | {"detected_date": "2026-08-10"},
+        _change_row(nct_id="NCT00000003", change_type="status_change", importance="Medium") | {"detected_date": "2026-08-05"},
     ])
-    prepared = ca.prepare_recent_changes(changes)
-    assert list(prepared["importance"]) == ["High", "Medium", "Low"]
+    prepared = ca.prepare_recent_changes(changes, today=TODAY)
+    # Purely chronological -- the Low-importance change from 8/10 comes
+    # first because it's the most recent, ahead of the High-importance
+    # change from 8/1.
+    assert list(prepared["nct_id"]) == ["NCT00000002", "NCT00000003", "NCT00000001"]
+
+
+def test_prepare_recent_changes_same_date_rows_keep_deterministic_order():
+    changes = _changes_df([
+        _change_row(nct_id="NCT00000001", change_type="status_change"),
+        _change_row(nct_id="NCT00000002", change_type="enrollment_change"),
+    ])  # both default to the same detected_date (TODAY)
+    prepared1 = ca.prepare_recent_changes(changes, today=TODAY)
+    prepared2 = ca.prepare_recent_changes(changes, today=TODAY)
+    assert list(prepared1["nct_id"]) == list(prepared2["nct_id"])
 
 
 def test_prepare_recent_changes_empty_input():
-    prepared = ca.prepare_recent_changes(None)
+    prepared = ca.prepare_recent_changes(None, today=TODAY)
     assert len(prepared) == 0
     assert "description" in prepared.columns
+
+
+def test_prepare_recent_changes_excludes_changes_older_than_30_days():
+    changes = _changes_df([
+        _change_row(nct_id="NCT00000001", change_type="status_change", importance="Medium")
+        | {"detected_date": "2026-07-01"},  # 44 days before TODAY -- outside the 30-day window
+        _change_row(nct_id="NCT00000002", change_type="results_posted", importance="Medium")
+        | {"detected_date": "2026-08-01"},  # 13 days before TODAY -- inside the window
+    ])
+    prepared = ca.prepare_recent_changes(changes, today=TODAY)
+    assert list(prepared["nct_id"]) == ["NCT00000002"]
+
+
+def test_prepare_recent_changes_empty_when_nothing_in_window():
+    changes = _changes_df([
+        _change_row(nct_id="NCT00000001", change_type="status_change") | {"detected_date": "2026-01-01"},
+    ])
+    prepared = ca.prepare_recent_changes(changes, today=TODAY)
+    assert len(prepared) == 0
+    assert "description" in prepared.columns
+
+
+def test_build_drug_to_nct_lookup_maps_developed_drug_to_nct_id():
+    annotated = pd.DataFrame([
+        {"nct_id": "NCT00000001", "developed_drug": "DrugA"},
+        {"nct_id": "NCT00000002", "developed_drug": "DrugB"},
+        {"nct_id": "NCT00000003", "developed_drug": ""},  # blank -- skipped
+        {"nct_id": "NCT00000004", "developed_drug": float("nan")},  # NaN -- skipped
+    ])
+    lookup = ca.build_drug_to_nct_lookup(annotated)
+    assert lookup == {"DrugA": "NCT00000001", "DrugB": "NCT00000002"}
+
+
+def test_build_drug_to_nct_lookup_keeps_first_trial_when_drug_has_several():
+    annotated = pd.DataFrame([
+        {"nct_id": "NCT00000001", "developed_drug": "DrugA"},
+        {"nct_id": "NCT00000002", "developed_drug": "DrugA"},
+    ])
+    lookup = ca.build_drug_to_nct_lookup(annotated)
+    assert lookup["DrugA"] == "NCT00000001"
+
+
+def test_prepare_recent_changes_backfills_nct_id_for_drug_level_changes():
+    # Drug-level changes (e.g. new_drug) carry nct_id == "" by
+    # construction -- confirms a real trial link is backfilled from
+    # drug_nct_lookup instead of staying blank ("no linked trial")
+    # when the drug is demonstrably associated with a real trial.
+    changes = _changes_df([
+        _change_row(entity_type="drug", nct_id="", canonical_drug_name="DNL921", change_type="new_drug"),
+    ])
+    lookup = {"DNL921": "NCT07758595"}
+    prepared = ca.prepare_recent_changes(changes, today=TODAY, drug_nct_lookup=lookup)
+    assert prepared.iloc[0]["nct_id"] == "NCT07758595"
+
+
+def test_prepare_recent_changes_never_overwrites_an_existing_nct_id():
+    changes = _changes_df([
+        _change_row(nct_id="NCT00000009", canonical_drug_name="DrugA"),
+    ])
+    lookup = {"DrugA": "NCT99999999"}  # deliberately different -- must not override a real nct_id
+    prepared = ca.prepare_recent_changes(changes, today=TODAY, drug_nct_lookup=lookup)
+    assert prepared.iloc[0]["nct_id"] == "NCT00000009"
+
+
+def test_prepare_recent_changes_leaves_nct_id_blank_when_drug_not_in_lookup():
+    changes = _changes_df([
+        _change_row(entity_type="drug", nct_id="", canonical_drug_name="UnmappedDrug", change_type="new_drug"),
+    ])
+    prepared = ca.prepare_recent_changes(changes, today=TODAY, drug_nct_lookup={"OtherDrug": "NCT00000001"})
+    assert not prepared.iloc[0]["nct_id"]
+
+
+def test_recent_changes_card_shows_backfilled_trial_link_not_no_linked_trial():
+    changes = _changes_df([
+        _change_row(entity_type="drug", nct_id="", canonical_drug_name="DNL921", change_type="new_drug"),
+    ])
+    prepared = ca.prepare_recent_changes(changes, today=TODAY, drug_nct_lookup={"DNL921": "NCT07758595"})
+    html = cav.render_recent_changes_section(prepared)
+    assert "no linked trial" not in html
+    assert 'href="https://clinicaltrials.gov/study/NCT07758595"' in html
+
+
+def test_recent_changes_card_shows_detected_date():
+    changes = _changes_df([
+        _change_row(nct_id="NCT00000001", canonical_drug_name="Drug1") | {"detected_date": "2026-08-01"},
+    ])
+    prepared = ca.prepare_recent_changes(changes, today=TODAY)
+    html = cav.render_recent_changes_section(prepared)
+    assert "2026-08-01" in html
+
+
+def test_update_changes_history_appends_and_prunes_old_rows():
+    import os
+    import tempfile
+    history_path = os.path.join(tempfile.mkdtemp(), "pipeline_changes_history.csv")
+    try:
+        # First "run": one change 44 days before TODAY -- should be pruned
+        # away once a later run's window no longer covers it.
+        old_run = _changes_df([
+            _change_row(nct_id="NCT00000001", change_type="status_change") | {"detected_date": "2026-07-01"}
+        ])
+        combined1 = ca.update_changes_history(old_run, history_path, today="2026-07-01")
+        assert len(combined1) == 1
+
+        # Second "run", 44 days later: the old row falls outside the
+        # trailing 30-day window and must be pruned from disk, while the
+        # new row is appended.
+        new_run = _changes_df([
+            _change_row(nct_id="NCT00000002", change_type="results_posted") | {"detected_date": TODAY}
+        ])
+        combined2 = ca.update_changes_history(new_run, history_path, today=TODAY)
+        assert list(combined2["nct_id"]) == ["NCT00000002"]
+
+        # Confirm the prune was actually persisted to disk, not just
+        # returned in memory.
+        on_disk = pd.read_csv(history_path)
+        assert list(on_disk["nct_id"]) == ["NCT00000002"]
+    finally:
+        import shutil
+        shutil.rmtree(os.path.dirname(history_path), ignore_errors=True)
+
+
+def test_update_changes_history_deduplicates_same_day_reruns():
+    import os
+    import tempfile
+    history_path = os.path.join(tempfile.mkdtemp(), "pipeline_changes_history.csv")
+    try:
+        run = _changes_df([
+            _change_row(nct_id="NCT00000001", change_type="status_change", old_value="Recruiting", new_value="Completed")
+        ])
+        ca.update_changes_history(run, history_path, today=TODAY)
+        # Re-running the pipeline again the same day with an identical
+        # detected change must not double the row count.
+        combined = ca.update_changes_history(run, history_path, today=TODAY)
+        assert len(combined) == 1
+    finally:
+        import shutil
+        shutil.rmtree(os.path.dirname(history_path), ignore_errors=True)
 
 
 def test_render_recent_changes_section_handles_empty_dataframe():
     html = cav.render_recent_changes_section(pd.DataFrame(columns=["description"]))
     assert "Recent Changes" in html
-    assert "No pipeline changes were detected" in html
+    assert "No drug-related pipeline changes were detected" in html
 
 
 def test_render_recent_changes_section_shows_change_and_drug():
     changes = _changes_df([
         _change_row(change_type="results_posted", old_value="NO", new_value="YES", canonical_drug_name="TestDrug"),
     ])
-    prepared = ca.prepare_recent_changes(changes)
+    prepared = ca.prepare_recent_changes(changes, today=TODAY)
     html = cav.render_recent_changes_section(prepared)
     assert "TestDrug" in html
     assert "results posted" in html.lower()
+
+
+def test_render_recent_changes_section_filters_out_unresolved_drug_changes():
+    # Recent Changes is drug-only: a change whose drug couldn't be
+    # resolved to a name is dropped from the feed entirely rather than
+    # shown labeled by NCT ID or "(unresolved)".
+    changes = _changes_df([
+        _change_row(change_type="new_trial", nct_id="NCT00663026", canonical_drug_name=""),
+        _change_row(change_type="new_trial", nct_id="NCT00000099", canonical_drug_name="TestDrug"),
+    ])
+    prepared = ca.prepare_recent_changes(changes, today=TODAY)
+    html = cav.render_recent_changes_section(prepared)
+    assert "(unresolved)" not in html
+    assert "NCT00663026" not in html
+    assert "TestDrug" in html
+    assert "showing 1 of 1" in html
+
+
+def test_render_recent_changes_section_handles_nan_fields_without_literal_nan():
+    # Simulates a row that round-tripped through CSV (blank cells read
+    # back as pandas float NaN, not "") -- the real failure mode this
+    # session hit via outputs/pipeline_changes_history.csv. The drug
+    # name itself is resolved here (so the row survives the drug-only
+    # filter) -- this confirms no OTHER blank field renders "nan".
+    df = pd.DataFrame([{
+        "nct_id": "NCT07756294", "canonical_drug_name": "DNL921",
+        "sponsor_or_company": float("nan"), "change_type": "new_trial",
+        "description": "A new trial was registered for DNL921.",
+    }])
+    html = cav.render_recent_changes_section(df)
+    assert "nan" not in html.lower()
+    assert "(unresolved)" not in html
+    assert "NCT07756294" in html
+    assert 'href="https://clinicaltrials.gov/study/NCT07756294"' in html
 
 
 def test_render_recent_changes_section_respects_top_n():
@@ -577,37 +861,181 @@ def test_render_recent_changes_section_respects_top_n():
         _change_row(nct_id=f"NCT{i:08d}", canonical_drug_name=f"Drug{i}", change_type="status_change")
         for i in range(20)
     ]
-    prepared = ca.prepare_recent_changes(_changes_df(rows))
+    prepared = ca.prepare_recent_changes(_changes_df(rows), today=TODAY)
     html = cav.render_recent_changes_section(prepared, top_n=5)
     assert "showing 5 of 20" in html
 
 
+def test_shown_recent_change_nct_ids_matches_the_rendered_top_n():
+    changes = _changes_df([
+        _change_row(nct_id="NCT00000001", canonical_drug_name="Drug1", importance="High"),
+        _change_row(nct_id="NCT00000002", canonical_drug_name="Drug2", importance="Medium"),
+        _change_row(nct_id="NCT00000003", canonical_drug_name="", importance="High"),  # unresolved -- excluded
+    ])
+    prepared = ca.prepare_recent_changes(changes, today=TODAY)
+    shown = cav.shown_recent_change_nct_ids(prepared, top_n=1)
+    # Only the single highest-importance, drug-resolved row is "shown".
+    assert shown == {"NCT00000001"}
+
+
+def test_needs_attention_deduplicates_items_already_shown_in_recent_changes():
+    changes = _changes_df([
+        _change_row(nct_id="NCT00000001", canonical_drug_name="DupDrug", importance="High"),
+    ])
+    recent_changes_df = ca.prepare_recent_changes(changes, today=TODAY)
+
+    dup_row = {**{c: "" for c in ca.ATTENTION_COLUMNS}, "relevance_score": 90, "priority_level": "High",
+               "canonical_drug_name": "DupDrug", "nct_id": "NCT00000001"}
+    unique_row = {**{c: "" for c in ca.ATTENTION_COLUMNS}, "relevance_score": 80, "priority_level": "High",
+                  "canonical_drug_name": "UniqueDrug", "nct_id": "NCT00000002"}
+    attention_df = pd.DataFrame([dup_row, unique_row], columns=ca.ATTENTION_COLUMNS)
+
+    html = cav.render_competitive_sections(recent_changes_df, attention_df)
+    assert html.count("DupDrug") == 1  # shown in Recent Changes only, not repeated in Needs Attention
+    assert html.count("UniqueDrug") == 1  # not a duplicate, shown normally in Needs Attention
+
+
+def test_needs_attention_shows_explanatory_empty_state_when_everything_is_a_duplicate():
+    changes = _changes_df([
+        _change_row(nct_id="NCT00000001", canonical_drug_name="DupDrug", importance="High"),
+    ])
+    recent_changes_df = ca.prepare_recent_changes(changes, today=TODAY)
+    dup_row = {**{c: "" for c in ca.ATTENTION_COLUMNS}, "relevance_score": 90, "priority_level": "High",
+               "canonical_drug_name": "DupDrug", "nct_id": "NCT00000001"}
+    attention_df = pd.DataFrame([dup_row], columns=ca.ATTENTION_COLUMNS)
+
+    html = cav.render_competitive_sections(recent_changes_df, attention_df)
+    assert "already shown in Recent Changes above" in html
+
+
 def test_render_competitive_sections_includes_placeholder_replaceable_content():
-    empty_milestones = {"next_30_days": [], "next_90_days": [], "recently_completed": [], "materially_delayed": []}
+    # Milestones is deliberately NOT part of this bundle anymore — it
+    # renders separately (see test_render_milestones_section_* below)
+    # into its own placeholder further down the page, beneath "AR1001
+    # Competitive Landscape".
     html = cav.render_competitive_sections(
         pd.DataFrame(columns=ca.ATTENTION_COLUMNS),
         pd.DataFrame(columns=ca.ATTENTION_COLUMNS),
-        empty_milestones,
     )
     assert "AR1001 Relevance" not in html  # removed section must not reappear
     assert "Recent Changes" in html
     assert "Needs Attention" in html
-    assert "Upcoming Competitive Milestones" in html
+    assert "Upcoming Competitive Milestones" not in html
     assert cav.PLACEHOLDER not in html  # the rendered section itself must not contain the raw token
 
 
-def test_render_competitive_sections_puts_first_two_panels_in_one_row():
-    # Recent Changes and Needs Attention sit side by side in a single
-    # row (AR1001 Relevance removed); Milestones stays full-width below.
-    empty_milestones = {"next_30_days": [], "next_90_days": [], "recently_completed": [], "materially_delayed": []}
+def test_needs_attention_section_has_notes_edit_button():
+    html = cav.render_needs_attention_section(pd.DataFrame(columns=ca.ATTENTION_COLUMNS))
+    assert 'id="attentionNotesEditBtn"' in html
+    assert "openAttentionNotesModal()" in html
+    assert 'id="attentionNotesModalOverlay"' in html
+    assert 'id="attentionNotesTextarea"' in html
+    assert "saveAttentionNotes()" in html
+    assert "cancelAttentionNotesEdit()" in html
+    assert 'id="attentionNotesList"' in html
+
+
+def test_notes_modal_has_separate_drug_name_and_general_notes_sections():
+    html = cav.render_needs_attention_section(pd.DataFrame(columns=ca.ATTENTION_COLUMNS))
+    assert 'id="attentionNotesDrugInput"' in html
+    assert "Drug name" in html
+    assert "General notes" in html
+    # Two distinct labeled fields, not one combined field.
+    assert html.count('class="attention-notes-field"') == 2
+
+
+def test_recent_changes_section_has_no_notes_edit_button():
+    # The notes feature was requested for Needs Attention specifically.
+    html = cav.render_recent_changes_section(pd.DataFrame(columns=["description"]))
+    assert "attentionNotesEditBtn" not in html
+
+
+def test_attention_notes_script_included_exactly_once():
     html = cav.render_competitive_sections(
         pd.DataFrame(columns=ca.ATTENTION_COLUMNS),
         pd.DataFrame(columns=ca.ATTENTION_COLUMNS),
-        empty_milestones,
+    )
+    assert html.count("<script>") == 1
+    assert html.count("saveAttentionNotes = function") == 1
+
+
+def test_attention_notes_persist_via_localstorage_not_page_markup():
+    # This is the specific failure mode that destroyed the original
+    # version of this feature: notes must never be baked into the
+    # page's own HTML, since the page is fully regenerated from
+    # scratch on every pipeline refresh (see run_pipeline.py) --
+    # anything living only in the HTML would be silently discarded the
+    # next time the page is rebuilt. localStorage lives in the
+    # browser, independent of the file's content on disk.
+    assert "localStorage.setItem" in cav.ATTENTION_NOTES_SCRIPT
+
+
+def test_attention_notes_are_a_dated_deletable_list_not_a_single_blob():
+    # Matches the described interaction: Save APPENDS a new dated entry
+    # (not overwrite), and each entry is individually deletable.
+    assert "JSON.stringify" in cav.ATTENTION_NOTES_SCRIPT
+    assert "JSON.parse" in cav.ATTENTION_NOTES_SCRIPT
+    assert "notes.push(" in cav.ATTENTION_NOTES_SCRIPT
+    assert "date:" in cav.ATTENTION_NOTES_SCRIPT
+    assert "deleteAttentionNote" in cav.ATTENTION_NOTES_SCRIPT
+    assert "attention-note-delete-btn" in cav.ATTENTION_NOTES_SCRIPT
+
+
+def test_attention_notes_capture_drug_name_alongside_general_notes():
+    assert "drug:" in cav.ATTENTION_NOTES_SCRIPT
+    assert "attentionNotesDrugInput" in cav.ATTENTION_NOTES_SCRIPT
+    assert "attention-note-drug" in cav.ATTENTION_NOTES_SCRIPT
+    # Drug name is optional -- only the notes textarea gates whether
+    # Save actually appends a new entry.
+    assert 'if (text) {' in cav.ATTENTION_NOTES_SCRIPT
+    assert "localStorage.getItem" in cav.ATTENTION_NOTES_SCRIPT
+
+
+def test_deleting_a_note_requires_confirmation():
+    delete_fn = cav.ATTENTION_NOTES_SCRIPT.split("window.deleteAttentionNote = function")[1].split("};")[0]
+    assert "window.confirm(" in delete_fn
+    # Confirmation must gate the actual deletion -- the filter/save call
+    # has to appear AFTER the confirm() check, not before it.
+    assert delete_fn.index("window.confirm(") < delete_fn.index("setNotes(")
+
+
+def test_render_competitive_sections_stacks_needs_attention_below_recent_changes():
+    # Recent Changes renders first (on top), Needs Attention second
+    # (below it) -- both full-width, single-column, not side by side.
+    html = cav.render_competitive_sections(
+        pd.DataFrame(columns=ca.ATTENTION_COLUMNS),
+        pd.DataFrame(columns=ca.ATTENTION_COLUMNS),
     )
     row_start = html.index('<div class="attention-row">')
     assert row_start < html.index("Recent Changes") < html.index("Needs Attention")
-    assert html.index("Upcoming Competitive Milestones") > html.index("Needs Attention")
+
+
+def test_attention_row_css_is_single_column():
+    assert "grid-template-columns: 1fr" in cav.COMPETITIVE_ATTENTION_CSS
+    assert "grid-template-columns: repeat(2, 1fr)" not in cav.COMPETITIVE_ATTENTION_CSS.split(".attention-cards-grid")[0]
+
+
+def test_recent_changes_cards_render_in_two_column_grid():
+    changes = _changes_df([
+        _change_row(nct_id="NCT00000001", canonical_drug_name="Drug1"),
+        _change_row(nct_id="NCT00000002", canonical_drug_name="Drug2"),
+    ])
+    prepared = ca.prepare_recent_changes(changes, today=TODAY)
+    html = cav.render_recent_changes_section(prepared)
+    assert '<div class="attention-cards-grid">' in html
+    # Both cards must live inside the same grid wrapper, not two separate ones.
+    assert html.count('<div class="attention-cards-grid">') == 1
+    assert html.count('<div class="attention-card">') == 2
+
+
+def test_needs_attention_cards_are_not_wrapped_in_two_column_grid():
+    # The two-column layout was requested for Recent Changes only --
+    # Needs Attention keeps its existing single-column list.
+    row = {**{c: "" for c in ca.ATTENTION_COLUMNS}, "relevance_score": 63, "priority_level": "High",
+           "canonical_drug_name": "bapineuzumab", "nct_id": "NCT00663026"}
+    df = pd.DataFrame([row], columns=ca.ATTENTION_COLUMNS)
+    html = cav.render_needs_attention_section(df)
+    assert "attention-cards-grid" not in html
 
 
 ALL_TESTS = [
@@ -630,6 +1058,12 @@ ALL_TESTS = [
     test_output_columns_match_required_schema,
     test_empty_changes_produces_empty_result_with_correct_columns,
     test_milestone_next_30_days_bucket,
+    test_milestone_item_carries_phase_from_annotated_df,
+    test_milestone_item_carries_drug_type_when_drugs_df_given,
+    test_milestone_item_drug_type_blank_when_drugs_df_not_given,
+    test_materially_delayed_milestone_item_carries_phase_and_drug_type,
+    test_render_milestones_section_shows_phase_and_drug_type,
+    test_render_milestones_section_omits_meta_line_when_both_blank,
     test_milestone_item_carries_resolved_drug_name,
     test_milestone_item_falls_back_to_nct_id_when_drug_unresolved,
     test_milestone_rendering_shows_drug_name_not_nct_id_as_link_text,
@@ -646,15 +1080,46 @@ ALL_TESTS = [
     test_render_needs_attention_section_handles_empty_dataframe,
     test_render_needs_attention_section_respects_top_n,
     test_render_needs_attention_section_no_longer_shows_ar1001_relevance_inline,
+    test_render_needs_attention_section_filters_out_unresolved_drug_items,
+    test_render_needs_attention_section_handles_nan_fields_without_literal_nan,
     test_describe_change_produces_factual_text_without_scored_factors,
+    test_describe_change_handles_nan_drug_name_without_rendering_literal_nan,
     test_prepare_recent_changes_adds_description_column,
-    test_prepare_recent_changes_sorts_high_importance_first,
+    test_prepare_recent_changes_sorts_by_date_most_recent_first,
+    test_prepare_recent_changes_same_date_rows_keep_deterministic_order,
     test_prepare_recent_changes_empty_input,
+    test_prepare_recent_changes_excludes_changes_older_than_30_days,
+    test_prepare_recent_changes_empty_when_nothing_in_window,
+    test_build_drug_to_nct_lookup_maps_developed_drug_to_nct_id,
+    test_build_drug_to_nct_lookup_keeps_first_trial_when_drug_has_several,
+    test_prepare_recent_changes_backfills_nct_id_for_drug_level_changes,
+    test_prepare_recent_changes_never_overwrites_an_existing_nct_id,
+    test_prepare_recent_changes_leaves_nct_id_blank_when_drug_not_in_lookup,
+    test_recent_changes_card_shows_backfilled_trial_link_not_no_linked_trial,
+    test_recent_changes_card_shows_detected_date,
+    test_update_changes_history_appends_and_prunes_old_rows,
+    test_update_changes_history_deduplicates_same_day_reruns,
     test_render_recent_changes_section_handles_empty_dataframe,
     test_render_recent_changes_section_shows_change_and_drug,
+    test_render_recent_changes_section_filters_out_unresolved_drug_changes,
+    test_render_recent_changes_section_handles_nan_fields_without_literal_nan,
     test_render_recent_changes_section_respects_top_n,
+    test_shown_recent_change_nct_ids_matches_the_rendered_top_n,
+    test_needs_attention_deduplicates_items_already_shown_in_recent_changes,
+    test_needs_attention_shows_explanatory_empty_state_when_everything_is_a_duplicate,
     test_render_competitive_sections_includes_placeholder_replaceable_content,
-    test_render_competitive_sections_puts_first_two_panels_in_one_row,
+    test_needs_attention_section_has_notes_edit_button,
+    test_notes_modal_has_separate_drug_name_and_general_notes_sections,
+    test_recent_changes_section_has_no_notes_edit_button,
+    test_attention_notes_script_included_exactly_once,
+    test_attention_notes_persist_via_localstorage_not_page_markup,
+    test_attention_notes_are_a_dated_deletable_list_not_a_single_blob,
+    test_attention_notes_capture_drug_name_alongside_general_notes,
+    test_deleting_a_note_requires_confirmation,
+    test_render_competitive_sections_stacks_needs_attention_below_recent_changes,
+    test_attention_row_css_is_single_column,
+    test_recent_changes_cards_render_in_two_column_grid,
+    test_needs_attention_cards_are_not_wrapped_in_two_column_grid,
 ]
 
 

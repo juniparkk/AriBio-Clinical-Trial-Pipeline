@@ -1,0 +1,39 @@
+detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
+2026-08-11,trial,NCT07756294,,Wake Forest University Health Sciences,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),True
+2026-08-11,trial,NCT07757178,,University of Nottingham,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT07757204,buntanetap/posiphen,Annovis Bio Inc.,new_trial,,Phase 2/Phase 3,High,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),True
+2026-08-11,trial,NCT07758595,DNL921,Denali Therapeutics Inc.,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT07758660,,Patrick Lao,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),True
+2026-08-11,trial,NCT07758751,,Beijing Tiantan Hospital,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT05007353,,National University of Singapore,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT05007353,,National University of Singapore,enrollment_change,1200,1212,Low,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT05007353,,National University of Singapore,primary_completion_date_change,2025-12-31,2025-12-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT05007353,,National University of Singapore,completion_date_change,2026-01-31,2025-12-29,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT05477862,,Northwestern University,status_change,Unknown,Recruiting,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT05477862,,Northwestern University,primary_completion_date_change,2025-10-15,2026-12-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT05477862,,Northwestern University,completion_date_change,2026-01-15,2026-12-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT05531656,CT1812,Cognition Therapeutics,primary_completion_date_change,2027-04,2027-05-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT05531656,CT1812,Cognition Therapeutics,completion_date_change,2027-04,2027-05-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT05926011,,REGEnLIFE SAS,primary_completion_date_change,2026-06,2027-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT05926011,,REGEnLIFE SAS,completion_date_change,2026-12,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT06249139,,Pro-Change Behavior Systems,enrollment_change,305,278,Low,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT06249139,,Pro-Change Behavior Systems,primary_completion_date_change,2025-05-27,2025-08-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT06249139,,Pro-Change Behavior Systems,completion_date_change,2025-05-27,2025-08-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT06249139,,Pro-Change Behavior Systems,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),True
+2026-08-11,trial,NCT07210528,,"National University Hospital, Singapore",status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT07210528,,"National University Hospital, Singapore",primary_completion_date_change,2026-03,2026-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT07210528,,"National University Hospital, Singapore",completion_date_change,2026-04,2026-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT07279103,,Hacettepe University,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,trial,NCT07279103,,Hacettepe University,primary_completion_date_change,2025-06-01,2025-07-10,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,drug,,DNL921,Denali Therapeutics Inc.,new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,drug,,Treatment As Usual,Chongqing Medical University; Instituto de Investigacion Sanitaria INCLIVA,new_drug,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,drug,,dimebon,"Medivation, Inc.; Pfizer",new_drug,,Phase 3,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,drug,,memantine HCl,Forest Laboratories; Merz Pharmaceuticals GmbH,new_drug,,Phase 4,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-11,drug,,octagam 10%,Octapharma; Sutter Health,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-11T222543Z),False
+2026-08-12,trial,NCT07752784,,JYAMS PET Research & Development Limited,primary_completion_date_change,2026-12-31,2027-04-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-12T165804Z),False
+2026-08-12,trial,NCT07752784,,JYAMS PET Research & Development Limited,completion_date_change,2027-04-07,2027-08-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-12T165804Z),False
+2026-08-12,drug,,Octagam 10%,Octapharma; Sutter Health,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-12T165804Z),False
+2026-08-12,drug,,Raloxifene,"Stanford University; University of Wisconsin, Madison",new_drug,,Phase 2/Phase 3,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-12T165804Z),False
+2026-08-12,drug,,Treatment as Usual,Chongqing Medical University; Instituto de Investigacion Sanitaria INCLIVA,new_drug,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-12T165804Z),False
+2026-08-12,drug,,memantine,"Florida Atlantic University; Forest Laboratories; H. Lundbeck A/S; Merz Pharmaceuticals GmbH; NYU Langone Health; Northwell Health; Peking University; Shanghai Mental Health Center; Stanford University; Sunnybrook Health Sciences Centre; University Hospital, Lille; University of California, San Diego",new_drug,,Phase 4,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-12T165804Z),False
+2026-08-12,drug,,pioglitazone,National Institute on Aging (NIA); Takeda,new_drug,,Phase 3,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-12T165804Z),False

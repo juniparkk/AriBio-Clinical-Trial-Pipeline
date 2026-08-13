@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>AriBio Alzheimer's Intelligence</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f4f5f8; margin: 0; padding: 0; color: #1a1a1a;
+  }
+  
+  .dash-nav {
+    display: flex; align-items: center; gap: 2px; background: #1d3d69; padding: 0 20px;
+    height: 44px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .dash-nav-brand { color: white; font-weight: 700; font-size: 13px; margin-right: 18px; white-space: nowrap; }
+  .dash-nav a {
+    color: #a0b7d5; text-decoration: none; font-size: 13px; font-weight: 600;
+    padding: 0 14px; height: 44px; display: flex; align-items: center;
+    border-bottom: 2px solid transparent;
+  }
+  .dash-nav a:hover { color: white; }
+  .dash-nav a.active { color: white; border-bottom-color: #c2255c; }
+
+  .home-hero { max-width: 900px; margin: 0 auto; padding: 64px 24px 80px; text-align: center; }
+  .home-hero h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 10px; }
+  .home-hero > p { color: #666; font-size: 15px; margin: 0 0 40px; }
+  .home-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left; }
+  @media (max-width: 680px) { .home-cards { grid-template-columns: 1fr; } }
+  .home-card {
+    background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(20, 40, 70, 0.09);
+    padding: 25px 26px 24px; text-decoration: none; color: inherit; display: block;
+    border-top: 3px solid #2e5fa3; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .home-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(20, 40, 70, 0.16); }
+  .home-card-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #2e5fa3; margin-bottom: 8px; }
+  .home-card h2 { font-size: 18px; font-weight: 700; margin: 0 0 8px; }
+  .home-card p { font-size: 13.5px; color: #666; line-height: 1.55; margin: 0; }
+  .home-card-note { margin-top: 14px; font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+<nav class="dash-nav">
+      <span class="dash-nav-brand">AriBio Alzheimer's Intelligence</span>
+      <a href="dashboard.html" class="active">Home</a><a href="pipeline_overview.html">Clinical Pipeline</a><a href="biomarker_dashboard.html">ADNI Natural History</a>
+    </nav>
+    <script>
+      if (window.self !== window.top) {
+        document.currentScript.previousElementSibling.style.display = 'none';
+      }
+    </script>
+<div class="home-hero">
+  <h1>AriBio Alzheimer's Intelligence</h1>
+  <p>Two views into the same disease area: the competitive clinical-trial landscape, and cohort-level biomarker data.</p>
+  <div class="home-cards">
+    <a class="home-card" href="pipeline_overview.html">
+      <div class="home-card-eyebrow">ClinicalTrials.gov</div>
+      <h2>Clinical Pipeline</h2>
+      <p>Every Alzheimer's disease drug candidate on ClinicalTrials.gov — phase, sponsor, target pathway, FDA status, and AR1001 competitive relevance.</p>
+      <div class="home-card-note" style="color:#2e5fa3">Open &rarr;</div>
+    </a>
+    <a class="home-card" href="biomarker_dashboard.html">
+      <div class="home-card-eyebrow">ADNI</div>
+      <h2>Natural History</h2>
+      <p>Alzheimer's Disease Neuroimaging Initiative cohort data — MRI, PET, CSF, cognitive, and genetic biomarkers.</p>
+      <div class="home-card-note" style="color:#2e5fa3">Open &rarr;</div>
+    </a></div>
+</div>
+</body>
+</html>

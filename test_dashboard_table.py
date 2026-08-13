@@ -304,61 +304,6 @@ def test_pipeline_table_names_are_subset_of_pipeline_drugs_csv():
         assert row["display_name"] in resolved_names
 
 
-def test_drug_type_pie_reconciles_with_resolved_drugs_df():
-    therapeutic_rows = get_therapeutic_rows()
-    traces = extract_plotly_traces(HTML_SOURCE, "pieDiv")
-    drug_type_trace = traces[1]  # trace order: 0=phase, 1=drug_type, 2=target, 3=status
-    assert drug_type_trace["name"] == "Drug Type"
-
-    # Phase 1A: narrowed to therapeutic_drugs_df (pipeline_scope ==
-    # "Therapeutic Drug") — this pie must show ONLY real therapeutic drugs.
-    expected_counts = {}
-    for row in therapeutic_rows:
-        expected_counts[row["drug_type"]] = expected_counts.get(row["drug_type"], 0) + 1
-
-    actual_counts = dict(zip(drug_type_trace["labels"], drug_type_trace["values"]))
-    assert actual_counts == expected_counts
-    assert sum(actual_counts.values()) == len(therapeutic_rows)
-    assert "drugs" in drug_type_trace["hovertemplate"], "hover text must say 'drugs', not 'trials', now that this pie is drug-level"
-
-
-def test_target_pie_reconciles_with_resolved_drugs_df():
-    therapeutic_rows = get_therapeutic_rows()
-    traces = extract_plotly_traces(HTML_SOURCE, "pieDiv")
-    target_trace = traces[2]
-    assert target_trace["name"] == "Target"
-
-    expected_counts = {}
-    for row in therapeutic_rows:
-        expected_counts[row["target"]] = expected_counts.get(row["target"], 0) + 1
-
-    actual_counts = dict(zip(target_trace["labels"], target_trace["values"]))
-    assert actual_counts == expected_counts
-    assert sum(actual_counts.values()) == len(therapeutic_rows)
-    assert "drugs" in target_trace["hovertemplate"]
-
-
-def test_phase_and_status_pies_remain_trial_level_by_design():
-    # "By Phase" and "By Trial Status" are DELIBERATELY kept trial-level
-    # (not migrated) — their own titles already say "trials", and they
-    # answer a genuinely different question ("how many TRIALS are at
-    # each phase/status") than the KPI tiles' drug-level counts. This
-    # test pins that design decision so a future change can't silently
-    # make them drug-level (or vice versa) without the test noticing.
-    traces = extract_plotly_traces(HTML_SOURCE, "pieDiv")
-    phase_trace, status_trace = traces[0], traces[3]
-    assert phase_trace["name"] == "Phase"
-    assert status_trace["name"] == "Status"
-    assert sum(phase_trace["values"]) == len(get_trials_csv_rows())
-    assert "trials" in phase_trace["hovertemplate"]
-    assert "trials" in status_trace["hovertemplate"]
-
-
-def get_trials_csv_rows():
-    with open("pipeline_annotated.csv", encoding="utf-8") as f:
-        return list(csv.DictReader(f))
-
-
 def test_no_dashboard_calculation_references_legacy_drugs_df():
     # legacy_drugs_df, and its whole upstream chain, must have zero
     # remaining CODE references (comments mentioning the retired name
@@ -369,21 +314,6 @@ def test_no_dashboard_calculation_references_legacy_drugs_df():
     assert re.search(r"legacy_drugs_df\.\w", PIPELINE_VIZ_SOURCE) is None
     for removed_def in ["def primary_intervention_name", "def canonical_drug_key", "def summarize_drug", "def mode_or_first"]:
         assert removed_def not in PIPELINE_VIZ_SOURCE, f"{removed_def} should have been removed entirely in Phase 0"
-
-
-def test_drug_type_and_target_pies_read_resolved_drugs_df_not_raw_df():
-    # static-source check: the two lines that feed the drug-type/target
-    # pies must read resolved_drugs_df (directly or via its
-    # Phase-1A-filtered therapeutic_drugs_df derivative) — never a bare
-    # trial-level `df`/`trials_df` column access
-    type_line = re.search(r"^type_counts = (.+)$", PIPELINE_VIZ_SOURCE, re.MULTILINE)
-    target_line = re.search(r"^target_counts = (.+)$", PIPELINE_VIZ_SOURCE, re.MULTILINE)
-    assert type_line and "therapeutic_drugs_df" in type_line.group(1)
-    assert target_line and "therapeutic_drugs_df" in target_line.group(1)
-    # therapeutic_drugs_df itself must be defined as a filter over
-    # resolved_drugs_df, not an independent computation
-    therapeutic_def_line = re.search(r"^therapeutic_drugs_df = (.+)$", PIPELINE_VIZ_SOURCE, re.MULTILINE)
-    assert therapeutic_def_line and "resolved_drugs_df" in therapeutic_def_line.group(1)
 
 
 # ============================================================
@@ -501,11 +431,7 @@ ALL_TESTS = [
     test_phase3_leaderboard_names_are_subset_of_resolved_drugs_df,
     test_phase3_leaderboard_sorted_by_relevance_and_excludes_ar1001,
     test_pipeline_table_names_are_subset_of_pipeline_drugs_csv,
-    test_drug_type_pie_reconciles_with_resolved_drugs_df,
-    test_target_pie_reconciles_with_resolved_drugs_df,
-    test_phase_and_status_pies_remain_trial_level_by_design,
     test_no_dashboard_calculation_references_legacy_drugs_df,
-    test_drug_type_and_target_pies_read_resolved_drugs_df_not_raw_df,
     test_pipeline_scope_field_present_on_every_table_row,
     test_no_non_therapeutic_scopes_present_in_table_data,
     test_placebo_or_comparator_never_in_table_rows,

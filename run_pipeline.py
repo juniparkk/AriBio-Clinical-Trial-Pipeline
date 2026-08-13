@@ -75,6 +75,7 @@ DRUGS_CSV = "pipeline_drugs.csv"
 ANNOTATED_CSV = "pipeline_annotated.csv"
 OVERVIEW_HTML = "pipeline_overview.html"
 CHANGES_CSV = os.path.join("outputs", "pipeline_changes.csv")
+CHANGES_HISTORY_CSV = os.path.join("outputs", "pipeline_changes_history.csv")
 ATTENTION_CSV = os.path.join("outputs", "competitive_attention.csv")
 
 TEST_FILES = [
@@ -248,20 +249,28 @@ def run_refresh():
             level_counts = attention_df["priority_level"].value_counts()
             print("  Priority levels: " + ", ".join(f"{k}={v}" for k, v in level_counts.items()))
 
-        milestones = competitive_attention.build_milestones(new_annotated_df, df, changes_df, watchlist)
+        milestones = competitive_attention.build_milestones(new_annotated_df, df, changes_df, watchlist, drugs_df=new_drugs_df)
         for key, items in milestones.items():
             print(f"  {key}: {len(items)}")
 
-        recent_changes_df = competitive_attention.prepare_recent_changes(changes_df)
+        changes_history_df = competitive_attention.update_changes_history(changes_df, CHANGES_HISTORY_CSV)
+        drug_nct_lookup = competitive_attention.build_drug_to_nct_lookup(new_annotated_df)
+        recent_changes_df = competitive_attention.prepare_recent_changes(changes_history_df, drug_nct_lookup=drug_nct_lookup)
 
         section_html = competitive_attention_viz.render_competitive_sections(
-            recent_changes_df, attention_df, milestones,
+            recent_changes_df, attention_df,
         )
+        milestones_html = competitive_attention_viz.render_milestones_section(milestones)
         with open(OVERVIEW_HTML) as f:
             html_content = f.read()
-        if competitive_attention_viz.PLACEHOLDER not in html_content:
-            raise RuntimeError(f"{OVERVIEW_HTML} is missing the competitive-attention placeholder")
+        missing = [tag for tag, token in (
+            ("competitive-attention", competitive_attention_viz.PLACEHOLDER),
+            ("competitive-milestones", competitive_attention_viz.MILESTONES_PLACEHOLDER),
+        ) if token not in html_content]
+        if missing:
+            raise RuntimeError(f"{OVERVIEW_HTML} is missing the {', '.join(missing)} placeholder(s)")
         html_content = html_content.replace(competitive_attention_viz.PLACEHOLDER, section_html)
+        html_content = html_content.replace(competitive_attention_viz.MILESTONES_PLACEHOLDER, milestones_html)
         with open(OVERVIEW_HTML, "w") as f:
             f.write(html_content)
         print(f"{OVERVIEW_HTML} updated with Recent Changes / Needs Attention / "

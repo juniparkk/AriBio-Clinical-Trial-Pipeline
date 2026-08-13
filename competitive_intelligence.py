@@ -32,11 +32,16 @@ PHASE_RANK_FOR_SCORING = {
 }
 
 # Point weights — sum to 100 when every dimension matches exactly.
+# Modality (Small Molecule vs. Biologic, matching AR1001's own oral
+# small-molecule profile) is weighted above phase timing and purpose
+# class -- what KIND of drug a competitor is matters more to AR1001's
+# competitive relevance than how far along it happens to be, which is
+# already shown separately on the bubble chart's maturity (x) axis.
 _TARGET_PATHWAY_POINTS = 40
-_MODALITY_POINTS = 25
+_MODALITY_POINTS = 35
 _PURPOSE_CLASS_POINTS = 15
-_SAME_PHASE_POINTS = 20
-_ADJACENT_PHASE_POINTS = 10
+_SAME_PHASE_POINTS = 10
+_ADJACENT_PHASE_POINTS = 5
 
 _PURPOSE_CLASS_LABELS = {"DTT": "Disease-targeted", "STT": "Symptomatic"}
 

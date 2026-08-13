@@ -329,7 +329,13 @@ def _describe_factors(change_type_factor, phase_points, phase_label, timing_fact
 
 def _why_it_matters(change_row, factors):
     template = _CHANGE_TYPE_DESCRIPTIONS.get(change_row["change_type"], "A change was detected.")
-    drug = str(change_row.get("canonical_drug_name") or "").strip()
+    # A blank cell that round-tripped through CSV (e.g. via
+    # update_changes_history()'s accumulated history file) reads back
+    # as pandas' float NaN, which is truthy in Python -- guard with
+    # pd.isna() first, or `nan or ""` silently keeps NaN and this
+    # renders the literal text "nan" instead of omitting the clause.
+    raw_drug = change_row.get("canonical_drug_name")
+    drug = "" if pd.isna(raw_drug) else str(raw_drug).strip()
     drug_clause = f" for {drug}" if drug else ""
     base = template.format(
         old_value=change_row.get("old_value", ""), new_value=change_row.get("new_value", ""),
@@ -471,18 +477,56 @@ def describe_change(change_row):
     return _why_it_matters(change_row, [])
 
 
-_IMPORTANCE_SORT_ORDER = {"High": 0, "Medium": 1, "Low": 2}
+RECENT_CHANGES_WINDOW_DAYS = 30
 
 
-def prepare_recent_changes(changes_df):
-    """Returns ALL rows of pipeline_changes.csv, sorted by ctgov_changes.py's
-    own importance (High/Medium/Low — NOT the competitive-priority
-    score), with a "description" column added via describe_change().
-    Not truncated here — competitive_attention_viz.py's renderer owns
-    the "top N of total" slicing, same as render_needs_attention_section.
-    Kept separate from compute_attention()/Needs Attention: this is the
-    raw, UNSCORED "what changed" feed — the renderer consumes
-    "description" directly and performs no computation of its own.
+def build_drug_to_nct_lookup(annotated_df):
+    """Maps a resolved drug name (annotated_df's own `developed_drug`)
+    to ONE representative NCT ID from the full annotated trial set.
+
+    Used to backfill a real, clickable trial link onto DRUG-LEVEL
+    change rows (change_type == "new_drug", etc.) -- those rows carry
+    nct_id == "" by construction (see ctgov_changes.detect_drug_level_
+    changes: a drug-level change isn't tied to any single trial event),
+    even though the drug itself is almost always associated with at
+    least one real trial elsewhere in the dataset. When a drug maps to
+    more than one trial, the first one encountered is used -- an
+    arbitrary but real, clickable link beats "no linked trial" when a
+    trial demonstrably exists.
+    """
+    if annotated_df is None or annotated_df.empty:
+        return {}
+    lookup = {}
+    for _, r in annotated_df.iterrows():
+        drug = r.get("developed_drug")
+        if drug is None or (isinstance(drug, float) and pd.isna(drug)) or not str(drug).strip():
+            continue
+        lookup.setdefault(str(drug).strip(), r.get("nct_id", ""))
+    return lookup
+
+
+def prepare_recent_changes(changes_df, today=None, window_days=RECENT_CHANGES_WINDOW_DAYS, drug_nct_lookup=None):
+    """Returns rows detected within the trailing `window_days` days of
+    `today` (default: now; 30-day window by default), sorted purely by
+    detected_date -- most recent first -- with a "description" column
+    added via describe_change(). Not truncated here —
+    competitive_attention_viz.py's renderer owns the "top N of total"
+    slicing, same as render_needs_attention_section. Kept separate
+    from compute_attention()/Needs Attention: this is the raw,
+    UNSCORED "what changed" feed — the renderer consumes "description"
+    directly and performs no computation of its own.
+
+    `changes_df` is expected to already span the intended history
+    window (e.g. update_changes_history()'s accumulated, pruned output)
+    — this function's own date filter is a second, defensive guarantee
+    that nothing older than `window_days` is ever shown, regardless of
+    what the caller passed in.
+
+    `drug_nct_lookup` (see build_drug_to_nct_lookup()): when given, a
+    row whose own nct_id is blank gets backfilled from this lookup by
+    its canonical_drug_name, so genuinely drug-level changes (like
+    "new_drug") still link to a real trial when one is resolvable,
+    instead of always showing "no linked trial".
     """
     fallback_columns = ["detected_date", "entity_type", "nct_id", "canonical_drug_name",
                          "sponsor_or_company", "change_type", "old_value", "new_value",
@@ -490,14 +534,80 @@ def prepare_recent_changes(changes_df):
     if changes_df is None or changes_df.empty:
         return pd.DataFrame(columns=fallback_columns)
 
-    prepared = changes_df.copy()
-    prepared["_importance_rank"] = prepared["importance"].map(_IMPORTANCE_SORT_ORDER).fillna(3)
-    prepared = prepared.sort_values(["_importance_rank", "detected_date"], ascending=[True, False]).drop(columns="_importance_rank")
-    prepared["description"] = prepared.apply(describe_change, axis=1)
-    return prepared.reset_index(drop=True)
+    today_ts = pd.Timestamp(today) if today is not None else pd.Timestamp.now(tz=None).normalize()
+    cutoff = today_ts - pd.Timedelta(days=window_days)
+    detected = pd.to_datetime(changes_df["detected_date"], errors="coerce")
+    windowed = changes_df.loc[(detected >= cutoff) & (detected <= today_ts)].copy()
+    if windowed.empty:
+        return pd.DataFrame(columns=fallback_columns)
+
+    # kind="stable" keeps same-date rows in a deterministic (original)
+    # order across runs, rather than an unstable-sort coin flip.
+    windowed = windowed.sort_values("detected_date", ascending=False, kind="stable")
+    windowed["description"] = windowed.apply(describe_change, axis=1)
+
+    if drug_nct_lookup:
+        def _backfill_nct_id(row):
+            nct = row.get("nct_id")
+            if nct is not None and not (isinstance(nct, float) and pd.isna(nct)) and str(nct).strip():
+                return nct
+            drug = row.get("canonical_drug_name")
+            if drug is not None and not (isinstance(drug, float) and pd.isna(drug)) and str(drug).strip():
+                return drug_nct_lookup.get(str(drug).strip(), nct)
+            return nct
+        windowed["nct_id"] = windowed.apply(_backfill_nct_id, axis=1)
+
+    return windowed.reset_index(drop=True)
 
 
-def build_milestones(annotated_df, trials_df, changes_df, watchlist, today=None):
+def update_changes_history(changes_df, history_path, today=None, window_days=RECENT_CHANGES_WINDOW_DAYS):
+    """Appends this run's freshly-detected changes into the accumulated
+    change-history file at `history_path` (creating it if it doesn't
+    exist yet), then prunes anything older than `window_days` days from
+    `today` (default: now). This file is intentionally NOT an unbounded
+    log — it exists solely to give prepare_recent_changes() a real
+    trailing window to draw from; nothing outside that window is ever
+    displayed, so nothing outside it is kept on disk either.
+
+    Deduplicates on (detected_date, entity_type, nct_id, change_type,
+    old_value, new_value) so re-running the pipeline more than once on
+    the same day never double-counts a change already recorded.
+
+    Returns the pruned, combined DataFrame (already written to
+    `history_path`) so the caller can hand it directly to
+    prepare_recent_changes() without a redundant re-read.
+
+    pipeline_changes.csv itself is untouched by this function — it
+    keeps its existing, separate meaning as "just this run's diff"
+    (see run_pipeline.py). This history file is additive, not a
+    replacement.
+    """
+    import os
+    existing = pd.read_csv(history_path, low_memory=False) if os.path.exists(history_path) else None
+    frames = [df for df in (existing, changes_df) if df is not None and not df.empty]
+    combined = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+
+    if combined.empty:
+        os.makedirs(os.path.dirname(history_path) or ".", exist_ok=True)
+        combined.to_csv(history_path, index=False)
+        return combined
+
+    dedupe_cols = [c for c in ("detected_date", "entity_type", "nct_id", "change_type", "old_value", "new_value")
+                   if c in combined.columns]
+    if dedupe_cols:
+        combined = combined.drop_duplicates(subset=dedupe_cols, keep="last")
+
+    today_ts = pd.Timestamp(today) if today is not None else pd.Timestamp.now(tz=None).normalize()
+    cutoff = today_ts - pd.Timedelta(days=window_days)
+    detected = pd.to_datetime(combined["detected_date"], errors="coerce")
+    combined = combined.loc[(detected >= cutoff) & (detected <= today_ts)].reset_index(drop=True)
+
+    os.makedirs(os.path.dirname(history_path) or ".", exist_ok=True)
+    combined.to_csv(history_path, index=False)
+    return combined
+
+
+def build_milestones(annotated_df, trials_df, changes_df, watchlist, today=None, drugs_df=None):
     """Buckets currently-therapeutic trials by completion-date timing for
     the "Upcoming Competitive Milestones" dashboard section.
 
@@ -510,11 +620,18 @@ def build_milestones(annotated_df, trials_df, changes_df, watchlist, today=None)
     is sourced from pipeline_changes.csv's own substantial,
     later-direction completion-date changes (a real detected change,
     not a static inference from a single snapshot).
+
+    `drugs_df` (pipeline_drugs.csv's per-drug rollup, optional): when
+    given, each item's `drug_type` is looked up from it by drug name --
+    without it, drug_type is simply blank rather than an error, since
+    every other field here is already resolvable from annotated_df/
+    trials_df alone.
     """
     today = pd.Timestamp(today) if today is not None else pd.Timestamp.now(tz=None).normalize()
     thresholds = watchlist["alert_thresholds"]
 
     trial_lookup = build_trial_lookup(annotated_df, trials_df)
+    drug_lookup = build_drug_lookup(drugs_df)
     therapeutic_ids = {nct_id for nct_id, info in trial_lookup.items() if info.get("pipeline_scope") == "Therapeutic Drug"}
 
     next_30, next_90, recently_completed = [], [], []
@@ -522,12 +639,15 @@ def build_milestones(annotated_df, trials_df, changes_df, watchlist, today=None)
         info = trial_lookup[nct_id]
         pcd = pd.to_datetime(info.get("primary_completion_date", ""), errors="coerce")
         cd = pd.to_datetime(info.get("completion_date", ""), errors="coerce")
+        drug_name = info.get("developed_drug", "") or nct_id
 
         item = {
             "nct_id": nct_id,
-            "drug_name": info.get("developed_drug", "") or nct_id,
+            "drug_name": drug_name,
             "sponsor": info.get("sponsor", ""),
             "status": info.get("status_clean", ""),
+            "phase": info.get("phase_clean", ""),
+            "drug_type": drug_lookup.get(drug_name, {}).get("drug_type", ""),
             "primary_completion_date": info.get("primary_completion_date", ""),
             "completion_date": info.get("completion_date", ""),
         }
@@ -569,6 +689,8 @@ def build_milestones(annotated_df, trials_df, changes_df, watchlist, today=None)
                     "nct_id": row["nct_id"],
                     "drug_name": drug_name,
                     "sponsor": info.get("sponsor", row.get("sponsor_or_company", "")),
+                    "phase": info.get("phase_clean", ""),
+                    "drug_type": drug_lookup.get(drug_name, {}).get("drug_type", ""),
                     "change_type": row["change_type"],
                     "old_value": row.get("old_value", ""),
                     "new_value": row.get("new_value", ""),

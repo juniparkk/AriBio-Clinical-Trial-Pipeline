@@ -217,7 +217,7 @@ def test_normalize_candidate_handles_none_and_empty():
 
 def test_load_official_pipeline_reads_seed_file():
     records = load_official_pipeline(PIPELINE_CSV_PATH)
-    assert len(records) == 6
+    assert len(records) == 7
     ariBio_rows = [r for r in records if r["company"] == "AriBio"]
     assert len(ariBio_rows) == 1
     assert ariBio_rows[0]["drug_name"] == "AR1001"

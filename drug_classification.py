@@ -200,6 +200,77 @@ def load_official_pipeline(path):
     return records
 
 
+REQUIRED_GENERIC_ALIAS_COLUMNS = ["raw_name", "canonical_name", "reason", "source", "reviewer", "verified_date"]
+
+
+def load_generic_drug_aliases(path):
+    """
+    Read data/reference/generic_drug_aliases.csv into a dict keyed by
+    normalized raw_name -> canonical_name. Missing-file-tolerant, same
+    pattern as load_official_pipeline()/load_scope_overrides(): a
+    missing file degrades to "no aliases" ({}), never a crash.
+
+    This is a DELIBERATELY SEPARATE mechanism from official_pipeline.csv
+    — that file requires the trial's sponsor to also match the curated
+    company (match_official_pipeline()'s whole safety property: "a
+    drug-name match alone is never enough"), which works for proprietary
+    pipeline drugs with one clear originator but breaks down for old,
+    off-patent generics (donepezil, galantamine, rivastigmine, ...)
+    studied by dozens of unrelated academic/pharma sponsors — requiring
+    a company match there would leave almost every trial unmerged.
+    Every row here is instead held to a stricter identity bar: it must
+    be a verified salt/brand/formulation/route/typo variant of ONE
+    active agent, never a combination product, prodrug, or a different
+    active moiety (see canonicalize_developed_drug_names()'s docstring
+    for how the original, pre-canonicalization name is still preserved).
+    """
+    try:
+        raw_df = pd.read_csv(path, dtype=str)
+    except FileNotFoundError:
+        return {}
+
+    missing = [c for c in REQUIRED_GENERIC_ALIAS_COLUMNS if c not in raw_df.columns]
+    if missing:
+        raise ValueError(f"generic_drug_aliases.csv at {path!r} is missing required column(s): {missing}")
+
+    raw_df = raw_df.fillna("")
+
+    aliases = {}
+    for _, row in raw_df.iterrows():
+        key = normalize_text(row["raw_name"])
+        canonical = str(row["canonical_name"]).strip()
+        if not key or not canonical:
+            continue
+        aliases[key] = canonical
+    return aliases
+
+
+def canonicalize_developed_drug_names(df, aliases):
+    """
+    Rewrite df["developed_drug"]/["developed_drug_normalized"] for any
+    row whose CURRENT normalized developed_drug exactly matches a known
+    generic-drug alias (see load_generic_drug_aliases()) — exact match
+    only, never substring/fuzzy, so a short alias can never accidentally
+    swallow an unrelated longer name.
+
+    The ORIGINAL (pre-canonicalization) text is preserved in a new
+    developed_drug_original column, never overwritten, so
+    build_resolved_drugs_dataframe()'s rollup can still surface every
+    raw name variant (salt form, brand, formulation/route) that fed
+    into the canonical row — formulation/route is metadata to keep,
+    not to discard just because the drug identity got merged.
+    """
+    df = df.copy()
+    df["developed_drug_original"] = df["developed_drug"]
+
+    def _canonicalize(name):
+        return aliases.get(normalize_text(name), name)
+
+    df["developed_drug"] = df["developed_drug"].apply(_canonicalize)
+    df["developed_drug_normalized"] = df["developed_drug"].apply(normalize_text)
+    return df
+
+
 def _company_matches(company_normalized, sponsor_normalized):
     """
     True if a pipeline record's company and a trial's sponsor text
@@ -1385,6 +1456,8 @@ def build_resolved_drugs_dataframe(trials_df):
     status_clean, drug_type, target, enrollment, is_aribio,
     developed_drug, developed_drug_normalized, drug_classification,
     verification_status, classification_confidence, needs_manual_review.
+    "Brief Summary" is read too if present, but is optional — its
+    absence degrades to an empty brief_summary field rather than an error.
     """
     eligible = trials_df[
         trials_df["drug_classification"].isin(["sponsor_developed_therapeutic", "investigational_therapeutic_unverified"])
@@ -1397,7 +1470,7 @@ def build_resolved_drugs_dataframe(trials_df):
         "display_name", "phase_reached", "nct_id", "status_summary", "drug_type", "target",
         "sponsor", "trial_count", "max_enrollment", "is_aribio", "verification_status",
         "classification_confidence", "needs_manual_review", "confirmed_trial_count", "unverified_trial_count",
-        "official_source_url", "classification_reason", "nct_ids",
+        "official_source_url", "classification_reason", "nct_ids", "brief_summary", "name_variants",
         "pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required",
         "diagnostic_subtype",
     ]
@@ -1458,6 +1531,37 @@ def build_resolved_drugs_dataframe(trials_df):
 
         nct_ids = "; ".join(sorted(set(g["nct_id"].dropna().astype(str))))
 
+        # developed_drug_original only exists after
+        # canonicalize_developed_drug_names() has rewritten developed_drug
+        # to a canonical active-agent name (e.g. "Donepezil") for a
+        # generic-drug alias match — absent otherwise (most groups never
+        # go through that rewrite, e.g. proprietary pipeline drugs).
+        # Rolling up the ORIGINAL raw names here is what keeps salt/
+        # brand/formulation/route info (e.g. "Donepezil TDS", "Aricept",
+        # "Rivastigmine patch") visible as metadata after several rows
+        # collapse into one canonical drug, instead of just discarding it.
+        if "developed_drug_original" in g.columns:
+            name_variants = "; ".join(sorted(set(g["developed_drug_original"].dropna().astype(str)) - {""}))
+        else:
+            name_variants = ""
+
+        # Brief Summary is a per-TRIAL ct.gov field describing what the
+        # study tests, not the drug's pharmacology — never treated as a
+        # mechanism-of-action substitute (see scientific_classification.py
+        # for the real, verified-evidence-only source of that). It only
+        # exists here as an honest, clearly-labeled fallback the dashboard
+        # shows when no real mechanism is on file. Prefer the same
+        # highest-phase trial every other "top" field above is drawn
+        # from; fall back to any other contributing trial's summary if
+        # that one happens to be blank.
+        if "Brief Summary" in top_rows.columns and len(top_rows):
+            top_brief_summary = str(top_rows["Brief Summary"].iloc[0] or "").strip()
+        else:
+            top_brief_summary = ""
+        brief_summary = top_brief_summary or next(
+            (s for s in (str(v).strip() for v in g.get("Brief Summary", pd.Series(dtype=str))) if s), ""
+        )
+
         # Phase 1A: pipeline_scope aggregation. In the overwhelming
         # majority of groups every contributing trial agrees on scope
         # (it's derived from the same winning intervention type/name) —
@@ -1506,6 +1610,8 @@ def build_resolved_drugs_dataframe(trials_df):
             "official_source_url": official_source_url,
             "classification_reason": classification_reason,
             "nct_ids": nct_ids,
+            "brief_summary": brief_summary,
+            "name_variants": name_variants,
             "pipeline_scope": pipeline_scope,
             "scope_reason": scope_reason,
             "scope_method": scope_method,

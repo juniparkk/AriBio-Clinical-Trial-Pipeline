@@ -38,15 +38,16 @@ def test_partial_overlap_any_shared_pathway_gives_full_pathway_credit():
     assert "Amyloid" in reasons[0]
 
 
-def test_modality_match_contributes_25_points():
+def test_modality_match_contributes_35_points():
     # Phase 1 vs. Phase 4 is 5 ranks apart (see PHASE_RANK_FOR_SCORING)
     # -> deliberately contributes 0 phase points, isolating modality's
-    # own contribution
+    # own contribution. Weighted above phase/purpose-class -- see
+    # module-level comment on _MODALITY_POINTS.
     score, _ = compute_relevance_score(
         [], "Small Molecule", "", "Phase 1",
         [], "Small Molecule", "", "Phase 4",
     )
-    assert score == 25
+    assert score == 35
 
 
 def test_purpose_class_match_contributes_15_points():
@@ -70,16 +71,16 @@ def test_blank_purpose_class_never_matches_and_never_scores():
     assert reasons == []
 
 
-def test_same_phase_contributes_20_points():
+def test_same_phase_contributes_10_points():
     score, reasons = compute_relevance_score(
         [], "", "", "Phase 2",
         [], "", "", "Phase 2",
     )
-    assert score == 20
+    assert score == 10
     assert "Same phase" in reasons[0]
 
 
-def test_adjacent_phase_contributes_10_points():
+def test_adjacent_phase_contributes_5_points():
     # "Phase 1/Phase 2" sits between "Phase 1" and "Phase 2" in
     # PHASE_RANK_FOR_SCORING (it's a real, distinct ct.gov designation,
     # not just a midpoint label) — one rank step from "Phase 1"
@@ -87,7 +88,7 @@ def test_adjacent_phase_contributes_10_points():
         [], "", "", "Phase 1",
         [], "", "", "Phase 1/Phase 2",
     )
-    assert score == 10
+    assert score == 5
     assert "Adjacent phase" in reasons[0]
 
 
@@ -145,11 +146,11 @@ ALL_TESTS = [
     test_identical_profile_scores_100,
     test_completely_unrelated_profile_scores_0,
     test_partial_overlap_any_shared_pathway_gives_full_pathway_credit,
-    test_modality_match_contributes_25_points,
+    test_modality_match_contributes_35_points,
     test_purpose_class_match_contributes_15_points,
     test_blank_purpose_class_never_matches_and_never_scores,
-    test_same_phase_contributes_20_points,
-    test_adjacent_phase_contributes_10_points,
+    test_same_phase_contributes_10_points,
+    test_adjacent_phase_contributes_5_points,
     test_two_phases_apart_contributes_no_points,
     test_unrecognized_phase_value_does_not_crash_and_scores_no_phase_points,
     test_phase_rank_covers_every_pipeline_viz_phase_order_value,

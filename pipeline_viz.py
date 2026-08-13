@@ -18,10 +18,11 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.io as pio
 import plotly.offline as pyo
-from plotly.subplots import make_subplots
 
 from drug_classification import (
     load_official_pipeline,
+    load_generic_drug_aliases,
+    canonicalize_developed_drug_names,
     build_interventions_dataframe,
     resolve_developed_drug,
     build_resolved_drugs_dataframe,
@@ -50,7 +51,13 @@ from scientific_classification import (
     classify_pipeline_quadrant,
 )
 from competitive_intelligence import compute_relevance_score
-from competitive_attention_viz import COMPETITIVE_ATTENTION_CSS, PLACEHOLDER as COMPETITIVE_ATTENTION_PLACEHOLDER
+from dashboard_nav import NAV_BG, NAV_CSS, render_nav_bar
+from fda_status import load_fda_status_reference, match_drug_to_fda_status
+from competitive_attention_viz import (
+    COMPETITIVE_ATTENTION_CSS,
+    PLACEHOLDER as COMPETITIVE_ATTENTION_PLACEHOLDER,
+    MILESTONES_PLACEHOLDER as COMPETITIVE_MILESTONES_PLACEHOLDER,
+)
 
 # ============================================================
 # AriBio brand colors + shade helpers — defined up front (rather than
@@ -162,6 +169,36 @@ df["start_date_parsed"] = df["start_date"].apply(parse_ct_date) if "start_date" 
 df["primary_completion_date_parsed"] = (
     df["primary_completion_date"].apply(parse_ct_date) if "primary_completion_date" in df.columns else pd.NaT
 )
+
+# Multicenter status per trial, derived from the "Locations" column
+# (pipe-separated "facility, city, state, zip, country" per site — see
+# _format_locations() in ctgov_normalize.py). ct.gov's API has no
+# dedicated multicenter field, so this is the only available signal.
+# De-dupe on (facility, city) before counting: a handful of trials list
+# the exact same site twice (e.g. NCT06730438 lists the same hospital
+# twice), which would otherwise inflate a 1-site trial into a false
+# "multicenter" at the raw-count>=2 boundary. Missing Locations data
+# (246 trials) is reported as "unknown", never silently folded into
+# "single" — the CSV genuinely doesn't say.
+def _site_facility_city(entry):
+    parts = entry.split(",")
+    facility = parts[0].strip().lower() if parts else ""
+    city = parts[1].strip().lower() if len(parts) > 1 else ""
+    return (facility, city)
+
+
+def classify_site_status(locations_str):
+    if not isinstance(locations_str, str) or not locations_str.strip():
+        return "unknown"
+    entries = [e.strip() for e in locations_str.split("|") if e.strip()]
+    if not entries:
+        return "unknown"
+    unique_sites = {_site_facility_city(e) for e in entries}
+    return "multicenter" if len(unique_sites) >= 2 else "single"
+
+
+df["site_status"] = df["Locations"].apply(classify_site_status) if "Locations" in df.columns else "unknown"
+TRIAL_SITE_STATUS = dict(zip(df["nct_id"], df["site_status"])) if "nct_id" in df.columns else {}
 
 # Every trial is kept, regardless of phase — including NA (no phase
 # assigned, e.g. observational/expanded-access records), Phase 4
@@ -504,12 +541,33 @@ print(f"{df['needs_manual_review'].sum()} trials flagged needs_manual_review")
 print()
 
 # ============================================================
+# STEP 3.65: GENERIC-DRUG NAME CANONICALIZATION
+#
+# Collapses salt/brand/formulation/route/typo variants of the SAME old,
+# multi-sponsor generic active agent (e.g. "Donepezil Hydrochloride",
+# "Aricept", "Donepezil TDS" -> "Donepezil") into one canonical
+# developed_drug value BEFORE STEP 3.7 groups by it — see
+# drug_classification.load_generic_drug_aliases()'s docstring for why
+# this can't just reuse official_pipeline.csv (that mechanism requires
+# a sponsor match, which fails for a generic studied by dozens of
+# unrelated sponsors). Never touches combination products, prodrugs, or
+# genuinely distinct active moieties — only verified variants of one
+# agent, curated in data/reference/generic_drug_aliases.csv.
+# ============================================================
+
+_generic_drug_aliases = load_generic_drug_aliases("data/reference/generic_drug_aliases.csv")
+df = canonicalize_developed_drug_names(df, _generic_drug_aliases)
+print(f"{len(_generic_drug_aliases)} generic-drug alias(es) loaded from "
+      f"data/reference/generic_drug_aliases.csv")
+print()
+
+# ============================================================
 # STEP 3.7: RESOLVED DRUG-LEVEL ROLLUP — the ONE drug-level source of
 # truth for the whole dashboard as of Phase 0 (data-source
 # consolidation): the visible HTML/JS drug table, pipeline_drugs.csv,
-# the KPI tiles, the heatmap, the Phase 3 leaderboard, and the
-# drug-type/target pies all derive from this dataframe now — no
-# component computes its own separate drug-level rollup anymore.
+# the KPI tiles, the heatmap, and the Phase 3 leaderboard all derive
+# from this dataframe now — no component computes its own separate
+# drug-level rollup anymore.
 # ============================================================
 
 resolved_drugs_df = build_resolved_drugs_dataframe(df)
@@ -614,6 +672,40 @@ resolved_drugs_df["scientific_manual_review_required"] = [r["manual_review_requi
 resolved_drugs_df["therapeutic_purpose_class"] = [r["therapeutic_purpose_class"] for r in _sci_results]
 resolved_drugs_df["therapeutic_purpose_category"] = [r["therapeutic_purpose_category"] for r in _sci_results]
 resolved_drugs_df["cadro"] = [r["cadro"] for r in _sci_results]
+
+# ============================================================
+# STEP 3.72: FDA STATUS RESOLUTION
+#
+# Genuinely separate FDA regulatory status, sourced ONLY from the
+# small, hand-curated data/reference/fda_status_reference.csv — see
+# fda_status.py's module docstring for why this is a curated file
+# rather than a live openFDA integration, and why "no match" resolves
+# to Unknown, never "Not FDA Approved" (absence from a small reviewed
+# file is not evidence of non-approval). Deliberately never derived
+# from trial-level status_summary/phase_reached — see STATUS_MAP above,
+# whose "APPROVED_FOR_MARKETING" -> "FDA Approved" TRIAL-status
+# relabeling is exactly the trial-status/FDA-status conflation this
+# step exists to stop repeating for anything new.
+# ============================================================
+
+_fda_status_reference = load_fda_status_reference("data/reference/fda_status_reference.csv")
+_fda_results = [
+    match_drug_to_fda_status(
+        _row["display_name"], _synonyms_by_drug_name.get(_row["display_name"], []), _fda_status_reference
+    )
+    for _, _row in resolved_drugs_df.iterrows()
+]
+resolved_drugs_df["fda_status"] = [r["fda_status"] for r in _fda_results]
+resolved_drugs_df["fda_indication"] = [r["indication"] for r in _fda_results]
+resolved_drugs_df["fda_approval_type"] = [r["approval_type"] for r in _fda_results]
+resolved_drugs_df["fda_approval_date"] = [r["approval_date"] for r in _fda_results]
+resolved_drugs_df["fda_withdrawal_date"] = [r["withdrawal_date"] for r in _fda_results]
+resolved_drugs_df["fda_application_status"] = [r["application_status"] for r in _fda_results]
+resolved_drugs_df["fda_source_title"] = [r["source_title"] for r in _fda_results]
+resolved_drugs_df["fda_source_url"] = [r["source_url"] for r in _fda_results]
+resolved_drugs_df["fda_notes"] = [r["notes"] for r in _fda_results]
+print(f"FDA status resolved for {sum(1 for s in resolved_drugs_df['fda_status'] if s != 'Unknown')} of "
+      f"{len(resolved_drugs_df)} drugs ({sum(1 for s in resolved_drugs_df['fda_status'] if s == 'FDA Approved')} FDA Approved)")
 
 # drug_type is now the 4-category "pipeline quadrant" scheme (Disease-
 # Targeted Biologic / Disease-Targeted Small Molecule / Cognition
@@ -760,9 +852,8 @@ else:
 # Diagnostic Agent, Non-Drug Intervention, Supportive Treatment, Needs
 # Review), so the dashboard's optional "reveal non-therapeutic records"
 # filter has real data to show. Components that must show ONLY actual
-# therapeutic drugs (KPI tiles, heatmap, Phase 3 leaderboard, drug-type/
-# target pies, and the table's default filter state) read THIS narrower
-# view instead.
+# therapeutic drugs (KPI tiles, heatmap, Phase 3 leaderboard, and the
+# table's default filter state) read THIS narrower view instead.
 # ============================================================
 therapeutic_drugs_df = resolved_drugs_df[resolved_drugs_df["pipeline_scope"] == THERAPEUTIC_SCOPE].copy()
 
@@ -899,7 +990,7 @@ PHASE_COLORS = {
 }
 
 # The one deliberately-distinct categorical palette left — pathway is
-# worth telling apart at a glance in the pie/heatmap, so it keeps its
+# worth telling apart at a glance in the heatmap, so it keeps its
 # own colors rather than folding into the blue ramp.
 TARGET_COLORS = {
     "Amyloid":          "#e53935",
@@ -933,80 +1024,6 @@ STATUS_COLORS = {
     "Discontinued":  ARIBIO_ACCENT,
 }
 
-# --- Compute counts for pie charts ---
-# Phase 0 data-source consolidation: "By Drug Type" and "By Target
-# Pathway" become genuinely drug-level — their titles never said "trial"
-# in the first place, so this actually makes them match what they always
-# claimed to show. "By Phase" and "By Trial Status" stay trial-level
-# (trials_df) deliberately: "how many TRIALS are at each phase/status" is
-# a real, different metric from the KPI tiles' "how many DRUGS have
-# reached each phase" — not an inconsistency to fix, a distinct metric
-# worth keeping. Subplot titles below say which basis each pie uses.
-#
-# Phase 1A: "By Drug Type"/"By Target Pathway" further narrow from
-# resolved_drugs_df to therapeutic_drugs_df (pipeline_scope == "Therapeutic
-# Drug" only) — per the requirement that these two pies "must use only
-# Therapeutic Drug records". They are NOT the same population as the
-# table's full JSON payload anymore (that stays the broader
-# resolved_drugs_df so the table's optional filter can reveal the rest).
-phase_counts = trials_df["phase_clean"].value_counts()
-type_counts = therapeutic_drugs_df["drug_type"].value_counts()
-target_counts = therapeutic_drugs_df["target"].value_counts()
-status_counts = trials_df["status_clean"].value_counts()
-
-# ============================================================
-# STEP 5: BUILD THE 4-PIE FIGURE
-# ============================================================
-
-fig = make_subplots(
-    rows=2, cols=2,
-    subplot_titles=["By Phase (trials)", "By Drug Type (therapeutic drugs)", "By Target Pathway (therapeutic drugs)", "By Trial Status (trials)"],
-    specs=[[{"type": "pie"}, {"type": "pie"}],
-           [{"type": "pie"}, {"type": "pie"}]]
-)
-
-# Trace order matters: it's used client-side (in the injected JS below) to map
-# a clicked pie slice back to the dataframe column it filters on.
-fig.add_trace(go.Pie(
-    labels=phase_counts.index.tolist(),
-    values=phase_counts.values.tolist(),
-    marker_colors=[PHASE_COLORS.get(p, "#999") for p in phase_counts.index],
-    name="Phase", hole=0.35, textinfo="label+percent",
-    hovertemplate="<b>%{label}</b><br>%{value} trials<br>%{percent}<extra></extra>"
-), row=1, col=1)
-
-fig.add_trace(go.Pie(
-    labels=type_counts.index.tolist(),
-    values=type_counts.values.tolist(),
-    marker_colors=[DRUG_TYPE_COLORS.get(t, "#999") for t in type_counts.index],
-    name="Drug Type", hole=0.35, textinfo="label+percent",
-    hovertemplate="<b>%{label}</b><br>%{value} therapeutic drugs<br>%{percent}<extra></extra>"
-), row=1, col=2)
-
-fig.add_trace(go.Pie(
-    labels=target_counts.index.tolist(),
-    values=target_counts.values.tolist(),
-    marker_colors=[TARGET_COLORS.get(t, "#999") for t in target_counts.index],
-    name="Target", hole=0.35, textinfo="label+percent",
-    hovertemplate="<b>%{label}</b><br>%{value} therapeutic drugs<br>%{percent}<extra></extra>"
-), row=2, col=1)
-
-fig.add_trace(go.Pie(
-    labels=status_counts.index.tolist(),
-    values=status_counts.values.tolist(),
-    marker_colors=[STATUS_COLORS.get(s, "#999") for s in status_counts.index],
-    name="Status", hole=0.35, textinfo="label+percent",
-    hovertemplate="<b>%{label}</b><br>%{value} trials<br>%{percent}<extra></extra>"
-), row=2, col=2)
-
-fig.update_layout(
-    paper_bgcolor="white",
-    font=dict(family="Arial", size=13),
-    height=640,
-    showlegend=False,
-    margin=dict(t=50, b=20),
-)
-
 # ============================================================
 # STEP 5.5: "AT A GLANCE" PANEL — target×phase heatmap + Phase 3 leaderboard.
 #
@@ -1038,8 +1055,14 @@ PHASES_ASC = PHASE_ORDER  # NA, Early Phase 1, Phase 1, Phase 1/Phase 2, Phase 2
 # Phase 0: built from resolved_drugs_df (was legacy_drugs_df). Phase 1A:
 # narrowed to therapeutic_drugs_df (pipeline_scope == "Therapeutic Drug"
 # only), per the requirement that the heatmap show only real drugs.
-HEATMAP_TABS = [("All", therapeutic_drugs_df), ("Small Molecule", therapeutic_drugs_df[therapeutic_drugs_df["drug_type"] == "Small Molecule"]),
-                 ("Biologic", therapeutic_drugs_df[therapeutic_drugs_df["drug_type"] == "Biologic"])]
+# Filters on `modality` (clean vocabulary: Small Molecule/Biologic/
+# Other/Cell-Gene Therapy/...), NOT `drug_type` (a different column
+# with values like "Disease-Targeted Small Molecule" that never
+# equals the bare "Small Molecule"/"Biologic" tab labels -- comparing
+# against drug_type here always evaluated to zero rows, which is why
+# the Small Molecule/Biologic tabs previously showed an all-zero grid.
+HEATMAP_TABS = [("All", therapeutic_drugs_df), ("Small Molecule", therapeutic_drugs_df[therapeutic_drugs_df["modality"] == "Small Molecule"]),
+                 ("Biologic", therapeutic_drugs_df[therapeutic_drugs_df["modality"] == "Biologic"])]
 HEATMAP_COLORSCALE = [[0, "#eef2f8"], [1, ARIBIO_BLUE]]
 
 
@@ -1083,7 +1106,7 @@ heatmap_figs = {label: build_heatmap(sub) for label, sub in HEATMAP_TABS}
 RELEVANCE_MATRIX_TOP_N = 40
 MATURITY_X_DIVIDER = 3.5  # late-stage = "Phase 2/Phase 3" (index 4) or later
 RELEVANCE_Y_DIVIDER = 70  # "high relevance" cutoff
-RELEVANCE_MATRIX_LABEL_COUNT = 6  # ~5-8 highest-priority competitors get a visible name label
+RELEVANCE_MATRIX_LABEL_COUNT = 4  # top 4 highest-priority competitors get a visible name label
 
 
 def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_N):
@@ -1123,24 +1146,56 @@ def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_
             ),
         ))
 
-    # ~5-8 highest-priority competitors (highest relevance, later stage
+    # Top 4 highest-priority competitors (highest relevance, later stage
     # preferred among ties) get a visible name label; every other point's
     # name is hover-only, per the "label only important competitors"
     # requirement — this is a presentation choice, doesn't touch matrix_df.
-    # These competitors tend to cluster tightly (they're tied on the
-    # same 1-2 top scores — see summarize_relevance_scores()), so a
-    # single shared textposition stacks every label on top of the next;
-    # cycling through several placements fans them out around their dots.
-    LABEL_TEXT_POSITIONS = ["top center", "bottom center", "middle right", "middle left", "top right", "bottom left"]
+    # These competitors tend to cluster tightly (they're tied on the same
+    # 1-2 top scores — see summarize_relevance_scores()): in real data
+    # the 4 labeled dots have sat within ~0.55 maturity-x units and ~5.5
+    # relevance-y units of each other, which cycling through Plotly
+    # textposition anchors ("top center"/"bottom center"/etc, each only
+    # a few px offset) was nowhere near enough to pull apart — hence the
+    # explicit 2x2 grid below instead. Because the y-axis is heavily
+    # compressed relative to x (the full y-range 0-118 spans the same
+    # pixel height as roughly a 6-7-unit slice of the x-range), spacing
+    # is deliberately x-led: each grid COLUMN carries almost all the
+    # separation, each ROW only a small vertical stagger. A thin leader
+    # line ties each relocated label back to its true (undisturbed) dot
+    # position so the label never reads as "a 5th, unplotted competitor."
     labeled = matrix_df.sort_values(
         ["aribio_relevance_score", "maturity_x", "display_name"], ascending=[False, False, True]
     ).head(RELEVANCE_MATRIX_LABEL_COUNT)
     if not labeled.empty:
+        LABEL_COL_SPACING = 1.15   # x units between the grid's two columns
+        LABEL_ROW_OFFSET = 8.0     # y units the two rows sit above/below the cluster
+        dot_x = (labeled["maturity_x"] + labeled["jitter_x"]).tolist()
+        dot_y = (labeled["aribio_relevance_score"] + labeled["jitter_y"]).clip(1, 99).tolist()
+        cluster_center_x = sum(dot_x) / len(dot_x)
+        label_x, label_y = [], []
+        for i in range(len(labeled)):
+            col, row = i // 2, i % 2
+            lx = cluster_center_x + (col - 0.5) * LABEL_COL_SPACING
+            ly = dot_y[i] + (LABEL_ROW_OFFSET if row == 0 else -LABEL_ROW_OFFSET)
+            # never climb into AR1001's own reference marker/label at
+            # y=100, and never drop past the "high relevance" y=70
+            # divider into a different quadrant's territory
+            ly = max(RELEVANCE_Y_DIVIDER + 2, min(ly, 96))
+            label_x.append(lx)
+            label_y.append(ly)
+
+        leader_x, leader_y = [], []
+        for dx, dy, lx, ly in zip(dot_x, dot_y, label_x, label_y):
+            leader_x += [dx, lx, None]
+            leader_y += [dy, ly, None]
         fig.add_trace(go.Scatter(
-            x=(labeled["maturity_x"] + labeled["jitter_x"]).tolist(),
-            y=(labeled["aribio_relevance_score"] + labeled["jitter_y"]).clip(1, 99).tolist(),
-            mode="text", text=labeled["display_name"].tolist(),
-            textposition=[LABEL_TEXT_POSITIONS[i % len(LABEL_TEXT_POSITIONS)] for i in range(len(labeled))],
+            x=leader_x, y=leader_y, mode="lines",
+            line=dict(color="#c7ccd6", width=1),
+            showlegend=False, hoverinfo="skip",
+        ))
+        fig.add_trace(go.Scatter(
+            x=label_x, y=label_y,
+            mode="text", text=labeled["display_name"].tolist(), textposition="middle center",
             textfont=dict(size=10.5, color="#2a2a2a", family="Arial Black, Arial"),
             showlegend=False, hoverinfo="skip",
         ))
@@ -1240,12 +1295,11 @@ print()
 
 # ============================================================
 # STEP 6: BUILD THE INTERACTIVE HTML PAGE
-# Header bar + KPI tiles + AR1001 spotlight + pill filters + the
-# trial-composition pies (plotly) + a hand-rolled sortable/filterable
-# per-drug table. Plotly's Table trace doesn't support header-click
-# sorting or being filtered by another chart's click events, so the
-# table is plain HTML/JS driven off a JSON blob — still a single,
-# fully standalone file, no server required.
+# Header bar + KPI tiles + AR1001 spotlight + pill filters + a
+# hand-rolled sortable/filterable per-drug table. Plotly's Table trace
+# doesn't support header-click sorting or being filtered by another
+# chart's click events, so the table is plain HTML/JS driven off a
+# JSON blob — still a single, fully standalone file, no server required.
 # ============================================================
 
 # Visible table now sourced from resolved_drugs_df (STEP 3.7) — the
@@ -1265,18 +1319,47 @@ TABLE_COLUMNS = [
     # still available via each row's detail-panel "Compare to AR1001"
     # button, the Phase 3 leaderboard, and the AR1001 Competitive
     # Landscape chart. Drug/Sponsor absorb the freed-up width.
-    ("display_name", "Drug", 24),
-    ("sponsor", "Sponsor", 21),
-    ("phase_reached", "Highest Phase", 10),
-    ("status_summary", "Status", 9),
-    ("target_display", "Target / Pathway", 12),
-    ("drug_type", "Drug Type", 11),
-    ("trial_count", "Trial Count", 7),
-    ("max_enrollment", "Enrollment", 6),
+    # Rebalanced from the original 24/21/10/9/12/11/7/6 split: Drug and
+    # Sponsor had far more width than their content ever used, while
+    # the short-header/short-value columns (Highest Phase, Status,
+    # Trial Count, Enrollment) were narrow enough to truncate their own
+    # header text into an ellipsis and hard-wrap single words like
+    # "Completed" mid-word. Drug/Sponsor still get the two largest
+    # shares (they hold the longest real content) but give up some
+    # surplus room to the columns that actually needed it.
+    ("display_name", "Drug", 19),
+    ("sponsor", "Sponsor", 16),
+    ("phase_reached", "Highest Phase", 12),
+    ("status_summary", "Status", 11),
+    ("target_display", "Target / Pathway", 13),
+    ("drug_type", "Drug Type", 12),
+    ("trial_count", "Trial Count", 9),
+    ("max_enrollment", "Enrollment", 8),
     # Verification/Confidence/Review Status columns removed from the main
     # table per request — still available per-row via the details toggle
     # (the underlying data columns are kept in table_df below for that).
 ]
+
+# Per-drug aggregate of TRIAL_SITE_STATUS (site_status, defined near the
+# top of the file from trials.csv's Locations column): "Multicenter" if
+# ANY of the drug's trials are multicenter, else "Single-site" if any
+# trial has known single-site data, else "Unknown". A competitor running
+# even one multicenter trial is worth flagging as a larger, later-stage
+# program — unlike the "which drugs matter" framing earlier, this filter
+# is specifically about spotting well-resourced competitor programs, so
+# one multicenter trial dominating the label (rather than needing ALL
+# trials to be multicenter) is the right rule here.
+def _drug_site_design_status(nct_ids_str):
+    ids = [i.strip() for i in str(nct_ids_str or "").split(";") if i.strip()]
+    statuses = {TRIAL_SITE_STATUS.get(i, "unknown") for i in ids}
+    if "multicenter" in statuses:
+        return "Multicenter"
+    if "single" in statuses:
+        return "Single-site"
+    return "Unknown"
+
+
+resolved_drugs_df["site_design_status"] = resolved_drugs_df["nct_ids"].apply(_drug_site_design_status)
 
 # Phase 1A: table_df stays sourced from the BROADER resolved_drugs_df
 # (every scope except Exclude/Placebo or Comparator, which never get a
@@ -1293,8 +1376,8 @@ table_df = resolved_drugs_df[[
     "classification_confidence", "confidence_label",
     "needs_manual_review", "review_label",
     "confirmed_trial_count", "unverified_trial_count",
-    "official_source_url", "classification_reason", "nct_ids",
-    "pipeline_scope", "scope_reason", "manual_review_required",
+    "official_source_url", "classification_reason", "nct_ids", "brief_summary", "name_variants",
+    "pipeline_scope", "scope_reason", "manual_review_required", "site_design_status",
     # Phase 2 — scientific classification (modality/target_pathways),
     # for the drug detail panel
     "target_pathways", "mechanism_of_action", "molecular_targets",
@@ -1304,6 +1387,14 @@ table_df = resolved_drugs_df[[
     "modality", "drug_type_source", "drug_type_inferred",
     "start_date_display", "primary_completion_date_display",
     "aribio_relevance_score", "aribio_relevance_reasons",
+    # FDA status (STEP 3.72) — a genuinely separate regulatory signal,
+    # never derived from trial-level status_summary; see fda_status.py.
+    # Only the status itself is shown in the dashboard (as an
+    # Intelligence pill) — the richer fields (indication/approval date/
+    # source/notes/etc.) still exist on resolved_drugs_df and the
+    # reference CSV for later use, just not sent to the browser while
+    # nothing displays them.
+    "fda_status",
 ]].copy()
 table_records = json.loads(table_df.to_json(orient="records"))
 
@@ -1324,8 +1415,6 @@ high_relevance_agents = int((
 ).sum())
 
 plotlyjs_lib = pyo.get_plotlyjs()  # loaded once at the top of the page; every figure below skips its own copy
-pies_html = pio.to_html(fig, include_plotlyjs=False, full_html=False, div_id="pieDiv")
-
 HEATMAP_DIV_IDS = {"All": "heatmapAll", "Small Molecule": "heatmapSmallMolecule", "Biologic": "heatmapBiologic"}
 heatmap_html = {
     label: pio.to_html(f, include_plotlyjs=False, full_html=False, div_id=HEATMAP_DIV_IDS[label])
@@ -1402,6 +1491,29 @@ REVIEW_COLORS = {
     "Needs manual review": ARIBIO_ACCENT,
     "Reviewed / no review needed": lighten(ARIBIO_BLUE, 0.45),
 }
+# Same rule as everywhere else in this palette: ARIBIO_ACCENT reserved
+# for the one value genuinely worth a second glance (an approval that
+# was withdrawn); "Unknown"/"Not Applicable" get the same neutral gray
+# STATUS_COLORS already uses for those concepts, not a shade of blue
+# that would imply more certainty than a blank reference-file lookup has.
+FDA_STATUS_COLORS = {
+    "FDA Approved": darken(ARIBIO_BLUE, 0.30),
+    "Under Review": ARIBIO_BLUE,
+    "Not FDA Approved": "#9e9e9e",
+    "Approval Withdrawn": ARIBIO_ACCENT,
+    "Not Applicable": "#bdbdbd",
+    "Unknown": "#bdbdbd",
+}
+
+# Same rule as FDA_STATUS_COLORS: ARIBIO_BLUE for the state worth a
+# second look (Multicenter — the signal for a larger, later-stage
+# competitor program), neutral grays for Single-site/Unknown so neither
+# reads as a warning.
+SITE_DESIGN_COLORS = {
+    "Multicenter": ARIBIO_BLUE,
+    "Single-site": "#9e9e9e",
+    "Unknown": "#bdbdbd",
+}
 
 # Verification/Confidence/Review Status filter groups removed per
 # request — VERIFICATION_COLORS/CONFIDENCE_COLORS/REVIEW_COLORS are
@@ -1411,6 +1523,7 @@ PILL_GROUPS = [
     ("drugType", "Drug Type", list(DRUG_TYPE_COLORS.keys()), DRUG_TYPE_COLORS),
     ("target", "Target", [t for t in TARGET_COLORS if t not in ("Other", "Unknown")], TARGET_COLORS),
     ("status", "Status", [s for s in STATUS_COLORS if s != "Other"], STATUS_COLORS),
+    ("siteDesign", "Trial Sites", ["Multicenter", "Single-site", "Unknown"], SITE_DESIGN_COLORS),
 ]
 
 # Shortened DISPLAY text only — data-value (what filtering/sorting
@@ -1455,11 +1568,13 @@ def render_pill_group(field, title, values, colors):
 pill_groups_html = "".join(render_pill_group(f, t, v, c) for f, t, v, c in PILL_GROUPS)
 
 target_colors_js = json.dumps(TARGET_COLORS)
+trial_site_status_js = json.dumps(TRIAL_SITE_STATUS)
 phase_colors_js = json.dumps(PHASE_COLORS)
 status_colors_js = json.dumps(STATUS_COLORS)
 type_colors_js = json.dumps(DRUG_TYPE_COLORS)
 verification_colors_js = json.dumps(VERIFICATION_COLORS)
 confidence_colors_js = json.dumps(CONFIDENCE_COLORS)
+fda_status_colors_js = json.dumps(FDA_STATUS_COLORS)
 
 # AriBio-relevance-score color thresholds — same blue ramp as everything
 # else on this dashboard, not a separate red/yellow/green "traffic
@@ -1474,16 +1589,8 @@ phase3_shown = min(PHASE3_PREVIEW_N, len(phase3_top_relevant_df))
 records_js = json.dumps(table_records)
 table_column_count = len(TABLE_COLUMNS)
 
-# pie trace order added above: 0=phase, 1=drug_type, 2=target, 3=status
-# (phase/status pies read trials_df; drug_type/target pies read
-# resolved_drugs_df as of Phase 0 — see the pie-counts comment above.
-# The click-to-filter mapping below is unaffected either way: it maps a
-# clicked slice's LABEL text to a table filter, and the table's filter
-# values — Phase 1/2/3, Small Molecule/Biologic/etc, Amyloid/Tau/etc,
-# Recruiting/Completed/etc — are the same vocabulary regardless of
-# which dataset produced the slice.)
-pie_field_map_js = json.dumps(["phase", "drugType", "target", "status"])
 today_str = date.today().isoformat()
+dashboard_nav_bar = render_nav_bar("pipeline")
 
 html_template = f"""
 <style>
@@ -1494,28 +1601,22 @@ html_template = f"""
   }}
   /* sidebar floats as a detached card near the left edge (margin + radius
      + all-around shadow, not flush/docked); page-content is shifted right
-     to clear it. No max-width on main/topbar-inner anymore — the whole
-     point of pulling the sidebar out here is to give the table (and
-     everything else) the full remaining viewport width to span, instead
-     of being capped at 1280px and centered. */
+     to clear it. No max-width on main anymore — the whole point of
+     pulling the sidebar out here is to give the table (and everything
+     else) the full remaining viewport width to span, instead of being
+     capped at 1280px and centered. */
   .page-content {{ margin-left: 276px; }}
   /* asymmetric padding: sidebar already provides its own 16px gap on the
      left, so the extra breathing room belongs on the right, otherwise
      wide tables/cards run flush to the browser edge and feel crowded */
-  main {{ margin: 0; padding: 0 96px 0 24px; }}
+  main {{ margin: 0; padding: 24px 96px 0 24px; }}
 
-  /* topbar is a full-bleed top-level element now (a sibling of the
-     sidebar/page-content, not nested inside page-content's margin), so
-     it spans the entire page width; the sidebar sits below it (see
-     positionSidebar() in the script, which measures its real height) */
-  .topbar {{
-    background: {ARIBIO_BLUE}; color: white; padding: 20px 96px 20px 24px; margin-bottom: 24px;
-    box-shadow: 0 2px 10px rgba(20, 40, 70, 0.16);
-    position: sticky; top: 0; z-index: 30;
-  }}
-  .topbar-inner {{ margin: 0; }}
-  .topbar-title {{ font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }}
-  .topbar-sub {{ font-size: 12.5px; color: {ARIBIO_BLUE_SUBTLE}; margin-top: 4px; }}
+  /* page title now lives in-flow at the top of main (above the AR1001
+     spotlight) instead of a separate sticky header bar — dashboard_nav.py's
+     nav bar is the only persistent top-of-page chrome now. */
+  .page-title-block {{ margin-bottom: 20px; }}
+  .page-title {{ font-size: 22px; font-weight: 700; letter-spacing: -0.01em; color: {NAV_BG}; }}
+  .page-title-sub {{ font-size: 12.5px; color: #666; margin-top: 4px; }}
 
   .spotlight {{
     background: {ARIBIO_ACCENT_BG}; border: 1px solid {ARIBIO_ACCENT_BORDER}; border-left: 5px solid {ARIBIO_ACCENT};
@@ -1534,25 +1635,25 @@ html_template = f"""
   .kpi-label {{ font-size: 12.5px; color: #666; margin-top: 3px; }}
 
   .sidebar {{
-    /* top: 96px is a fallback (topbar height + gap) for the instant
-       before JS measures the real header height and overrides it via
-       positionSidebar() below — keeps things sane with JS disabled too.
-       transition: top so any later re-measurement (window resize, text
-       reflow) eases into place instead of snapping. */
-    position: fixed; left: 16px; top: 96px; bottom: 16px; width: 240px;
+    /* top: 60px is a fallback (dash-nav's 44px height + 16px gap) for the
+       instant before JS measures the real nav bar height and overrides it
+       via positionSidebar() below — keeps things sane with JS disabled
+       too. transition: top so any later re-measurement (window resize,
+       text reflow) eases into place instead of snapping. */
+    position: fixed; left: 16px; top: 60px; bottom: 16px; width: 240px;
     background: white; border-radius: {CARD_RADIUS}; box-shadow: {ELEVATED_SHADOW};
     z-index: 20; display: flex; flex-direction: column; overflow: hidden;
     transition: top 0.2s ease;
   }}
   .sidebar-header {{
     display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-    padding: 11px 14px; background: {ARIBIO_BLUE_SUBTLE}; border-bottom: 1px solid {SURFACE_BORDER};
+    padding: 11px 14px; background: {NAV_BG};
   }}
   .sidebar-title {{
     display: flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 700;
-    color: {ARIBIO_BLUE}; text-transform: uppercase; letter-spacing: 0.05em;
+    color: white; text-transform: uppercase; letter-spacing: 0.05em;
   }}
-  .sidebar-title svg {{ color: {ARIBIO_BLUE}; flex-shrink: 0; }}
+  .sidebar-title svg {{ color: white; flex-shrink: 0; }}
   /* overflow-y stays auto as a fallback for genuinely short viewports —
      the sizing below is tuned to fit all 4 groups without scrolling on
      ordinary laptop/desktop viewport heights, not to physically prevent
@@ -1605,7 +1706,13 @@ html_template = f"""
      "selected" signal. Falls back gracefully to the old flat-gray look
      on any browser without color-mix() support (Safari <16.4 etc.). */
   .filter-pill.active {{
-    color: var(--pill-color); font-weight: 700;
+    /* No font-weight bump here on purpose: the tint + ring already
+       carry the "selected" signal (see comment above), and bold text
+       is measurably WIDER than regular text at the same font-size --
+       in this pill's fixed-width grid cell, that was enough extra
+       width to wrap a longer label (e.g. "FDA Approved") onto a
+       second line the moment it became active. */
+    color: var(--pill-color);
     background: color-mix(in srgb, var(--pill-color) 13%, white);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pill-color) 30%, transparent);
   }}
@@ -1620,7 +1727,7 @@ html_template = f"""
   #clear-filter:hover {{ text-decoration: underline; }}
   #clear-filter.visible {{ visibility: visible; }}
 
-  h2.section-title {{ color: #1a1a1a; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; margin: 30px 0 6px; }}
+  h2.section-title {{ color: {NAV_BG}; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; margin: 30px 0 6px; }}
   .section-hint {{ font-size: 13px; color: #666; margin-bottom: 4px; }}
 
   #controls {{ display: flex; align-items: center; gap: 12px; margin: 10px 0 12px; flex-wrap: wrap; }}
@@ -1657,7 +1764,7 @@ html_template = f"""
      table never shifts again regardless of what's filtered. */
   table#drug-table {{ border-collapse: collapse; table-layout: fixed; width: 100%; font-size: 13px; }}
   table#drug-table thead th {{
-    position: sticky; top: 0; background: {ARIBIO_BLUE}; color: white; text-align: left;
+    position: sticky; top: 0; background: {NAV_BG}; color: white; text-align: left;
     padding: 11px 14px; cursor: pointer; user-select: none; white-space: nowrap;
     overflow: hidden; text-overflow: ellipsis; z-index: 1;
   }}
@@ -1696,6 +1803,23 @@ html_template = f"""
      closing a row's detail panel reads as one continuous motion */
   .details-toggle .caret {{ display: inline-block; transition: transform 0.15s ease; }}
   .details-toggle .caret.expanded {{ transform: rotate(90deg); }}
+  /* Drug name in the main table acts as a second trigger for the same
+     row-expand detail panel as the caret toggle -- deliberately styled
+     as plain text, not a hyperlink, since it no longer navigates
+     anywhere itself; individual trial links live inside the detail
+     panel (see the Trial IDs row in renderDetailRow). */
+  .drug-name-toggle {{
+    background: none; border: none; cursor: pointer; font-family: inherit; font-size: inherit;
+    color: inherit; padding: 0; text-decoration: none;
+  }}
+  .drug-name-toggle:hover {{ color: {ARIBIO_BLUE}; }}
+  .detail-trial-links {{ display: flex; flex-wrap: wrap; gap: 4px 10px; }}
+  .detail-trial-link {{ display: inline-flex; align-items: center; gap: 5px; }}
+  .detail-trial-links a {{ color: {ARIBIO_BLUE} !important; text-decoration: none !important; }}
+  .detail-trial-links a:hover {{ text-decoration: underline !important; }}
+  .site-badge {{ display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 600; line-height: 1.5; white-space: nowrap; }}
+  .site-badge--multi {{ background: color-mix(in srgb, {ARIBIO_BLUE} 15%, white); color: {darken(ARIBIO_BLUE, 0.15)}; }}
+  .site-badge--unknown {{ background: #ececec; color: #888; }}
   tr.detail-row td {{ background: {SURFACE_TINT}; padding: 14px 20px; border-bottom: 1px solid {SURFACE_BORDER}; }}
   /* CSS transitions don't run on elements created via innerHTML (they
      already exist in their end state) — a keyframe animation, in
@@ -1716,12 +1840,46 @@ html_template = f"""
     to {{ opacity: 0; transform: translateY(-4px); }}
   }}
   .detail-panel {{
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px 22px;
     font-size: 12.5px; color: #444; animation: detailPanelIn 0.18s ease;
   }}
   .detail-panel.closing {{ animation: detailPanelOut 0.15s ease forwards; }}
   .detail-panel strong {{ display: block; color: #999; font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 3px; }}
   .detail-panel ul {{ margin: 0; padding-left: 16px; }}
+  /* Detail panel is grouped into Clinical / Scientific / Mechanism /
+     Intelligence side-by-side, then Provenance as a full-width band
+     underneath — Provenance answers "how much to trust the fields
+     above", a different kind of information than the facts themselves,
+     so it doesn't compete with them as a 5th equal-weight column. FDA
+     status lives in Intelligence as a single pill (see FDA_STATUS_COLORS/
+     fda_status.py) rather than its own column — deliberately never
+     folded into the existing trial-derived Status pill, but not
+     substantial enough on its own to earn a whole group either. */
+  .detail-groups {{
+    display: grid; grid-template-columns: 0.85fr 1.25fr 1.5fr 0.95fr; gap: 0;
+  }}
+  .detail-group {{ padding-right: 18px; }}
+  .detail-group + .detail-group {{ border-left: 1px solid {SURFACE_BORDER}; padding-left: 18px; }}
+  .detail-group h4 {{
+    font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    color: #9aa0ab; margin: 0 0 11px;
+  }}
+  .detail-group > div {{ margin-bottom: 11px; }}
+  .detail-group > div:last-child {{ margin-bottom: 0; }}
+  .detail-mechanism-text {{ font-size: 12.5px; line-height: 1.55; color: #444; max-width: 48ch; }}
+  .detail-provenance {{
+    grid-column: 1 / -1; border-left: none !important; padding-left: 0 !important;
+    border-top: 1px solid {SURFACE_BORDER}; margin-top: 16px; padding-top: 14px;
+  }}
+  .detail-provenance-grid {{
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px 22px;
+  }}
+  @media (max-width: 1050px) {{
+    .detail-groups {{ grid-template-columns: 1fr; }}
+    .detail-group + .detail-group {{
+      border-left: none; padding-left: 0;
+      border-top: 1px solid {SURFACE_BORDER}; padding-top: 14px; margin-top: 3px;
+    }}
+  }}
   .sponsor-cell {{ cursor: help; }}
 
   .compare-btn {{
@@ -1778,13 +1936,7 @@ html_template = f"""
 
   .glance-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 8px; align-items: start; }}
   .glance-panel {{ background: white; border-radius: {CARD_RADIUS}; padding: 18px; box-shadow: {CARD_SHADOW}; }}
-  .glance-panel-title {{ font-size: 15px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 4px; }}
-  /* wraps the Plotly pies so "Trial Composition" lives in a white card
-     like every other section, instead of sitting directly on the page
-     background — the pies themselves are unchanged (still built in
-     STEP 5), this is presentation-only */
-  .pies-card {{ background: white; border-radius: {CARD_RADIUS}; padding: 12px 18px 4px; box-shadow: {CARD_SHADOW}; }}
-
+  .glance-panel-title {{ font-size: 15px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 4px; color: {NAV_BG}; }}
   .heatmap-tabs {{ display: flex; gap: 6px; margin: 10px 0 6px; }}
   .heatmap-tab {{
     font-size: 12.5px; padding: 5px 12px; border-radius: 14px; border: 1px solid #ddd;
@@ -1803,16 +1955,12 @@ html_template = f"""
   }}
   @media (max-width: 860px) {{ .glance-grid {{ grid-template-columns: 1fr; }} }}
   {COMPETITIVE_ATTENTION_CSS}
+  {NAV_CSS}
 </style>
 
 <script>{plotlyjs_lib}</script>
 
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="topbar-title">Alzheimer's Disease Clinical Trial Pipeline</div>
-    <div class="topbar-sub">Source: clinicaltrials.gov &middot; Updated {today_str} &middot; {len(df)} trials analyzed &middot; {total_drugs} therapeutic drugs ({total_resolved_records} total resolved records)</div>
-  </div>
-</header>
+{dashboard_nav_bar}
 
 <aside class="sidebar">
   <div class="sidebar-header">
@@ -1836,6 +1984,11 @@ html_template = f"""
 
 <div class="page-content">
   <main>
+    <div class="page-title-block">
+      <div class="page-title">Alzheimer's Disease Clinical Trial Pipeline</div>
+      <div class="page-title-sub">Source: clinicaltrials.gov &middot; Updated {today_str} &middot; {len(df)} trials analyzed &middot; {total_drugs} therapeutic drugs ({total_resolved_records} total resolved records)</div>
+    </div>
+
     <div class="spotlight">
       &#9733; <b>AR1001 (AriBio)</b> &mdash; Phase 3 &middot; Oral PDE5 inhibitor &middot; Amyloid + Tau + Neuroprotection &middot;
       POLARIS AD trial &middot; 1,535 patients enrolled. Phase 2 showed improvements in pTau181, A&beta;42/40 ratio, and
@@ -1880,11 +2033,7 @@ html_template = f"""
       <div class="section-hint">{RELEVANCE_MATRIX_EXPLANATION}</div>
     </div>
 
-    <h2 class="section-title">Trial Composition</h2>
-    <div class="section-hint">Click any pie slice to filter the table below (in addition to the filters in the sidebar).</div>
-    <div class="pies-card">
-      {pies_html}
-    </div>
+    {COMPETITIVE_MILESTONES_PLACEHOLDER}
 
     <h2 class="section-title">Drug Pipeline Table</h2>
     <div id="controls">
@@ -1921,22 +2070,25 @@ html_template = f"""
 <script>
   const ALL_ROWS = JSON.parse(document.getElementById('drug-data').textContent);
   const TARGET_COLORS = {target_colors_js};
+  const TRIAL_SITE_STATUS = {trial_site_status_js};
   const PHASE_COLORS = {phase_colors_js};
   const STATUS_COLORS = {status_colors_js};
   const TYPE_COLORS = {type_colors_js};
   const VERIFICATION_COLORS = {verification_colors_js};
   const CONFIDENCE_COLORS = {confidence_colors_js};
-  const PIE_FIELD_MAP = {pie_field_map_js};
+  const FDA_STATUS_COLORS = {fda_status_colors_js};
   const TABLE_COLUMN_COUNT = {table_column_count};
-  // maps a pill/pie "field" key to the actual column name on each row
+  // maps a pill "field" key to the actual column name on each row
   const FIELD_TO_COLUMN = {{
     phase: 'phase_reached', drugType: 'drug_type', target: 'target', status: 'status_summary',
+    siteDesign: 'site_design_status',
   }};
 
   let sortKey = 'phase_reached';
   let sortAsc = false;
   let filters = {{
     phase: new Set(), drugType: new Set(), target: new Set(), status: new Set(),
+    siteDesign: new Set(),
   }};
   let searchTerm = '';
   // Phase 1A: ALL_ROWS carries every resolved_drugs_df record (every
@@ -1958,6 +2110,7 @@ html_template = f"""
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
     }})[ch]);
   }}
+
 
   function textSafeColor(hexColor) {{
     // Pills are now plain colored TEXT on a white background, not a
@@ -2013,38 +2166,90 @@ html_template = f"""
     return haystack.includes(term);
   }}
 
+  // Badge is deliberately silent for "single" — a single confirmed
+  // site is the unmarked default, so only the two cases worth a second
+  // look (multicenter, or no location data on file) get a visible tag.
+  function siteStatusBadge(nctId) {{
+    const status = TRIAL_SITE_STATUS[nctId];
+    if (status === 'multicenter') return '<span class="site-badge site-badge--multi" title="2+ distinct sites in this trial\\'s location data">Multicenter</span>';
+    if (status === 'unknown') return '<span class="site-badge site-badge--unknown" title="No location data on file for this trial">No site data</span>';
+    return '';
+  }}
+
+  function renderTrialLinks(nctIdsField) {{
+    const trialIds = String(nctIdsField || '').split(';').map(s => s.trim()).filter(Boolean);
+    if (!trialIds.length) return '—';
+    return `<div class="detail-trial-links">${{trialIds.map(id =>
+      `<span class="detail-trial-link"><a href="https://clinicaltrials.gov/study/${{encodeURIComponent(id)}}" target="_blank" rel="noopener">${{escapeHtml(id)}}</a>${{siteStatusBadge(id)}}</span>`
+    ).join('')}}</div>`;
+  }}
+
   function renderDetailRow(r) {{
     const sponsors = String(r.sponsor || '').split('; ').filter(Boolean);
     const sponsorList = sponsors.length
       ? `<ul>${{sponsors.map(s => `<li>${{escapeHtml(s)}}</li>`).join('')}}</ul>`
       : '—';
-    return `<tr class="detail-row"><td colspan="${{TABLE_COLUMN_COUNT}}"><div class="detail-panel">
-      <div><strong>Sponsors</strong>${{sponsorList}}</div>
-      <div><strong>Verification</strong>${{pill(r.verification_label, VERIFICATION_COLORS)}}</div>
-      <div><strong>Confidence</strong>${{pill(r.confidence_label, CONFIDENCE_COLORS)}}</div>
-      <div><strong>Pipeline scope</strong>${{escapeHtml(r.pipeline_scope || '—')}}</div>
-      <div><strong>Confirmed trials</strong>${{r.confirmed_trial_count}}</div>
-      <div><strong>Unverified trials</strong>${{r.unverified_trial_count}}</div>
-      <div><strong>Notes</strong>${{escapeHtml(r.classification_reason || '—')}}</div>
-      <div><strong>Scope reason</strong>${{escapeHtml(r.scope_reason || '—')}}</div>
-      <div><strong>Start date</strong>${{escapeHtml(r.start_date_display || 'TBD')}}</div>
-      <div><strong>Primary completion</strong>${{escapeHtml(r.primary_completion_date_display || 'TBD')}}</div>
-      <div><strong>Modality</strong>${{escapeHtml(r.modality || '—')}}</div>
-      <div><strong>Drug type category${{r.drug_type_inferred ? ' (inferred)' : ' (NIH-sourced)'}}</strong>${{escapeHtml(r.drug_type || '—')}}</div>
-      <div><strong>Target pathway(s)</strong>${{escapeHtml(r.target_pathways || '—')}}</div>
-      <div><strong>CADRO category</strong>${{escapeHtml(r.cadro || '—')}}</div>
-      <div><strong>Therapeutic purpose</strong>${{escapeHtml([r.therapeutic_purpose_class, r.therapeutic_purpose_category].filter(Boolean).join(' · ') || '—')}}</div>
-      <div><strong>Mechanism of action</strong>${{escapeHtml(r.mechanism_of_action || '—')}}</div>
-      <div><strong>Molecular target(s)</strong>${{escapeHtml(r.molecular_targets || '—')}}</div>
-      <div><strong>Classification source</strong>${{escapeHtml(r.classification_source || '—')}} (${{escapeHtml(r.scientific_classification_confidence || '—')}} confidence)</div>
-      <div><strong>Trial IDs</strong>${{escapeHtml(r.nct_ids || '—')}}</div>
-      <div><strong>AR1001 Relevance</strong>${{
-        r.display_name === 'AR1001'
-          ? '<span style="color:#999;">Reference</span>'
-          : `<span style="color:${{relevanceColor(r.aribio_relevance_score)}};font-weight:700;">${{r.aribio_relevance_score}}/100</span>
-             <button class="compare-btn" onclick="event.stopPropagation(); openComparator('${{escapeHtml(r.display_name)}}')" title="Compare to AR1001">&#8646; Compare</button>`
-      }}</div>
-    </div></td></tr>`;
+    // target_pathways is a "; "-joined string of canonical TARGET_COLORS
+    // vocabulary (Amyloid/Tau/.../Metabolism/...) — reuse the same pill()
+    // helper the main table/filters use, one chip per pathway, rather
+    // than a fixed color for the whole field.
+    const targetChips = String(r.target_pathways || '').split('; ').filter(Boolean)
+      .map(t => pill(t, TARGET_COLORS)).join(' ') || '—';
+    const relevanceBlock = r.display_name === 'AR1001'
+      ? '<span style="color:#999;">Reference</span>'
+      : `<span style="color:${{relevanceColor(r.aribio_relevance_score)}};font-weight:700;">${{r.aribio_relevance_score}}/100</span>
+         <div style="height:5px;border-radius:3px;background:{SURFACE_BORDER};overflow:hidden;margin:5px 0 8px;max-width:140px;">
+           <div style="height:100%;border-radius:3px;width:${{r.aribio_relevance_score}}%;background:${{relevanceColor(r.aribio_relevance_score)}};"></div>
+         </div>
+         <button class="compare-btn" onclick="event.stopPropagation(); openComparator('${{escapeHtml(r.display_name)}}')" title="Compare to AR1001">&#8646; Compare to AR1001</button>`;
+    // No verified mechanism on file for most rows (see brief_summary's
+    // definition in drug_classification.py) — fall back to the trial's
+    // own Brief Summary, labeled as exactly that, never as "Mechanism",
+    // so a trial-design blurb never reads as pharmacology.
+    const hasMechanism = !!(r.mechanism_of_action && String(r.mechanism_of_action).trim());
+    const mechanismTitle = hasMechanism ? 'Mechanism' : 'Brief Summary';
+    const mechanismText = hasMechanism ? r.mechanism_of_action : (r.brief_summary || '—');
+    return `<tr class="detail-row"><td colspan="${{TABLE_COLUMN_COUNT}}"><div class="detail-panel"><div class="detail-groups">
+      <div class="detail-group">
+        <h4>Clinical</h4>
+        <div><strong>Start date</strong>${{escapeHtml(r.start_date_display || 'TBD')}}</div>
+        <div><strong>Primary completion</strong>${{escapeHtml(r.primary_completion_date_display || 'TBD')}}</div>
+        <div><strong>Trial IDs</strong>${{renderTrialLinks(r.nct_ids)}}</div>
+      </div>
+      <div class="detail-group">
+        <h4>Scientific</h4>
+        <div><strong>Modality</strong>${{escapeHtml(r.modality || '—')}}</div>
+        <div><strong>Drug type category${{r.drug_type_inferred ? ' (inferred)' : ' (NIH-sourced)'}}</strong>${{escapeHtml(r.drug_type || '—')}}</div>
+        <div><strong>Target pathway(s)</strong>${{targetChips}}</div>
+        <div><strong>Molecular target(s)</strong>${{escapeHtml(r.molecular_targets || '—')}}</div>
+        <div><strong>CADRO category</strong>${{escapeHtml(r.cadro || '—')}}</div>
+        <div><strong>Therapeutic purpose</strong>${{escapeHtml([r.therapeutic_purpose_class, r.therapeutic_purpose_category].filter(Boolean).join(' · ') || '—')}}</div>
+      </div>
+      <div class="detail-group">
+        <h4>${{mechanismTitle}}</h4>
+        <div class="detail-mechanism-text">${{escapeHtml(mechanismText)}}</div>
+      </div>
+      <div class="detail-group">
+        <h4>Intelligence</h4>
+        <div><strong>Verification</strong>${{pill(r.verification_label, VERIFICATION_COLORS)}}</div>
+        <div><strong>Confidence</strong>${{pill(r.confidence_label, CONFIDENCE_COLORS)}}</div>
+        <div><strong>FDA status</strong>${{pill(r.fda_status, FDA_STATUS_COLORS)}}</div>
+        <div><strong>AR1001 Relevance</strong>${{relevanceBlock}}</div>
+      </div>
+      <div class="detail-group detail-provenance">
+        <h4>Provenance &mdash; how much to trust the fields above</h4>
+        <div class="detail-provenance-grid">
+          <div><strong>Sponsors</strong>${{sponsorList}}</div>
+          <div><strong>Name variants merged</strong>${{escapeHtml(r.name_variants || '—')}}</div>
+          <div><strong>Pipeline scope</strong>${{escapeHtml(r.pipeline_scope || '—')}}</div>
+          <div><strong>Scope reason</strong>${{escapeHtml(r.scope_reason || '—')}}</div>
+          <div><strong>Notes</strong>${{escapeHtml(r.classification_reason || '—')}}</div>
+          <div><strong>Confirmed trials</strong>${{r.confirmed_trial_count}}</div>
+          <div><strong>Unverified trials</strong>${{r.unverified_trial_count}}</div>
+          <div><strong>Classification source</strong>${{escapeHtml(r.classification_source || '—')}} (${{escapeHtml(r.scientific_classification_confidence || '—')}} confidence)</div>
+        </div>
+      </div>
+    </div></div></td></tr>`;
   }}
 
   function renderTable() {{
@@ -2061,7 +2266,20 @@ html_template = f"""
     let rows = scopeBase.filter(r => {{
       for (const field in filters) {{
         const set = filters[field];
-        if (set.size > 0 && !set.has(r[FIELD_TO_COLUMN[field]])) return false;
+        if (set.size === 0) continue;
+        if (field === 'status') {{
+          // The "FDA Approved" pill checks the curated fda_status field
+          // (see fda_status.py) — never status_summary, even though
+          // STATUS_MAP can also produce a trial-level "FDA Approved"
+          // label (from ct.gov's APPROVED_FOR_MARKETING). Those two are
+          // deliberately different claims; this pill means the real one.
+          const matchesStatus = [...set].some(v =>
+            v === 'FDA Approved' ? r.fda_status === 'FDA Approved' : r.status_summary === v
+          );
+          if (!matchesStatus) return false;
+          continue;
+        }}
+        if (!set.has(r[FIELD_TO_COLUMN[field]])) return false;
       }}
       if (searchTerm && !matchesSearch(r, searchTerm)) return false;
       return true;
@@ -2099,8 +2317,15 @@ html_template = f"""
       const enrollment = r.max_enrollment ? Math.round(r.max_enrollment).toLocaleString() : '—';
       const isExpanded = expandedRows.has(r.display_name);
       const toggle = `<button class="details-toggle" data-drug-key="${{escapeHtml(r.display_name)}}" title="Show details"><span class="caret${{isExpanded ? ' expanded' : ''}}">\\u25b8</span></button>`;
+      // Drug name is a second trigger for the SAME row-expand detail
+      // panel as the caret (same class + data-drug-key, so the
+      // existing #drug-table-body click handler picks it up as-is) --
+      // the detail panel is where individual trial links live now
+      // (see renderDetailRow's Trial links row), not a direct
+      // navigation link to a single, arbitrarily-chosen trial.
+      const nameBtn = `<button type="button" class="details-toggle drug-name-toggle" data-drug-key="${{escapeHtml(r.display_name)}}">${{escapeHtml(r.display_name)}}</button>`;
       const mainRow = `<tr class="${{classes.join(' ')}}">
-        <td>${{toggle}} ${{star}}<a href="${{r.study_url}}" target="_blank" rel="noopener">${{r.display_name}}</a></td>
+        <td>${{toggle}} ${{star}}${{nameBtn}}</td>
         <td class="sponsor-cell" title="${{escapeHtml(r.sponsor || '')}}">${{r.sponsor_display || ''}}</td>
         <td>${{pill(r.phase_reached, PHASE_COLORS)}}</td>
         <td>${{pill(r.status_summary, STATUS_COLORS)}}</td>
@@ -2173,21 +2398,6 @@ html_template = f"""
     }} else {{
       expandedRows.add(key);
     }}
-    renderTable();
-  }});
-
-  // clicking a pie slice toggles the same filter set as its matching pill
-  // (falls back silently for slices with no matching pill, e.g. "Other")
-  const pieDiv = document.getElementById('pieDiv');
-  pieDiv.on('plotly_click', function(data) {{
-    const pt = data.points[0];
-    const field = PIE_FIELD_MAP[pt.curveNumber];
-    if (!field || !filters[field]) return;
-    const matchingPill = document.querySelector(`.filter-pill[data-field="${{field}}"][data-value="${{pt.label}}"]`);
-    if (matchingPill) {{ togglePill(matchingPill); return; }}
-    if (filters[field].has(pt.label)) filters[field].delete(pt.label);
-    else filters[field].add(pt.label);
-    updateClearButton();
     renderTable();
   }});
 
@@ -2268,14 +2478,16 @@ html_template = f"""
     if (e.key === 'Escape') closeComparator();
   }});
 
-  // The topbar now spans the full page width (it's a sibling of the
-  // sidebar, not nested inside it), so the floating sidebar needs to
-  // start below it rather than at the very top of the viewport. This
-  // measures the topbar's REAL rendered height (rather than hardcoding
+  // dashboard_nav.py's nav bar spans the full page width (it's a sibling
+  // of the sidebar, not nested inside it), so the floating sidebar needs
+  // to start below it rather than at the very top of the viewport. This
+  // measures the nav bar's REAL rendered height (rather than hardcoding
   // an estimate) so it stays correct if text wraps differently across
-  // browsers/zoom levels.
+  // browsers/zoom levels — and correctly collapses to ~0 when the nav
+  // bar hides itself (see dashboard_nav.py) because this page is loaded
+  // inside dashboard.html's own tab shell.
   function positionSidebar() {{
-    const header = document.querySelector('.topbar');
+    const header = document.querySelector('.dash-nav');
     const sidebar = document.querySelector('.sidebar');
     if (!header || !sidebar) return;
     sidebar.style.top = (header.getBoundingClientRect().height + 16) + 'px';

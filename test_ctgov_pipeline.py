@@ -375,6 +375,7 @@ class _RefreshSandbox:
         self._orig_drugs_csv = run_pipeline.DRUGS_CSV
         self._orig_annotated_csv = run_pipeline.ANNOTATED_CSV
         self._orig_changes_csv = run_pipeline.CHANGES_CSV
+        self._orig_changes_history_csv = run_pipeline.CHANGES_HISTORY_CSV
         self._orig_attention_csv = run_pipeline.ATTENTION_CSV
         self._orig_overview_html = run_pipeline.OVERVIEW_HTML
         run_pipeline.TRIALS_CSV = os.path.join(self.tmp, "trials.csv")
@@ -382,6 +383,7 @@ class _RefreshSandbox:
         run_pipeline.DRUGS_CSV = os.path.join(self.tmp, "pipeline_drugs.csv")
         run_pipeline.ANNOTATED_CSV = os.path.join(self.tmp, "pipeline_annotated.csv")
         run_pipeline.CHANGES_CSV = os.path.join(self.tmp, "outputs", "pipeline_changes.csv")
+        run_pipeline.CHANGES_HISTORY_CSV = os.path.join(self.tmp, "outputs", "pipeline_changes_history.csv")
         run_pipeline.ATTENTION_CSV = os.path.join(self.tmp, "outputs", "competitive_attention.csv")
         run_pipeline.OVERVIEW_HTML = os.path.join(self.tmp, "pipeline_overview.html")
 
@@ -400,6 +402,7 @@ class _RefreshSandbox:
         run_pipeline.DRUGS_CSV = self._orig_drugs_csv
         run_pipeline.ANNOTATED_CSV = self._orig_annotated_csv
         run_pipeline.CHANGES_CSV = self._orig_changes_csv
+        run_pipeline.CHANGES_HISTORY_CSV = self._orig_changes_history_csv
         run_pipeline.ATTENTION_CSV = self._orig_attention_csv
         run_pipeline.OVERVIEW_HTML = self._orig_overview_html
         ctgov_client.fetch_all_studies = self._orig_fetch_all
@@ -445,7 +448,10 @@ def test_successful_refresh_writes_snapshot_and_updates_trials_csv():
         # write a minimal stand-in so STEP 7's splice step has something
         # real to operate on.
         with open(run_pipeline.OVERVIEW_HTML, "w") as f:
-            f.write(f"<html><body>{competitive_attention_viz.PLACEHOLDER}</body></html>")
+            f.write(
+                f"<html><body>{competitive_attention_viz.PLACEHOLDER}"
+                f"{competitive_attention_viz.MILESTONES_PLACEHOLDER}</body></html>"
+            )
 
         exit_code = run_pipeline.run_refresh()
 
