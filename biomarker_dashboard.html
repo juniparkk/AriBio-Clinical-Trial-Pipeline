@@ -42,11 +42,14 @@
   .header-continuum-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch; margin-bottom: 20px; }
   .header-left-col { flex: 1 1 500px; min-width: 440px; display: flex; flex-direction: column; }
   /* header-info-card grows to fill the stretched column; the bottom
-     (cohort) card grows within it, and POLARIS panel -- its own last
-     child -- absorbs the extra height, rather than leaving a blank gap
-     after it. */
+     (cohort) card grows within it, and the population section -- its
+     own last always-present child -- absorbs the extra height, rather
+     than leaving a blank gap after it. (The POLARIS cohort-construction
+     detail nested inside that section only appears once selected, and
+     stays collapsed until clicked open, so it never itself needs to
+     absorb stretch height.) */
   .header-left-col .header-info-card { flex: 1; display: flex; flex-direction: column; }
-  .header-info-filter-row { flex: 1; }
+  .header-info-population { flex: 1; }
   .header-info-cohort-card { flex: 1; display: flex; flex-direction: column; }
   .header-right-col { flex: 1 1 500px; min-width: 440px; display: flex; }
   /* Same idea for Disease Continuum: the panel grows, and the heatmap
@@ -123,18 +126,55 @@
   .header-info-stat-value { font-size: 22px; font-weight: 700; color: #2e5fa3; letter-spacing: -0.01em; line-height: 1.15; }
   .header-info-stat-label { font-size: 11.5px; color: #666; margin-top: 3px; white-space: nowrap; }
 
-  /* Population filter -- the one control in this card. No background
-     wash of its own -- the accent color already lives in the icon,
-     label, and the toggle button's own solid-blue active state, so a
-     tinted strip behind it would be redundant, not additive. Generous
-     padding (the actual "blank space" doing the separating work) plus
-     a hairline divider is what sets it apart from its neighbors. */
-  .header-info-filter-row {
-    display: flex; align-items: center; flex-wrap: wrap; column-gap: 12px; row-gap: 6px;
+  /* Population section -- the one control in this card, restructured
+     as label -> toggle -> summary (the active population's name, n,
+     and a one-line description) instead of a wordy "Filter by
+     population:" sentence. Generous padding (the actual "blank space"
+     doing the separating work) plus a hairline divider is what sets it
+     apart from the stats above it. */
+  .header-info-population {
     border-top: 1px solid #dfe7f1; padding: 16px 20px;
   }
-  .population-filter-icon { color: #2e5fa3; flex-shrink: 0; }
-  .population-filter-label { font-size: 15px; font-weight: 700; color: #2e5fa3; white-space: nowrap; }
+  /* label/toggle/summary on the left, the retention badge (POLARIS
+     only) on the right -- keeps the row from reading as half-empty on
+     wide cards once the wordy "Filter by population:" sentence was
+     replaced by the shorter label -> toggle -> summary stack. */
+  .population-header-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .population-main { flex: 1; min-width: 0; }
+  .population-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #889;
+    margin: 0 0 10px;
+  }
+  .population-summary { margin-top: 12px; }
+  .population-summary-name { font-size: 15px; font-weight: 700; color: #2e5fa3; }
+  .population-summary-desc {
+    display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; row-gap: 2px;
+    font-size: 13px; color: #445; line-height: 1.4; margin-top: 2px;
+  }
+  /* Only relevant while POLARIS is selected -- fully removed from flow
+     (not just visually hidden) the rest of the time, unlike .is-hidden
+     elsewhere on this page, since there's no fixed-height neighbor here
+     that needs its space reserved. */
+  .view-cohort-def-link {
+    font-size: 12.5px; font-weight: 600; color: #2e5fa3; cursor: pointer; white-space: nowrap;
+    text-decoration: none; border-bottom: 1px solid transparent;
+  }
+  .view-cohort-def-link.is-hidden { display: none; }
+  .view-cohort-def-link:hover { border-bottom-color: #2e5fa3; }
+
+  /* Retention badge -- how much POLARIS eligibility filtering narrowed
+     Overall ADNI, at a glance, without reading the funnel below.
+     White + bordered (like .meta-chip) rather than SURFACE_TINT so it
+     still stands out against the tinted cohort card behind it. Overall
+     ADNI has nothing to compare against, so it's fully removed then,
+     not just faded. */
+  .population-retention {
+    flex-shrink: 0; text-align: center; background: white; border: 1px solid #dfe7f1;
+    border-radius: 10px; padding: 8px 18px; box-shadow: 0 1px 3px rgba(20, 40, 70, 0.09);
+  }
+  .population-retention.is-hidden { display: none; }
+  .population-retention-pct { font-size: 20px; font-weight: 700; color: #2e5fa3; line-height: 1.1; white-space: nowrap; }
+  .population-retention-detail { font-size: 10.5px; color: #667; margin-top: 3px; line-height: 1.35; white-space: nowrap; }
 
   .meta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
   .meta-chip {
@@ -244,11 +284,6 @@
      render and therefore always replays. */
   .fade-in-span { animation: contentFadeIn 0.3s ease; }
 
-  /* Population filter -- explicitly labeled "Filter by population"
-     (not just "Population") so it reads as an action that changes
-     what the page shows, not a passive info label. Now a section of
-     .header-info-card (see above) rather than its own separately
-     boxed/shadowed pill. */
   /* Generic "hidden but still reserves its layout space" utility --
      used everywhere a population-dependent piece of text has a
      same-population-independent alternate (or absence) that would
@@ -257,20 +292,6 @@
      grow the WHOLE card -- and its stretch-aligned sibling -- taller
      and shift the page. display:none is never used for these. */
   .is-hidden { visibility: hidden; }
-
-  /* The Overall/POLARIS helper sentences are very different lengths --
-     the POLARIS one wraps onto an extra line at typical widths. Both
-     are stacked in the SAME grid cell (grid-area: 1/1) at all times,
-     so the wrapper's height is always the taller of the two regardless
-     of which one is toggled visible. */
-  .population-helper-stack { display: grid; flex: 1 1 240px; }
-  .population-helper-stack > .population-helper { grid-area: 1 / 1; }
-  .population-helper { font-size: 13px; color: #445; line-height: 1.4; }
-
-  /* Same idea for the POLARIS Cohort Construction toggle's hint text --
-     the "enabled" sentence is much longer than the "disabled" one. */
-  .polaris-hint-stack { display: grid; }
-  .polaris-hint-stack > .polaris-hint { grid-area: 1 / 1; margin: 4px 0 0; }
 
   #biomarkerPlatformGroup { animation: contentFadeIn 0.3s ease; }
 
@@ -293,24 +314,17 @@
     transition: opacity 0.2s ease; animation: contentFadeIn 0.3s ease;
   }
 
-  /* Nested inside .header-info-cohort-card, directly under the filter
-     row, no gap and no background of its own -- the shared card plus a
-     hairline divider is what makes clear it belongs to the filter
-     above it, rather than being an unrelated section. Its title uses
+  /* POLARIS cohort-construction detail (funnel + population profile) --
+     nested inside .header-info-population, directly under the summary
+     line, with no gap and no background of its own. Its title uses
      ARIBIO_ACCENT (the same "worth a second glance" color as the AR1001
      star and manual-review flags elsewhere) so it still reads as its
-     own distinct sub-topic without a colored fill. flex: 1 lets it
-     absorb any extra stretch height from matching Disease Continuum's
-     height. ALWAYS rendered (never display:none) at a fixed height,
-     whether Overall ADNI or POLARIS is active -- switching population
-     only toggles the disabled/enabled look below, so the header card's
-     own height (and everything below it on the page) never shifts just
-     from changing the population filter. Only a genuine user click on
-     the toggle (enabled state only) is allowed to change layout height. */
-  .polaris-panel { border-top: 1px solid #dfe7f1; padding: 16px 20px; flex: 1; }
-  .polaris-panel h2 { color: #c2255c; }
-  .polaris-panel--disabled .collapsible-toggle { cursor: default; pointer-events: none; opacity: 0.55; }
-  .polaris-panel--disabled .chev { visibility: hidden; }
+     own distinct sub-topic without a colored fill. Starts collapsed
+     (the standard .collapsible-body open/close animation) and only
+     expands on an explicit "View cohort definition" click
+     (togglePolarisCohortDefinition() in the JS) -- selecting Overall
+     ADNI resets it back to collapsed rather than leaving it open. */
+  #polarisCollapsibleBody h2 { color: #c2255c; }
   .polaris-context-box {
     background: #f6f8fb; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #33475b;
     line-height: 1.6; margin-bottom: 14px;
@@ -391,32 +405,28 @@
             </div>
           </div>
         </div>
-        <div class="header-info-section header-info-filter-row">
-          <svg class="population-filter-icon" width="13" height="13" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-            <path d="M1 2.5h14L9.5 9v4.5l-3 1.5V9L1 2.5z" fill="currentColor"></path>
-          </svg>
-          <span class="population-filter-label" title="Changes which validated cohort every chart on this page shows.">Filter by population:</span>
-          <div class="toggle-group" id="populationToggleGroup">
-            <button class="toggle-btn active" data-population="overall" onclick="setPopulation('overall')">Overall ADNI</button>
-            <button class="toggle-btn" data-population="polaris" onclick="setPopulation('polaris')">POLARIS AD&ndash;Aligned</button>
-          </div>
-          <span class="population-helper-stack">
-            <span class="population-helper" id="populationHelperOverall">Broad validated ADNI natural-history cohort.</span>
-            <span class="population-helper is-hidden" id="populationHelperPolaris">ADNI participants meeting validated MMSE and amyloid-PET eligibility criteria relevant to the POLARIS clinical-development population.</span>
-          </span>
-        </div>
-        <div class="header-info-section polaris-panel polaris-panel--disabled" id="polarisPanel">
-          <div class="collapsible-toggle" id="polarisToggleHeader" onclick="toggleCollapsible(this)">
-            <div>
-              <h2 style="margin:0;font-size:15px;">POLARIS AD&ndash;Aligned Cohort Construction</h2>
-              <div class="polaris-hint-stack">
-                <p class="panel-sub polaris-hint" id="polarisHintDisabled">Select POLARIS AD&ndash;Aligned above to view how the 620-participant cohort was built.</p>
-                <p class="panel-sub polaris-hint is-hidden" id="polarisHintEnabled">Eligibility filtering only &mdash; not propensity-score matching, not an external control arm. Click to see how the 620-participant cohort was built.</p>
+        <div class="header-info-section header-info-population">
+          <div class="population-header-row">
+            <div class="population-main">
+              <div class="population-label">Population</div>
+              <div class="toggle-group" id="populationToggleGroup">
+                <button class="toggle-btn active" data-population="overall" onclick="setPopulation('overall')">Overall ADNI</button>
+                <button class="toggle-btn" data-population="polaris" onclick="setPopulation('polaris')">POLARIS AD&ndash;Aligned</button>
+              </div>
+              <div class="population-summary">
+                <div class="population-summary-name" id="populationSummaryName">Overall ADNI &middot; n&nbsp;=&nbsp;3,030</div>
+                <div class="population-summary-desc">
+                  <span id="populationSummaryDesc">Broad natural-history cohort.</span>
+                  <a href="javascript:void(0)" class="view-cohort-def-link is-hidden" id="viewCohortDefLink" onclick="togglePolarisCohortDefinition()">View cohort definition</a>
+                </div>
               </div>
             </div>
-            <span class="chev">&#9656;</span>
+            <div class="population-retention is-hidden" id="populationRetention">
+              <div class="population-retention-pct" id="populationRetentionPct"></div>
+              <div class="population-retention-detail">of Overall ADNI<br><span id="populationRetentionN"></span></div>
+            </div>
           </div>
-          <div class="collapsible-body">
+          <div class="collapsible-body" id="polarisCollapsibleBody">
             <div class="polaris-context-box" id="polarisContextBox"></div>
             <div class="polaris-funnel" id="polarisFunnel"></div>
             <h2 style="font-size:14px;margin:4px 0 2px;">Overall ADNI vs. POLARIS AD&ndash;Aligned &mdash; Population Profile</h2>
@@ -4803,38 +4813,42 @@ function populationLabelText(pop) {
   return "Population: " + pop.label + (pop.populationNote ? " · " + pop.populationNote : "");
 }
 
+const POPULATION_SUMMARY_DESC = {
+  overall: "Broad natural-history cohort.",
+  polaris: "Trial-aligned cohort based on POLARIS eligibility criteria.",
+};
+
 function setPopulation(pop) {
   currentPopulation = pop;
   document.querySelectorAll('[data-population]').forEach(function (b) { b.classList.toggle('active', b.dataset.population === pop); });
-  // visibility, not display -- both helper sentences stay in the
-  // layout (see .population-helper-stack) so the row's height never
-  // changes when switching population.
-  document.getElementById("populationHelperOverall").classList.toggle("is-hidden", pop !== "overall");
-  document.getElementById("populationHelperPolaris").classList.toggle("is-hidden", pop !== "polaris");
+
+  const pd = currentPop();
+  document.getElementById("populationSummaryName").textContent = pd.label + " · n = " + pd.n.toLocaleString();
+  document.getElementById("populationSummaryDesc").textContent = POPULATION_SUMMARY_DESC[pop] || "";
+
+  // Retention badge -- only meaningful for POLARIS (a fraction of
+  // Overall ADNI); fully removed, not just faded, when Overall ADNI
+  // itself is selected since there's nothing to compare it to.
+  if (pop === "polaris") {
+    const overallN = DATA.populations.overall.n;
+    document.getElementById("populationRetentionPct").textContent = (pd.n / overallN * 100).toFixed(1) + "%";
+    document.getElementById("populationRetentionN").textContent = pd.n.toLocaleString() + " / " + overallN.toLocaleString();
+  }
+  document.getElementById("populationRetention").classList.toggle("is-hidden", pop !== "polaris");
+
   // visibility, not display -- the note always reserves its own line
   // in Disease Continuum's card so switching population can't grow it
   // (and its stretch-aligned header-card sibling) taller.
   document.getElementById("diseaseContinuumPolarisNote").classList.toggle("is-hidden", pop !== "polaris");
 
-  // The POLARIS Cohort Construction toggle stays in the document at a
-  // fixed height at all times (never display:none) -- only its
-  // enabled/disabled look changes here, so switching population never
-  // shifts the header card's height or anything below it on the page.
-  // Its own collapsible body only expands on a real user click.
-  const polarisPanelEl = document.getElementById("polarisPanel");
-  const polarisToggleHeader = document.getElementById("polarisToggleHeader");
-  polarisPanelEl.classList.toggle("polaris-panel--disabled", pop !== "polaris");
-  // Both hint sentences stay in the layout (see .polaris-hint-stack) --
-  // toggled by visibility, not textContent, since the "enabled" one is
-  // much longer and would otherwise wrap onto an extra line.
-  document.getElementById("polarisHintDisabled").classList.toggle("is-hidden", pop === "polaris");
-  document.getElementById("polarisHintEnabled").classList.toggle("is-hidden", pop !== "polaris");
-  // Leaving POLARIS always resets the toggle back to collapsed, so
-  // re-selecting POLARIS later never shows it already expanded.
-  if (pop !== "polaris") {
-    polarisToggleHeader.classList.remove("open");
-    polarisToggleHeader.nextElementSibling.classList.remove("open");
-  }
+  // The "View cohort definition" link only exists for POLARIS -- fully
+  // removed (see .view-cohort-def-link.is-hidden), not just visually
+  // disabled. Leaving POLARIS always resets its detail back to
+  // collapsed, so re-selecting POLARIS later never shows it already
+  // expanded.
+  document.getElementById("viewCohortDefLink").classList.toggle("is-hidden", pop !== "polaris");
+  document.getElementById("viewCohortDefLink").textContent = "View cohort definition";
+  document.getElementById("polarisCollapsibleBody").classList.remove("open");
 
   if (pop === "polaris" && !polarisRendered) {
     renderPolarisPanel();
@@ -4849,6 +4863,11 @@ function setPopulation(pop) {
   renderCognitiveChart();
   renderBiomarkerChart();
   renderResultsTable();
+}
+
+function togglePolarisCohortDefinition() {
+  const open = document.getElementById("polarisCollapsibleBody").classList.toggle("open");
+  document.getElementById("viewCohortDefLink").textContent = open ? "Hide cohort definition" : "View cohort definition";
 }
 
 function fmtNumericSummary(s) {
