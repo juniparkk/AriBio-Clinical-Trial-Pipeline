@@ -41,11 +41,13 @@
      edge lining up with its neighbor. */
   .header-continuum-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch; margin-bottom: 20px; }
   .header-left-col { flex: 1 1 500px; min-width: 440px; display: flex; flex-direction: column; }
-  /* header-info-card grows to fill the stretched column; its own LAST
-     section (the population filter row) absorbs the extra height
-     rather than leaving a blank gap after it. */
+  /* header-info-card grows to fill the stretched column; the bottom
+     (cohort) card grows within it, and POLARIS panel -- its own last
+     child -- absorbs the extra height, rather than leaving a blank gap
+     after it. */
   .header-left-col .header-info-card { flex: 1; display: flex; flex-direction: column; }
   .header-info-filter-row { flex: 1; }
+  .header-info-cohort-card { flex: 1; display: flex; flex-direction: column; }
   .header-right-col { flex: 1 1 500px; min-width: 440px; display: flex; }
   /* Same idea for Disease Continuum: the panel grows, and the heatmap
      itself (not blank space below it) absorbs the extra height. */
@@ -71,43 +73,68 @@
   .trajectories-row > section.panel .chart-card { flex: 1; }
   @media (max-width: 1300px) { .trajectories-row { flex-direction: column; } }
 
-  /* Unified header info card: description/disclaimer, participant
-     stats, status legend, and the population filter used to each be
-     their own separately-shadowed, differently-rounded floating box
-     (a rectangular note, two pill-ish cards, and one true 999px pill),
-     stacked with visible gaps -- inconsistent radii and a repeated
-     white/shadow treatment four times over. Now ONE card, ONE radius,
-     ONE shadow, with thin internal dividers between sections instead
-     of a new box each time. */
-  .header-info-card {
-    background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(20, 40, 70, 0.09);
-    margin-bottom: 14px; overflow: hidden;
-  }
-  .header-info-section { padding: 13px 20px; border-top: 1px solid #dfe7f1; }
-  .header-info-section:first-child { border-top: none; }
+  /* Header info card: two cards with the SAME border/bg treatment
+     (SURFACE_TINT + SURFACE_BORDER + CARD_RADIUS -- the same tokens
+     every other panel on this page already uses, not a one-off tint
+     invented for this section) so they read as a consistent pair, not
+     one boxed and one blank. The bottom card (stats + filter + POLARIS
+     panel -- "the cohort itself": who's in it, which version you're
+     viewing, how that version was built -- the one you actually act
+     on) keeps the extra box-shadow the top card (disclaimer + legend
+     -- "how to read this page") doesn't get, so it still reads as the
+     more important of the two without looking unrelated to it.
+     Two-tier type scale across both cards -- 13px for body/description
+     copy, 15px bold for labels/headlines -- consistent WITHIN each
+     tier without forcing every line to the same size. */
+  .header-info-card { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
 
-  .header-info-disclaimer {
-    font-size: 12.5px; color: #33475b; line-height: 1.55;
-    border-left: 3px solid #2e5fa3; padding-left: 17px;
+  .header-info-top-card {
+    background: #f6f8fb; border: 1px solid #dfe7f1; border-radius: 12px;
+    overflow: hidden;
   }
-  .header-info-stats { font-size: 14px; font-weight: 600; color: #1a1a1a; }
-  .header-info-stats b { color: #2e5fa3; }
+  .header-info-disclaimer { font-size: 13px; color: #45566b; line-height: 1.55; padding: 14px 20px; }
 
   /* Status legend -- symbols only, full definitions on hover (title
      attr) and in the Analysis Details disclosure. */
-  .header-info-legend { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 12.5px; color: #444; }
+  .header-info-legend {
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 13px; color: #556;
+    padding: 10px 20px 14px; border-top: 1px solid #dfe7f1;
+  }
   .header-info-legend .cl-item { cursor: help; border-bottom: 1px dotted #bbb; }
   .header-info-legend .cl-info-btn {
     background: none; border: 1px solid #dfe7f1; border-radius: 50%; width: 20px; height: 20px;
     color: #888; cursor: pointer; font-size: 12px; line-height: 1; font-family: inherit;
   }
 
-  /* Population filter -- now just another full-width section of the
-     same card (no separate pill-shaped container of its own, so it no
-     longer sits narrower than its siblings). */
-  .header-info-filter-row { display: flex; align-items: center; flex-wrap: wrap; column-gap: 12px; row-gap: 6px; }
+  .header-info-cohort-card {
+    background: #f6f8fb; border: 1px solid #dfe7f1; border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(20, 40, 70, 0.09); overflow: hidden;
+  }
+  .header-info-stats { padding: 16px 20px; }
+  /* Big value, small label underneath -- a stat-tile look without the
+     bordered/shadowed tile itself -- just the number/label pair,
+     floating on the shared cohort card's own background. CN/MCI/
+     Dementia values reuse GROUP_COLORS (the same blue/orange/red used
+     for these groups on every chart on this page), so the same color
+     means the same group everywhere, not just in the charts. */
+  .header-info-stat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+  @media (max-width: 620px) { .header-info-stat-row { grid-template-columns: repeat(3, 1fr); } }
+  .header-info-stat-item { display: flex; flex-direction: column; }
+  .header-info-stat-value { font-size: 22px; font-weight: 700; color: #2e5fa3; letter-spacing: -0.01em; line-height: 1.15; }
+  .header-info-stat-label { font-size: 11.5px; color: #666; margin-top: 3px; white-space: nowrap; }
+
+  /* Population filter -- the one control in this card. No background
+     wash of its own -- the accent color already lives in the icon,
+     label, and the toggle button's own solid-blue active state, so a
+     tinted strip behind it would be redundant, not additive. Generous
+     padding (the actual "blank space" doing the separating work) plus
+     a hairline divider is what sets it apart from its neighbors. */
+  .header-info-filter-row {
+    display: flex; align-items: center; flex-wrap: wrap; column-gap: 12px; row-gap: 6px;
+    border-top: 1px solid #dfe7f1; padding: 16px 20px;
+  }
   .population-filter-icon { color: #2e5fa3; flex-shrink: 0; }
-  .population-filter-label { font-size: 13px; font-weight: 700; color: #2e5fa3; white-space: nowrap; }
+  .population-filter-label { font-size: 15px; font-weight: 700; color: #2e5fa3; white-space: nowrap; }
 
   .meta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
   .meta-chip {
@@ -238,7 +265,7 @@
      of which one is toggled visible. */
   .population-helper-stack { display: grid; flex: 1 1 240px; }
   .population-helper-stack > .population-helper { grid-area: 1 / 1; }
-  .population-helper { font-size: 12.5px; color: #666; line-height: 1.4; }
+  .population-helper { font-size: 13px; color: #445; line-height: 1.4; }
 
   /* Same idea for the POLARIS Cohort Construction toggle's hint text --
      the "enabled" sentence is much longer than the "disabled" one. */
@@ -266,16 +293,22 @@
     transition: opacity 0.2s ease; animation: contentFadeIn 0.3s ease;
   }
 
-  /* Now a section of .header-info-card (right under the filter row) --
-     padding-left trimmed by the border width so its text still lines
-     up with the other sections' 20px inset. ALWAYS rendered (never
-     display:none) at a fixed height, whether Overall ADNI or POLARIS
-     is active -- switching population only toggles the disabled/
-     enabled look below, so the header card's own height (and
-     everything below it on the page) never shifts just from changing
-     the population filter. Only a genuine user click on the toggle
-     (enabled state only) is allowed to change layout height. */
-  .polaris-panel { border-left: 4px solid #c2255c; padding-left: 16px; }
+  /* Nested inside .header-info-cohort-card, directly under the filter
+     row, no gap and no background of its own -- the shared card plus a
+     hairline divider is what makes clear it belongs to the filter
+     above it, rather than being an unrelated section. Its title uses
+     ARIBIO_ACCENT (the same "worth a second glance" color as the AR1001
+     star and manual-review flags elsewhere) so it still reads as its
+     own distinct sub-topic without a colored fill. flex: 1 lets it
+     absorb any extra stretch height from matching Disease Continuum's
+     height. ALWAYS rendered (never display:none) at a fixed height,
+     whether Overall ADNI or POLARIS is active -- switching population
+     only toggles the disabled/enabled look below, so the header card's
+     own height (and everything below it on the page) never shifts just
+     from changing the population filter. Only a genuine user click on
+     the toggle (enabled state only) is allowed to change layout height. */
+  .polaris-panel { border-top: 1px solid #dfe7f1; padding: 16px 20px; flex: 1; }
+  .polaris-panel h2 { color: #c2255c; }
   .polaris-panel--disabled .collapsible-toggle { cursor: default; pointer-events: none; opacity: 0.55; }
   .polaris-panel--disabled .chev { visibility: hidden; }
   .polaris-context-box {
@@ -320,47 +353,76 @@
         </div>
         
     <div class="header-info-card">
-      <div class="header-info-section header-info-disclaimer">ADNI is an observational natural-history cohort, not a randomized clinical trial and not an external control arm. Results describe disease progression and should not be interpreted as treatment effects.</div>
-      <div class="header-info-section header-info-stats">
-        <b>3,030</b> participants &middot; CN <b>1,215</b> &middot; MCI <b>1,338</b> &middot; Dementia <b>477</b> &middot; <b>7</b> endpoints &middot; up to <b>48</b> months
-      </div>
-      <div class="header-info-section header-info-legend" id="statusLegend">
-        <span class="cl-item" title="Prespecified ANCOVA fit; HC3 robust inference displayed.">&#9679; Adjusted</span>
-        <span class="cl-item" title="Insufficient subgroup sample size for inferential model; descriptive value shown instead (no p-value, no adjustment).">&#9675; Descriptive</span>
-        <span class="cl-item" title="Result materially changed under HC3 and/or influence analysis.">&#9888; Sensitivity concern</span>
-        <button type="button" class="cl-info-btn" onclick="toggleCollapsible(document.getElementById('analysisDetailsToggle'))" title="Full definitions in Analysis Details">&#9432;</button>
-      </div>
-      <div class="header-info-section header-info-filter-row">
-        <svg class="population-filter-icon" width="13" height="13" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-          <path d="M1 2.5h14L9.5 9v4.5l-3 1.5V9L1 2.5z" fill="currentColor"></path>
-        </svg>
-        <span class="population-filter-label" title="Changes which validated cohort every chart on this page shows.">Filter by population:</span>
-        <div class="toggle-group" id="populationToggleGroup">
-          <button class="toggle-btn active" data-population="overall" onclick="setPopulation('overall')">Overall ADNI</button>
-          <button class="toggle-btn" data-population="polaris" onclick="setPopulation('polaris')">POLARIS AD&ndash;Aligned</button>
+      <div class="header-info-top-card">
+        <div class="header-info-section header-info-disclaimer">ADNI is an observational natural-history cohort, not a randomized clinical trial and not an external control arm. Results describe disease progression and should not be interpreted as treatment effects.</div>
+        <div class="header-info-section header-info-legend" id="statusLegend">
+          <span class="cl-item" title="Prespecified ANCOVA fit; HC3 robust inference displayed.">&#9679; Adjusted</span>
+          <span class="cl-item" title="Insufficient subgroup sample size for inferential model; descriptive value shown instead (no p-value, no adjustment).">&#9675; Descriptive</span>
+          <span class="cl-item" title="Result materially changed under HC3 and/or influence analysis.">&#9888; Sensitivity concern</span>
+          <button type="button" class="cl-info-btn" onclick="toggleCollapsible(document.getElementById('analysisDetailsToggle'))" title="Full definitions in Analysis Details">&#9432;</button>
         </div>
-        <span class="population-helper-stack">
-          <span class="population-helper" id="populationHelperOverall">Broad validated ADNI natural-history cohort.</span>
-          <span class="population-helper is-hidden" id="populationHelperPolaris">ADNI participants meeting validated MMSE and amyloid-PET eligibility criteria relevant to the POLARIS clinical-development population.</span>
-        </span>
       </div>
-      <div class="header-info-section polaris-panel polaris-panel--disabled" id="polarisPanel">
-        <div class="collapsible-toggle" id="polarisToggleHeader" onclick="toggleCollapsible(this)">
-          <div>
-            <h2 style="margin:0;font-size:14px;">POLARIS AD&ndash;Aligned Cohort Construction</h2>
-            <div class="polaris-hint-stack">
-              <p class="panel-sub polaris-hint" id="polarisHintDisabled">Select POLARIS AD&ndash;Aligned above to view how the 620-participant cohort was built.</p>
-              <p class="panel-sub polaris-hint is-hidden" id="polarisHintEnabled">Eligibility filtering only &mdash; not propensity-score matching, not an external control arm. Click to see how the 620-participant cohort was built.</p>
+      <div class="header-info-cohort-card">
+        <div class="header-info-section header-info-stats">
+          <div class="header-info-stat-row">
+            <div class="header-info-stat-item">
+              <div class="header-info-stat-value">3,030</div>
+              <div class="header-info-stat-label">participants</div>
+            </div>
+            <div class="header-info-stat-item">
+              <div class="header-info-stat-value" style="color:#2196F3">1,215</div>
+              <div class="header-info-stat-label">CN</div>
+            </div>
+            <div class="header-info-stat-item">
+              <div class="header-info-stat-value" style="color:#FF9800">1,338</div>
+              <div class="header-info-stat-label">MCI</div>
+            </div>
+            <div class="header-info-stat-item">
+              <div class="header-info-stat-value" style="color:#F44336">477</div>
+              <div class="header-info-stat-label">Dementia</div>
+            </div>
+            <div class="header-info-stat-item">
+              <div class="header-info-stat-value">7</div>
+              <div class="header-info-stat-label">endpoints</div>
+            </div>
+            <div class="header-info-stat-item">
+              <div class="header-info-stat-value">48</div>
+              <div class="header-info-stat-label">months (max)</div>
             </div>
           </div>
-          <span class="chev">&#9656;</span>
         </div>
-        <div class="collapsible-body">
-          <div class="polaris-context-box" id="polarisContextBox"></div>
-          <div class="polaris-funnel" id="polarisFunnel"></div>
-          <h2 style="font-size:14px;margin:4px 0 2px;">Overall ADNI vs. POLARIS AD&ndash;Aligned &mdash; Population Profile</h2>
-          <p class="panel-sub">How eligibility filtering changed the population. Descriptive comparison only &mdash; not a statistical test of comparability.</p>
-          <div class="profile-grid" id="polarisProfileGrid"></div>
+        <div class="header-info-section header-info-filter-row">
+          <svg class="population-filter-icon" width="13" height="13" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M1 2.5h14L9.5 9v4.5l-3 1.5V9L1 2.5z" fill="currentColor"></path>
+          </svg>
+          <span class="population-filter-label" title="Changes which validated cohort every chart on this page shows.">Filter by population:</span>
+          <div class="toggle-group" id="populationToggleGroup">
+            <button class="toggle-btn active" data-population="overall" onclick="setPopulation('overall')">Overall ADNI</button>
+            <button class="toggle-btn" data-population="polaris" onclick="setPopulation('polaris')">POLARIS AD&ndash;Aligned</button>
+          </div>
+          <span class="population-helper-stack">
+            <span class="population-helper" id="populationHelperOverall">Broad validated ADNI natural-history cohort.</span>
+            <span class="population-helper is-hidden" id="populationHelperPolaris">ADNI participants meeting validated MMSE and amyloid-PET eligibility criteria relevant to the POLARIS clinical-development population.</span>
+          </span>
+        </div>
+        <div class="header-info-section polaris-panel polaris-panel--disabled" id="polarisPanel">
+          <div class="collapsible-toggle" id="polarisToggleHeader" onclick="toggleCollapsible(this)">
+            <div>
+              <h2 style="margin:0;font-size:15px;">POLARIS AD&ndash;Aligned Cohort Construction</h2>
+              <div class="polaris-hint-stack">
+                <p class="panel-sub polaris-hint" id="polarisHintDisabled">Select POLARIS AD&ndash;Aligned above to view how the 620-participant cohort was built.</p>
+                <p class="panel-sub polaris-hint is-hidden" id="polarisHintEnabled">Eligibility filtering only &mdash; not propensity-score matching, not an external control arm. Click to see how the 620-participant cohort was built.</p>
+              </div>
+            </div>
+            <span class="chev">&#9656;</span>
+          </div>
+          <div class="collapsible-body">
+            <div class="polaris-context-box" id="polarisContextBox"></div>
+            <div class="polaris-funnel" id="polarisFunnel"></div>
+            <h2 style="font-size:14px;margin:4px 0 2px;">Overall ADNI vs. POLARIS AD&ndash;Aligned &mdash; Population Profile</h2>
+            <p class="panel-sub">How eligibility filtering changed the population. Descriptive comparison only &mdash; not a statistical test of comparability.</p>
+            <div class="profile-grid" id="polarisProfileGrid"></div>
+          </div>
         </div>
       </div>
     </div>
