@@ -365,9 +365,12 @@ def test_dietary_supplement_confirmed_leakage_examples_excluded_entirely():
         assert name not in table_names, f"{name!r} must not appear anywhere in resolved_drugs_df/TABLE_ROWS"
 
 
-def test_scope_toggle_control_present_in_html():
-    assert 'id="scope-toggle"' in HTML_SOURCE
-    assert "showNonTherapeutic" in HTML_SOURCE
+def test_scope_toggle_control_removed_from_html():
+    # The "Show non-therapeutic / needs-review records" checkbox was
+    # removed per request -- the table now always filters to
+    # THERAPEUTIC_SCOPE, with no UI path to reveal the rest.
+    assert 'id="scope-toggle"' not in HTML_SOURCE
+    assert "showNonTherapeutic" not in HTML_SOURCE
     assert "THERAPEUTIC_SCOPE" in HTML_SOURCE
 
 
@@ -436,7 +439,7 @@ ALL_TESTS = [
     test_no_non_therapeutic_scopes_present_in_table_data,
     test_placebo_or_comparator_never_in_table_rows,
     test_dietary_supplement_confirmed_leakage_examples_excluded_entirely,
-    test_scope_toggle_control_present_in_html,
+    test_scope_toggle_control_removed_from_html,
     test_gap_audit_csv_exists_with_expected_columns,
     test_gap_audit_csv_flags_confirmed_leakage_examples_as_not_dashboard_eligible,
     test_pipeline_interventions_csv_preserves_scope_columns_and_row_count,

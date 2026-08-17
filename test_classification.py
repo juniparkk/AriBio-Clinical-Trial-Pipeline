@@ -56,6 +56,7 @@ from drug_classification import (
     EXTENDED_NON_DRUG_REASON,
     _is_diagnostic_challenge_or_probe_purpose,
     _is_deprescribing_or_procedural_support,
+    classify_sponsor_type,
 )
 
 PIPELINE_CSV_PATH = os.path.join(os.path.dirname(__file__), "data", "official_pipeline.csv")
@@ -1033,11 +1034,12 @@ def make_trial_row(nct_id, sponsor, developed_drug, drug_classification, verific
                     drug_type="Small Molecule", target="Amyloid", enrollment=100, is_aribio=False,
                     title="Test Trial", interventions="DRUG: X", classification_reason="test reason",
                     pipeline_scope="Therapeutic Drug", scope_reason="test scope reason",
-                    scope_method="rule_classification", scope_confidence="high", manual_review_required=None):
+                    scope_method="rule_classification", scope_confidence="high", manual_review_required=None,
+                    funder_type="OTHER"):
     return {
         "nct_id": nct_id, "sponsor": sponsor, "title": title, "interventions": interventions,
         "phase_clean": phase, "status_clean": status, "drug_type": drug_type, "target": target,
-        "enrollment": enrollment, "is_aribio": is_aribio,
+        "enrollment": enrollment, "is_aribio": is_aribio, "funder_type": funder_type,
         "developed_drug": developed_drug,
         "developed_drug_normalized": normalize_text(developed_drug),
         "drug_classification": drug_classification,
@@ -1195,6 +1197,105 @@ def test_rollup_case_variant_duplicate_names_collapse():
     assert len(result) == 1
     assert result.iloc[0]["display_name"].lower() == "ar1001"
     assert result.iloc[0]["trial_count"] == 2
+
+
+def test_rollup_display_name_tiebreak_is_order_independent():
+    # Regression guard: two same-length spellings that differ only in
+    # case (e.g. ct.gov's "Raloxifene" vs. "raloxifene" across two real
+    # trials) must resolve to the SAME display_name no matter which
+    # trial happens to appear first in trials.csv -- ct.gov API
+    # pagination order isn't stable across refreshes, and a
+    # row-order-dependent display_name previously caused
+    # detect_drug_level_changes() to misreport an already-tracked drug
+    # as a brand-new "new_drug" the moment fetch order shuffled which
+    # spelling won a bare min(key=len) tie. The Title-Case-looking
+    # spelling should win deterministically, regardless of row order.
+    forward = pd.DataFrame([
+        make_trial_row("NCT10", "Sponsor A", "Raloxifene", "investigational_therapeutic_unverified", "no_match", "medium", True),
+        make_trial_row("NCT11", "Sponsor B", "raloxifene", "investigational_therapeutic_unverified", "no_match", "medium", True),
+    ])
+    backward = pd.DataFrame([
+        make_trial_row("NCT11", "Sponsor B", "raloxifene", "investigational_therapeutic_unverified", "no_match", "medium", True),
+        make_trial_row("NCT10", "Sponsor A", "Raloxifene", "investigational_therapeutic_unverified", "no_match", "medium", True),
+    ])
+    forward_result = build_resolved_drugs_dataframe(forward)
+    backward_result = build_resolved_drugs_dataframe(backward)
+    assert forward_result.iloc[0]["display_name"] == "Raloxifene"
+    assert backward_result.iloc[0]["display_name"] == "Raloxifene"
+
+
+def test_rollup_dev_phase_enrollment_sums_phase_1_2_3_excludes_phase_4():
+    # dev_phase_enrollment is a SUM across every contributing trial
+    # phased 1/2/3 (including the combined Phase 1/Phase 2 and Phase
+    # 2/Phase 3 ct.gov designations) -- unlike max_enrollment (still the
+    # single largest trial, used unchanged for relevance-score capping),
+    # this is meant to reflect total patients tested during development,
+    # explicitly excluding Phase 4 (post-approval/post-marketing).
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT20", "Sponsor A", "TestDrugX", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, phase="Phase 1", enrollment=50),
+        make_trial_row("NCT21", "Sponsor A", "TestDrugX", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, phase="Phase 2/Phase 3", enrollment=300),
+        make_trial_row("NCT22", "Sponsor A", "TestDrugX", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, phase="Phase 4", enrollment=5000),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert len(result) == 1
+    assert result.iloc[0]["dev_phase_enrollment"] == 350
+    assert result.iloc[0]["max_enrollment"] == 5000
+
+
+def test_rollup_dev_phase_enrollment_is_zero_when_only_phase_4_trials():
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT23", "Sponsor A", "TestDrugY", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, phase="Phase 4", enrollment=2000),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert result.iloc[0]["dev_phase_enrollment"] == 0
+
+
+def test_classify_sponsor_type_industry_is_company():
+    assert classify_sponsor_type("INDUSTRY") == "Company"
+
+
+def test_classify_sponsor_type_everything_else_is_institution():
+    for funder_type in ("OTHER", "NIH", "OTHER_GOV", "FED", "NETWORK", "INDIV", "UNKNOWN", "", None):
+        assert classify_sponsor_type(funder_type) == "University/Institution"
+
+
+def test_rollup_sponsor_type_is_company_when_all_trials_industry():
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT24", "Eli Lilly", "TestDrugZ", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, funder_type="INDUSTRY"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert result.iloc[0]["sponsor_type"] == "Company"
+
+
+def test_rollup_sponsor_type_is_institution_when_all_trials_non_industry():
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT25", "Some University", "TestDrugW", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, funder_type="OTHER"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert result.iloc[0]["sponsor_type"] == "University/Institution"
+
+
+def test_rollup_sponsor_type_is_company_when_any_trial_is_industry():
+    # Mixed sponsorship (~3% of real drugs) errs toward flagging the
+    # commercial signal: ANY industry-funded contributing trial is
+    # enough to call the whole drug "Company", even if most of its
+    # trials are academic.
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT26", "Some University", "TestDrugV", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, funder_type="OTHER"),
+        make_trial_row("NCT27", "Some University", "TestDrugV", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, funder_type="OTHER"),
+        make_trial_row("NCT28", "Big Pharma Inc.", "TestDrugV", "investigational_therapeutic_unverified",
+                        "no_match", "medium", True, funder_type="INDUSTRY"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert result.iloc[0]["sponsor_type"] == "Company"
 
 
 def test_rollup_one_confirmed_plus_one_unverified_produces_one_mixed_row():
@@ -2609,6 +2710,14 @@ ALL_TESTS = [
     test_rollup_wujia_unverified_trial_produces_one_row,
     test_rollup_same_drug_across_two_trials_collapses_to_one_row,
     test_rollup_case_variant_duplicate_names_collapse,
+    test_rollup_display_name_tiebreak_is_order_independent,
+    test_rollup_dev_phase_enrollment_sums_phase_1_2_3_excludes_phase_4,
+    test_rollup_dev_phase_enrollment_is_zero_when_only_phase_4_trials,
+    test_classify_sponsor_type_industry_is_company,
+    test_classify_sponsor_type_everything_else_is_institution,
+    test_rollup_sponsor_type_is_company_when_all_trials_industry,
+    test_rollup_sponsor_type_is_institution_when_all_trials_non_industry,
+    test_rollup_sponsor_type_is_company_when_any_trial_is_industry,
     test_rollup_one_confirmed_plus_one_unverified_produces_one_mixed_row,
     test_rollup_multiple_unresolved_candidates_excluded,
     test_unresolved_trials_csv_includes_ambiguous_and_uncertain_trials,

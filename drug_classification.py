@@ -1385,6 +1385,25 @@ def resolve_developed_drug(classified_interventions):
 
 _CONFIDENCE_RANK = {"high": 3, "medium": 2, "low": 1}
 _DRUG_ROLLUP_STATUS_PRIORITY = ["FDA Approved", "Recruiting", "Active", "Completed", "Discontinued", "Unknown", "Other"]
+
+# ct.gov's own lead-sponsor classification (its "Agency Class", captured
+# here as trials.csv's "Funder Type"/df["funder_type"]) -- INDUSTRY is
+# the only value that unambiguously means a company; every other value
+# (OTHER, NIH, OTHER_GOV, FED, NETWORK, INDIV, UNKNOWN) covers
+# universities, hospitals, government agencies, and nonprofits, which
+# this dashboard groups as one "University/Institution" bucket per the
+# two-way company/institution distinction it's meant to support. This
+# is ct.gov's OWN classification, not a guess from the sponsor name
+# string -- more reliable than name-matching (e.g. "University of ..."),
+# though not perfect: ct.gov itself sometimes buries a real company
+# under OTHER (e.g. "Pharnext S.C.A." is tagged OTHER, not INDUSTRY, in
+# the raw registration data).
+_SPONSOR_TYPE_COMPANY = "Company"
+_SPONSOR_TYPE_INSTITUTION = "University/Institution"
+
+
+def classify_sponsor_type(funder_type):
+    return _SPONSOR_TYPE_COMPANY if funder_type == "INDUSTRY" else _SPONSOR_TYPE_INSTITUTION
 # Every phase_clean value pipeline_viz.py's clean_phase() can produce
 # must have a rank here — trials.csv carries far more than just Phase
 # 1/2/3 (NA, Early Phase 1, Phase 4, and the combined Phase 1/Phase 2 /
@@ -1397,6 +1416,18 @@ _DRUG_ROLLUP_STATUS_PRIORITY = ["FDA Approved", "Recruiting", "Active", "Complet
 _DRUG_ROLLUP_PHASE_RANK = {
     "Phase 4": 8, "Phase 3": 7, "Phase 2/Phase 3": 6, "Phase 2": 5,
     "Phase 1/Phase 2": 4, "Phase 1": 3, "Early Phase 1": 2, "NA": 1,
+}
+
+# "Phase 1/2/3" for enrollment-summing purposes (dev_phase_enrollment
+# below): every _DRUG_ROLLUP_PHASE_RANK phase EXCEPT Phase 4 (post-
+# approval/post-marketing — often huge real-world studies that reflect
+# commercial reach, not development investment) and NA (no phase
+# assigned at all, so not identifiable as "1/2/3" either). The combined
+# ct.gov designations (Phase 1/Phase 2, Phase 2/Phase 3) count too —
+# they're real, distinct phase values that sit inside the 1-3 range,
+# not outside it.
+_DEV_PHASE_ENROLLMENT_PHASES = {
+    "Early Phase 1", "Phase 1", "Phase 1/Phase 2", "Phase 2", "Phase 2/Phase 3", "Phase 3",
 }
 
 
@@ -1468,7 +1499,7 @@ def build_resolved_drugs_dataframe(trials_df):
 
     empty_columns = [
         "display_name", "phase_reached", "nct_id", "status_summary", "drug_type", "target",
-        "sponsor", "trial_count", "max_enrollment", "is_aribio", "verification_status",
+        "sponsor", "trial_count", "max_enrollment", "dev_phase_enrollment", "sponsor_type", "is_aribio", "verification_status",
         "classification_confidence", "needs_manual_review", "confirmed_trial_count", "unverified_trial_count",
         "official_source_url", "classification_reason", "nct_ids", "brief_summary", "name_variants",
         "pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required",
@@ -1497,7 +1528,23 @@ def build_resolved_drugs_dataframe(trials_df):
         if len(confirmed_rows):
             display_name = confirmed_rows["developed_drug"].iloc[0]
         else:
-            display_name = min(g["developed_drug"], key=len)
+            # Tie-break deterministically on (length, casing, alphabetical)
+            # -- NOT just length. Two trials for the same drug can spell
+            # it differently only in case (e.g. "Raloxifene" vs.
+            # "raloxifene" -- both 10 characters), and a bare
+            # min(..., key=len) silently falls back to "whichever row
+            # happens to come first in g", which follows trials.csv's
+            # row order -- itself just ct.gov API pagination order, not
+            # guaranteed stable across refreshes. An unstable display_name
+            # for the same real-world drug makes detect_drug_level_changes()
+            # (ctgov_changes.py) misread a same-length spelling flip as a
+            # brand-new drug entering the pipeline (a real false positive
+            # this caused for "Raloxifene", a 20+-year-old completed SERM
+            # repurposing study, not a new candidate). Preferring a
+            # Title Case-looking spelling, then alphabetical order, over
+            # raw row order makes this fully reproducible regardless of
+            # trial fetch order.
+            display_name = min(g["developed_drug"], key=lambda s: (len(s), not s[:1].isupper(), s))
 
         sponsors = sorted(set(g["sponsor"].dropna().astype(str)) - {""})
         sponsor_field = "; ".join(sponsors)
@@ -1591,6 +1638,22 @@ def build_resolved_drugs_dataframe(trials_df):
         manual_review_required = bool(g["manual_review_required"].any()) if "manual_review_required" in g.columns else False
         manual_review_required = manual_review_required or scope_disagreement
 
+        # Sum (not max) across every contributing trial phased 1/2/3 --
+        # Phase 4 trials excluded (see _DEV_PHASE_ENROLLMENT_PHASES). A
+        # drug with only a Phase 4 trial on file sums to 0 here, which
+        # the dashboard displays as "—", same as any other missing value.
+        dev_phase_enrollment = g.loc[g["phase_clean"].isin(_DEV_PHASE_ENROLLMENT_PHASES), "enrollment"].sum()
+
+        # Any industry-funded contributing trial is enough to call the
+        # whole drug "Company" -- real commercial interest exists even
+        # if academia is also involved (only ~3% of drugs have BOTH
+        # industry and non-industry trials; this errs toward flagging
+        # the commercial signal for those rather than diluting it).
+        if "funder_type" in g.columns:
+            sponsor_type = _SPONSOR_TYPE_COMPANY if (g["funder_type"] == "INDUSTRY").any() else _SPONSOR_TYPE_INSTITUTION
+        else:
+            sponsor_type = _SPONSOR_TYPE_INSTITUTION
+
         return pd.Series({
             "display_name": display_name,
             "phase_reached": top_rows["phase_clean"].iloc[0],
@@ -1601,6 +1664,8 @@ def build_resolved_drugs_dataframe(trials_df):
             "sponsor": sponsor_field,
             "trial_count": g["nct_id"].nunique(),
             "max_enrollment": g["enrollment"].max(),
+            "dev_phase_enrollment": dev_phase_enrollment,
+            "sponsor_type": sponsor_type,
             "is_aribio": bool(g["is_aribio"].any()) if "is_aribio" in g.columns else False,
             "verification_status": verification_status,
             "classification_confidence": classification_confidence,

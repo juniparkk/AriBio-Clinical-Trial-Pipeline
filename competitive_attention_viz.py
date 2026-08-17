@@ -402,7 +402,7 @@ def render_milestones_section(milestones):
         <div class="milestone-col">
           <div class="milestone-col-title">{label} <span class="milestone-count">({len(items)})</span></div>
           <div class="milestone-col-note">{_milestone_note(key)}</div>
-          {_render_milestone_list(items, key, date_field)}
+          <div class="milestone-col-list">{_render_milestone_list(items, key, date_field)}</div>
         </div>""")
 
     return f"""
@@ -492,6 +492,29 @@ COMPETITIVE_ATTENTION_CSS = """
   .milestone-col-title { font-size: 12.5px; font-weight: 700; color: #1a1a1a; }
   .milestone-count { font-weight: 400; color: #888; }
   .milestone-col-note { font-size: 10.5px; color: #999; margin: 3px 0 8px; line-height: 1.4; }
+  /* "Scroll shadow" trick: the two radial-gradient shadows are
+     background-attachment:scroll (fixed to the box, not the content),
+     the two white fades are background-attachment:local (scroll WITH
+     the content) -- so the top shadow only shows once you've scrolled
+     past the first row, and the bottom shadow only shows while there's
+     more content below. That's the actual "this scrolls" affordance;
+     a plain overflow:auto with an invisible/auto-hiding OS scrollbar
+     (e.g. macOS) gives no such cue on its own. */
+  .milestone-col-list {
+    max-height: 320px; overflow-y: auto; padding-right: 6px;
+    background:
+      linear-gradient(white 30%, rgba(255,255,255,0)) center top,
+      linear-gradient(rgba(255,255,255,0), white 70%) center bottom,
+      radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.18), rgba(0,0,0,0)) center top,
+      radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.18), rgba(0,0,0,0)) center bottom;
+    background-repeat: no-repeat;
+    background-size: 100% 24px, 100% 24px, 100% 10px, 100% 10px;
+    background-attachment: local, local, scroll, scroll;
+    scrollbar-width: thin; scrollbar-color: #ccc transparent;
+  }
+  .milestone-col-list::-webkit-scrollbar { width: 7px; }
+  .milestone-col-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+  .milestone-col-list::-webkit-scrollbar-thumb:hover { background: #aaa; }
   .milestone-row { display: flex; flex-direction: column; gap: 1px; padding: 6px 0; border-top: 1px solid #f0f0f0; font-size: 12px; }
   .milestone-row:first-of-type { border-top: none; }
   .milestone-row a { color: #2e5fa3; text-decoration: none; font-weight: 600; }
