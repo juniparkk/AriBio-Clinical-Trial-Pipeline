@@ -39,6 +39,7 @@ from drug_classification import (
     build_resolved_drugs_exclusion_audit_dataframe,
     THERAPEUTIC_SCOPE,
     normalize_text,
+    _company_matches,
 )
 from nih_reference import parse_nih_dataset
 from scientific_classification import (
@@ -1139,12 +1140,16 @@ def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_
     print()
 
     fig = go.Figure()
+    all_plot_x = []  # tracks every plotted x-value (maturity) so the axis range below can zoom to the real data spread instead of always starting at "Early Phase 1"
+    all_plot_y = []  # tracks every plotted y-value so the axis range below can zoom to the real data spread instead of a fixed 0-100 scale
     for target in TARGET_ORDER + ["Other", "Unknown"]:
         rows = matrix_df[matrix_df["target"] == target]
         if rows.empty:
             continue
         plot_x = (rows["maturity_x"] + rows["jitter_x"]).tolist()
         plot_y = (rows["aribio_relevance_score"] + rows["jitter_y"]).clip(1, 99).tolist()
+        all_plot_x.extend(plot_x)
+        all_plot_y.extend(plot_y)
         fig.add_trace(go.Scatter(
             x=plot_x, y=plot_y, mode="markers",
             marker=dict(size=16, color=TARGET_COLORS.get(target, "#999"), opacity=0.85,
@@ -1171,9 +1176,8 @@ def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_
     # relevance-y units of each other, which cycling through Plotly
     # textposition anchors ("top center"/"bottom center"/etc, each only
     # a few px offset) was nowhere near enough to pull apart — hence the
-    # explicit 2x2 grid below instead. Because the y-axis is heavily
-    # compressed relative to x (the full y-range 0-118 spans the same
-    # pixel height as roughly a 6-7-unit slice of the x-range), spacing
+    # explicit 2x2 grid below instead. Because the y-axis spans far fewer
+    # data units than the x-axis for the same pixel height, spacing
     # is deliberately x-led: each grid COLUMN carries almost all the
     # separation, each ROW only a small vertical stagger. A thin leader
     # line ties each relocated label back to its true (undisturbed) dot
@@ -1220,6 +1224,8 @@ def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_
         ar1001 = ar1001_rows.iloc[0]
         ar1001_x = MATURITY_PHASE_ORDER.index(ar1001["phase_reached"]) if ar1001["phase_reached"] in MATURITY_PHASE_ORDER else None
         if ar1001_x is not None:
+            all_plot_x.append(ar1001_x)
+            all_plot_y.append(100)
             fig.add_trace(go.Scatter(
                 x=[ar1001_x], y=[100], mode="markers+text",
                 marker=dict(size=24, symbol="star", color=ARIBIO_ACCENT, line=dict(width=1.5, color="white")),
@@ -1236,9 +1242,39 @@ def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_
             ))
 
     x_max = len(MATURITY_PHASE_ORDER) - 1
-    fig.add_shape(type="line", x0=MATURITY_X_DIVIDER, x1=MATURITY_X_DIVIDER, y0=-5, y1=108,
+
+    # The y-axis deliberately does NOT start at 0: relevance scores for
+    # the plotted top-N competitors cluster tightly near the top of the
+    # 0-100 scale (see the docstring above), so a fixed 0-100 (or wider)
+    # range squashes that cluster into a thin band and makes real score
+    # differences between competitors hard to see. Instead the range
+    # zooms to the actual plotted data (dots + AR1001's star), padded a
+    # bit on each side, while still always including the y=70 "high
+    # relevance" divider line so the WATCH/LOWER PRIORITY quadrants stay
+    # meaningful even when — as is typical — nothing currently plots
+    # below that line.
+    Y_AXIS_PADDING = 6
+    y_data_min = min(all_plot_y) if all_plot_y else RELEVANCE_Y_DIVIDER
+    y_data_max = max(all_plot_y) if all_plot_y else 100
+    y_range_low = min(y_data_min, RELEVANCE_Y_DIVIDER) - Y_AXIS_PADDING
+    y_range_high = max(y_data_max, 100) + Y_AXIS_PADDING
+
+    # Same reasoning for the x-axis: real competitor data always lands at
+    # Phase 1/Phase 2 or later (nothing is ever plotted at Early Phase 1
+    # or Phase 1 in practice), so starting the axis at index 0 wastes a
+    # third of its width on categories with no points. Zoom to the actual
+    # plotted maturity range, still always including the vertical
+    # MATURITY_X_DIVIDER line, and never wider than the full category
+    # range (-0.5 to x_max+0.5) that used to be the fixed default.
+    X_AXIS_PADDING = 0.5
+    x_data_min = min(all_plot_x) if all_plot_x else 0
+    x_data_max = max(all_plot_x) if all_plot_x else x_max
+    x_range_low = max(min(x_data_min, MATURITY_X_DIVIDER) - X_AXIS_PADDING, -0.5)
+    x_range_high = min(max(x_data_max, MATURITY_X_DIVIDER) + X_AXIS_PADDING, x_max + 0.5)
+
+    fig.add_shape(type="line", x0=MATURITY_X_DIVIDER, x1=MATURITY_X_DIVIDER, y0=y_range_low, y1=y_range_high,
                   line=dict(color="#d8d8d8", width=1, dash="dash"))
-    fig.add_shape(type="line", x0=-0.5, x1=x_max + 0.5, y0=RELEVANCE_Y_DIVIDER, y1=RELEVANCE_Y_DIVIDER,
+    fig.add_shape(type="line", x0=x_range_low, x1=x_range_high, y0=RELEVANCE_Y_DIVIDER, y1=RELEVANCE_Y_DIVIDER,
                   line=dict(color="#d8d8d8", width=1, dash="dash"))
 
     # Quadrant captions are pinned near the top/bottom edge of the AXES
@@ -1250,8 +1286,8 @@ def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_
     # at 0.965/0.025, combined with AR1001's label now sitting beside
     # its star instead of above it, keeps this row genuinely empty.
     quadrant_x_fracs = [
-        (MATURITY_X_DIVIDER / 2 + 0.5) / (x_max + 1),
-        ((MATURITY_X_DIVIDER + x_max) / 2 + 0.5) / (x_max + 1),
+        ((x_range_low + MATURITY_X_DIVIDER) / 2 - x_range_low) / (x_range_high - x_range_low),
+        ((MATURITY_X_DIVIDER + x_range_high) / 2 - x_range_low) / (x_range_high - x_range_low),
     ]
     quadrant_labels = [
         ("WATCH", quadrant_x_fracs[0], 0.965),
@@ -1266,11 +1302,11 @@ def build_relevance_matrix_figure(resolved_drugs_df, top_n=RELEVANCE_MATRIX_TOP_
 
     fig.update_xaxes(
         tickvals=list(range(len(MATURITY_PHASE_ORDER))), ticktext=MATURITY_PHASE_ORDER,
-        range=[-0.5, x_max + 0.5], tickfont=dict(size=11), showgrid=True, gridcolor="#f2f2f2",
+        range=[x_range_low, x_range_high], tickfont=dict(size=11), showgrid=True, gridcolor="#f2f2f2",
         title=dict(text="Development Maturity — Early → Late", font=dict(size=12.5, color="#555")),
     )
     fig.update_yaxes(
-        range=[-10, 118], tickfont=dict(size=11), showgrid=True, gridcolor="#f2f2f2",
+        range=[y_range_low, y_range_high], tickfont=dict(size=11), showgrid=True, gridcolor="#f2f2f2",
         title=dict(text="Competitive Relevance to AR1001", font=dict(size=12.5, color="#555")),
     )
     fig.update_layout(
@@ -1376,6 +1412,58 @@ def _drug_site_design_status(nct_ids_str):
 
 resolved_drugs_df["site_design_status"] = resolved_drugs_df["nct_ids"].apply(_drug_site_design_status)
 
+# Per-drug flag: does ANY of this drug's (semicolon-joined) sponsors
+# word-match a company on the AriBio competitive watchlist (config/
+# aribio_watchlist.yaml's competitor_companies -- see
+# competitive_attention.py's identical POINTS_NAMED_COMPETITOR logic,
+# which this deliberately mirrors so "highlighted in the table" and
+# "flagged in Needs Attention" always agree on the same company list).
+# aribio_watchlist.py needs PyYAML, which pipeline_viz.py itself does
+# NOT require to run standalone (only run_pipeline.py's fuller
+# orchestration does) -- importing it here would make a bare
+# `python3 pipeline_viz.py` fail on any machine without pyyaml
+# installed. Missing the module degrades to "no watchlist companies
+# known" (every drug's flag is False), the same fallback philosophy
+# aribio_watchlist.load_watchlist() already uses for a missing/broken
+# config file.
+try:
+    import aribio_watchlist as _aribio_watchlist
+    _watchlist_companies = _aribio_watchlist.load_watchlist().get("competitor_companies") or []
+except ImportError:
+    _watchlist_companies = []
+
+
+def _drug_is_watchlist_company(sponsor_field):
+    if not _watchlist_companies:
+        return False
+    sponsor_parts = [normalize_text(p) for p in str(sponsor_field or "").split(";") if p.strip()]
+    sponsor_parts = [p for p in sponsor_parts if p]
+    if not sponsor_parts:
+        return False
+    for company in _watchlist_companies:
+        company_norm = normalize_text(company)
+        if company_norm and any(_company_matches(company_norm, s) for s in sponsor_parts):
+            return True
+    return False
+
+
+resolved_drugs_df["is_watchlist_company"] = resolved_drugs_df["sponsor"].apply(_drug_is_watchlist_company)
+# Companion display-string column (same pattern as sponsor_type) so the
+# sidebar filter pills, which match on an exact string value, have
+# something to compare against -- is_watchlist_company itself stays a
+# pure bool for the JS highlight-styling check.
+resolved_drugs_df["watchlist_label"] = resolved_drugs_df["is_watchlist_company"].map({True: "Watchlist", False: "Other"})
+
+# Companion filter for the KPI tile below ("High relevance to AR1001
+# (>=70)") -- same RELEVANCE_Y_DIVIDER threshold, same AR1001-excluded
+# rule (its own self-score is never a meaningful "how relevant is this
+# competitor" signal), so the KPI count and this filter can never
+# silently disagree.
+resolved_drugs_df["high_relevance_label"] = [
+    "High Relevance" if (pd.notna(score) and score >= RELEVANCE_Y_DIVIDER and not is_aribio) else "Other"
+    for score, is_aribio in zip(resolved_drugs_df["aribio_relevance_score"], resolved_drugs_df["is_aribio"])
+]
+
 # Phase 1A: table_df stays sourced from the BROADER resolved_drugs_df
 # (every scope except Exclude/Placebo or Comparator, which never get a
 # row at all) — not therapeutic_drugs_df — so the browser has the data
@@ -1385,7 +1473,8 @@ resolved_drugs_df["site_design_status"] = resolved_drugs_df["nct_ids"].apply(_dr
 # only therapeutic drugs while the data itself preserves the rest.
 table_df = resolved_drugs_df[[
     "display_name", "phase_reached", "drug_type", "target", "target_display",
-    "status_summary", "trial_count", "max_enrollment", "dev_phase_enrollment", "sponsor_type", "sponsor", "sponsor_display",
+    "status_summary", "trial_count", "max_enrollment", "dev_phase_enrollment", "sponsor_type",
+    "is_watchlist_company", "watchlist_label", "high_relevance_label", "sponsor", "sponsor_display",
     "synonyms", "is_aribio", "study_url",
     "verification_status", "verification_label",
     "classification_confidence", "confidence_label",
@@ -1571,6 +1660,11 @@ SPONSOR_TYPE_COLORS = {
     "University/Institution": "#9e9e9e",
 }
 
+# "Watchlist"/"High Relevance" have no color dicts -- they render as a
+# single combined group (see render_combined_pill_group()), which,
+# like every other non-Target group, doesn't set a per-value pill
+# color (only Target's dot-legend pills do).
+
 # Verification/Confidence/Review Status filter groups, and the
 # row-detail panel's Verification/Confidence pills, removed per
 # request. verification_label/confidence_label still exist on
@@ -1583,6 +1677,9 @@ PILL_GROUPS = [
     ("status", "Status", [s for s in STATUS_COLORS if s != "Other"], STATUS_COLORS),
     ("siteDesign", "Trial Sites", ["Multicenter", "Single-site", "Unknown"], SITE_DESIGN_COLORS),
     ("sponsorType", "Sponsor Type", ["Company", "University/Institution"], SPONSOR_TYPE_COLORS),
+    # "Watchlist" and "High Relevance" are deliberately NOT here -- they
+    # render together as one combined group (see render_combined_pill_group()
+    # below), not two stacked sections.
 ]
 
 # Shortened DISPLAY text only — data-value (what filtering/sorting
@@ -1600,6 +1697,7 @@ _PILL_SHORT_LABELS = {
     "Disease-Targeted Small Molecule": "Small Molecule",
     "Cognition Enhancer": "Cognition Enh.",
     "Neuropsychiatric Symptom Tx": "Neuropsychiatric",
+    "High Relevance": "High Rel. (≥70)",
 }
 
 
@@ -1631,7 +1729,38 @@ def render_pill_group(field, title, values, colors):
         f'<div class="filter-pills{layout_class}">{pills}</div></div>'
     )
 
+
+def render_combined_pill_group(title, subgroups):
+    """Like render_pill_group(), but for pills from more than one FIELD
+    (each with its own underlying column, via FIELD_TO_COLUMN) shown
+    side by side under one shared title/section instead of each
+    getting its own -- e.g. "Watchlist" and "High Relevance" are two
+    independent, unrelated columns, but visually belong together as
+    one row of at-a-glance highlight pills. Each pill still carries
+    its OWN data-field (see togglePill()), so filtering/toggling works
+    exactly as if these were separate groups -- only the container
+    markup is shared. No per-value dot color here, matching every
+    other non-Target group (see render_pill_group(): only Target sets
+    a custom --pill-color).
+    subgroups: list of (field, values).
+    """
+    pills = "".join(
+        f'<button class="filter-pill" data-field="{field}" data-value="{v}" title="{v}" '
+        f'onclick="togglePill(this)">{_PILL_SHORT_LABELS.get(v, v)}</button>'
+        for field, values in subgroups
+        for v in values
+    )
+    return (
+        f'<div class="filter-group"><div class="filter-group-title">{title.upper()}</div>'
+        f'<div class="filter-pills">{pills}</div></div>'
+    )
+
+
 pill_groups_html = "".join(render_pill_group(f, t, v, c) for f, t, v, c in PILL_GROUPS)
+pill_groups_html += render_combined_pill_group("Highlights", [
+    ("watchlist", ["Watchlist"]),
+    ("highRelevance", ["High Relevance"]),
+])
 
 target_colors_js = json.dumps(TARGET_COLORS)
 trial_site_status_js = json.dumps(TRIAL_SITE_STATUS)
@@ -1687,6 +1816,11 @@ html_template = f"""
     border-radius: {CARD_RADIUS}; padding: 14px 20px; margin-bottom: 20px; font-size: 14px; color: #4a1230;
   }}
   .spotlight b {{ color: {ARIBIO_ACCENT}; }}
+  .spotlight-title {{ margin-bottom: 6px; }}
+  .spotlight-body {{ margin: 0; padding-left: 20px; line-height: 1.55; }}
+  .spotlight-body li {{ margin-bottom: 4px; }}
+  .spotlight-body li:last-child {{ margin-bottom: 0; }}
+  .spotlight-disclaimer {{ margin-top: 8px; font-size: 11.5px; color: #7a5568; font-style: italic; }}
 
   .kpi-row {{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px; }}
   @media (max-width: 1000px) {{ .kpi-row {{ grid-template-columns: repeat(3, 1fr); }} }}
@@ -1697,6 +1831,14 @@ html_template = f"""
   }}
   .kpi-value {{ font-size: 27px; font-weight: 700; color: {ARIBIO_BLUE}; letter-spacing: -0.01em; }}
   .kpi-label {{ font-size: 12.5px; color: #666; margin-top: 3px; }}
+  /* Only the "High relevance" tile is clickable (jumps to the table
+     with that filter applied, see showHighRelevance()) -- the other
+     KPI tiles are plain counts with no matching single-pill filter to
+     jump to, so they stay static rather than implying an interaction
+     that isn't there. */
+  .kpi-tile--clickable {{ cursor: pointer; transition: box-shadow 0.15s ease, transform 0.1s ease; }}
+  .kpi-tile--clickable:hover {{ box-shadow: {ELEVATED_SHADOW}; }}
+  .kpi-tile--clickable:active {{ transform: scale(0.98); }}
 
   .sidebar {{
     /* top: 60px is a fallback (dash-nav's 44px height + 16px gap) for the
@@ -1882,11 +2024,10 @@ html_template = f"""
      color (e.g. a dark teal or purple pill barely readable on solid
      magenta) and made every OTHER column's now-plain-black text
      (see plainPill()) unreadable too. A pale tint (the same
-     ARIBIO_ACCENT_BG used for the spotlight card) plus a colored left
-     border keeps the row recognizable without fighting any text color
-     inside it -- text stays whatever color it'd normally be. */
+     ARIBIO_ACCENT_BG used for the spotlight card) keeps the row
+     recognizable without fighting any text color inside it -- text
+     stays whatever color it'd normally be. */
   tr.aribio-row td {{ background: {ARIBIO_ACCENT_BG} !important; text-decoration: none !important; }}
-  tr.aribio-row td:first-child {{ border-left: 4px solid {ARIBIO_ACCENT}; }}
   tr.aribio-row .drug-name-toggle {{ color: {ARIBIO_ACCENT}; font-weight: 700; }}
   tr.aribio-row:hover td {{ background: {ARIBIO_ACCENT_BORDER} !important; }}
   /* plain colored text, not a badge — color set inline per-value in JS.
@@ -2123,9 +2264,22 @@ html_template = f"""
     </div>
 
     <div class="spotlight">
-      &#9733; <b>AR1001 (AriBio)</b> &mdash; Phase 3 &middot; Oral PDE5 inhibitor &middot; Amyloid + Tau + Neuroprotection &middot;
-      POLARIS AD trial &middot; 1,535 patients enrolled. Phase 2 showed improvements in pTau181, A&beta;42/40 ratio, and
-      ADAS-Cog13 vs. ADNI external controls (AAIC 2026).
+      <div class="spotlight-title">&#9733; <b>About AR1001 (AriBio)</b></div>
+      <ul class="spotlight-body">
+        <li><b>What it is:</b> an investigational, once-daily oral small molecule being developed by AriBio for
+          Alzheimer&rsquo;s disease and other neurodegenerative disorders &mdash; a potent, blood&ndash;brain
+          barrier-penetrant PDE5 inhibitor designed to modulate NO&ndash;cGMP signaling and address multiple
+          biological pathways implicated in Alzheimer&rsquo;s disease, including cerebral perfusion,
+          neuroprotection, neuroinflammation and tau phosphorylation.</li>
+        <li><b>Trial status:</b> being evaluated in the global Phase 3 POLARIS-AD trial for early Alzheimer&rsquo;s
+          disease &mdash; 1,535 patients enrolled.</li>
+        <li><b>Clinical data:</b> Phase 2 showed improvements in pTau181, A&beta;42/40 ratio, and ADAS-Cog13 vs. ADNI
+          external controls (AAIC 2026).</li>
+      </ul>
+      <div class="spotlight-disclaimer">
+        AR1001 has not been approved by the U.S. Food and Drug Administration or any other regulatory authority, and
+        its safety and efficacy have not been established.
+      </div>
     </div>
 
     <div class="kpi-row">
@@ -2133,7 +2287,9 @@ html_template = f"""
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 3']}">{phase3_agents}</div><div class="kpi-label">Phase 3 agents</div></div>
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 2']}">{phase2_agents}</div><div class="kpi-label">Phase 2 agents</div></div>
       <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 1']}">{phase1_agents}</div><div class="kpi-label">Phase 1 agents</div></div>
-      <div class="kpi-tile"><div class="kpi-value" style="color:{ARIBIO_ACCENT}">{high_relevance_agents}</div><div class="kpi-label">High relevance to AR1001 (&ge;{RELEVANCE_Y_DIVIDER})</div></div>
+      <div class="kpi-tile kpi-tile--clickable" onclick="showHighRelevance()" title="Show these drugs in the table below">
+        <div class="kpi-value" style="color:{ARIBIO_ACCENT}">{high_relevance_agents}</div><div class="kpi-label">High relevance to AR1001 (&ge;{RELEVANCE_Y_DIVIDER})</div>
+      </div>
     </div>
 
     {COMPETITIVE_ATTENTION_PLACEHOLDER}
@@ -2219,14 +2375,15 @@ html_template = f"""
   // maps a pill "field" key to the actual column name on each row
   const FIELD_TO_COLUMN = {{
     phase: 'phase_reached', drugType: 'drug_type', target: 'target', status: 'status_summary',
-    siteDesign: 'site_design_status', sponsorType: 'sponsor_type',
+    siteDesign: 'site_design_status', sponsorType: 'sponsor_type', watchlist: 'watchlist_label',
+    highRelevance: 'high_relevance_label',
   }};
 
   let sortKey = 'phase_reached';
   let sortAsc = false;
   let filters = {{
     phase: new Set(), drugType: new Set(), target: new Set(), status: new Set(),
-    siteDesign: new Set(), sponsorType: new Set(),
+    siteDesign: new Set(), sponsorType: new Set(), watchlist: new Set(), highRelevance: new Set(),
   }};
   let searchTerm = '';
   // Phase 1A: ALL_ROWS carries every resolved_drugs_df record (every
@@ -2504,9 +2661,18 @@ html_template = f"""
       const rowBg = isDiscontinued
         ? `color-mix(in srgb, #999999 8%, white)`
         : `color-mix(in srgb, ${{targetColor}} 10%, white)`;
+      // Watchlist-company sponsors (config/aribio_watchlist.yaml's
+      // competitor_companies -- the same list Needs Attention's named-
+      // competitor flagging uses) get bold ARIBIO_BLUE text, same as
+      // the AR1001 row's own name treatment -- but suppressed on
+      // discontinued rows, which stay uniformly gray (see isDiscontinued
+      // above: "gray out the entire row" applies here too).
+      const sponsorText = escapeHtml(r.sponsor_display || '');
+      const sponsorHtml = (r.is_watchlist_company && !isDiscontinued)
+        ? `<strong style="color:{ARIBIO_BLUE}">${{sponsorText}}</strong>` : sponsorText;
       const mainRow = `<tr class="${{classes.join(' ')}}" style="background-color:${{rowBg}}">
         <td><div class="drug-name-cell">${{toggle}}<div class="drug-name-wrap">${{nameBtn}}</div></div></td>
-        <td class="sponsor-cell" title="${{escapeHtml(r.sponsor || '')}}">${{r.sponsor_display || ''}}</td>
+        <td class="sponsor-cell" title="${{escapeHtml(r.sponsor || '')}}">${{sponsorHtml}}</td>
         <td>${{plainPill(r.phase_reached)}}</td>
         <td>${{plainPill(r.status_summary)}}</td>
         <td>${{pill(r.target_display, TARGET_COLORS, isDiscontinued)}}</td>
@@ -2614,6 +2780,15 @@ html_template = f"""
   function showAllPhase3() {{
     const phase3Pill = document.querySelector('.filter-pill[data-field="phase"][data-value="Phase 3"]');
     if (phase3Pill && !phase3Pill.classList.contains('active')) togglePill(phase3Pill);
+    document.getElementById('table-wrap').scrollIntoView({{ behavior: 'smooth', block: 'start' }});
+  }}
+
+  // "High relevance to AR1001" KPI tile -> same pattern as showAllPhase3():
+  // select the matching filter pill (if not already active), then jump
+  // to the table so the filtered result is immediately visible.
+  function showHighRelevance() {{
+    const pill = document.querySelector('.filter-pill[data-field="highRelevance"][data-value="High Relevance"]');
+    if (pill && !pill.classList.contains('active')) togglePill(pill);
     document.getElementById('table-wrap').scrollIntoView({{ behavior: 'smooth', block: 'start' }});
   }}
 
@@ -2739,7 +2914,7 @@ print("=== SAVED: pipeline_annotated.csv (per-trial) ===")
 # "Therapeutic Drug" only in Excel.
 drug_review_cols = [
     "display_name", "phase_reached", "drug_type", "target", "status_summary",
-    "trial_count", "max_enrollment", "dev_phase_enrollment", "sponsor_type", "sponsor", "is_aribio",
+    "trial_count", "max_enrollment", "dev_phase_enrollment", "sponsor_type", "is_watchlist_company", "sponsor", "is_aribio",
     "verification_status", "classification_confidence", "needs_manual_review",
     "confirmed_trial_count", "unverified_trial_count",
     "pipeline_scope", "scope_reason", "scope_method", "scope_confidence", "manual_review_required",

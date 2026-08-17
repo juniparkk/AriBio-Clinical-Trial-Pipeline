@@ -37,7 +37,10 @@ DEFAULT_WATCHLIST = {
     "priority_routes": ["Oral"],
     "priority_endpoints": [],
     "priority_biomarkers": [],
-    "competitor_companies": [],
+    "competitor_companies": [
+        "Annovis", "Alzheon", "Anavex", "AB Science", "Cognition Therapeutics",
+        "Eli Lilly", "Roche", "Biogen", "Eisai", "Janssen", "TauRx Therapeutics",
+    ],
     "alert_thresholds": {
         "critical_score": 80,
         "high_score": 60,

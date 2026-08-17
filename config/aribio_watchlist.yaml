@@ -84,11 +84,45 @@ priority_endpoints: []
 # "amyloid PET", "p-tau217"). Empty by default for the same reason.
 priority_biomarkers: []
 
-# Optional: company names to call out explicitly in why_it_matters
-# text when they appear as a trial's sponsor. Empty means no company
-# gets special treatment — every sponsor is scored purely on the
-# trial/drug's own factors.
-competitor_companies: []
+# Company names to flag as named competitors: a change whose trial/drug
+# sponsor matches one of these earns +20 points (competitive_attention.py's
+# POINTS_NAMED_COMPETITOR, comparable to the biggest change-type factors)
+# AND is guaranteed a slot in the "Needs Attention" panel regardless of
+# how it ranks against everything else that changed the same day (see
+# render_needs_attention_section() in competitive_attention_viz.py).
+# Empty means no company gets special treatment — every sponsor is
+# scored purely on the trial/drug's own factors, same as before.
+#
+# Matching reuses drug_classification.py's own word-overlap sponsor
+# matcher (_company_matches) — the same one official-pipeline matching
+# uses — not a literal string/substring match, so "Eli Lilly" here
+# correctly matches ct.gov's actual sponsor string "Eli Lilly and
+# Company" without false-positiving on unrelated names that merely
+# contain the same substring (e.g. a naive match on "Roche" would
+# wrongly catch "University of Rochester").
+#
+# A few entries below are written as ct.gov's REAL sponsor name where
+# that differs from the common/parent-company name, since matching
+# happens against the sponsor string actually on file, never a brand
+# name ct.gov doesn't use:
+#   - "Janssen" (not "J&J"/"Johnson & Johnson") — J&J's own AD trials
+#     are sponsored by its Janssen subsidiaries (e.g. "Janssen Research
+#     & Development, LLC"), never literally "J&J" in ct.gov's data.
+#   - "AB Science" (not "ABScience") — the real sponsor string has a
+#     space; without it, the word-overlap matcher can't line up
+#     "abscience" (one word) against "ab science" (two words).
+competitor_companies:
+  - "Annovis"
+  - "Alzheon"
+  - "Anavex"
+  - "AB Science"
+  - "Cognition Therapeutics"
+  - "Eli Lilly"
+  - "Roche"
+  - "Biogen"
+  - "Eisai"
+  - "Janssen"  # J&J's actual ct.gov sponsor entity — see note above
+  - "TauRx Therapeutics"
 
 # Thresholds driving priority_level bucketing and the "Upcoming
 # Competitive Milestones" dashboard section. All are plain integers so

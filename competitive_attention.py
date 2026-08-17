@@ -75,6 +75,12 @@
 #   + biomarker_match_points       (same mechanism, priority_biomarkers)        +5
 #   + population_match_points      (trial's Sex AND Age exactly match the
 #                                    primary AriBio asset's reference_sex/age)  +3
+#   + named_competitor_points      (the drug's/trial's sponsor word-matches a
+#                                    company on watchlist competitor_companies,
+#                                    e.g. "Eli Lilly" matching "Eli Lilly and
+#                                    Company" -- same word-overlap matcher
+#                                    drug_classification.py already uses for
+#                                    official-pipeline sponsor matching)       +20
 #
 #   - low_confidence_penalty       (classification_confidence == "low")  -10
 #
@@ -85,6 +91,7 @@
 import pandas as pd
 
 import aribio_watchlist
+from drug_classification import normalize_text, _company_matches
 
 # --- change-type point constants ---
 POINTS_RESULTS_POSTED = 30
@@ -120,6 +127,15 @@ POINTS_ROUTE_MATCH = 5
 POINTS_ENDPOINT_MATCH = 5
 POINTS_BIOMARKER_MATCH = 5
 POINTS_POPULATION_MATCH = 3
+# A change from a company on the watchlist's competitor_companies list
+# (config/aribio_watchlist.yaml) is treated as inherently worth a
+# second look, independent of what else about the change scores high
+# or low -- comparable in size to the two biggest change-type factors
+# (results_posted/phase_advancement, +30/+25) so a named competitor's
+# change reliably lands in the High/Critical tier on its own. See
+# render_needs_attention_section() in competitive_attention_viz.py for
+# how this ALSO guarantees display, not just a higher rank.
+POINTS_NAMED_COMPETITOR = 20
 
 ACTIVE_STATUSES = {"Recruiting", "Active"}
 
@@ -128,7 +144,7 @@ ATTENTION_COLUMNS = [
     "canonical_drug_name", "nct_id", "company_or_sponsor", "change_type", "old_value", "new_value",
     "highest_phase", "modality", "target_pathways", "trial_status",
     "primary_completion_date", "completion_date", "why_it_matters",
-    "relevance_factors", "source", "needs_human_review",
+    "relevance_factors", "source", "needs_human_review", "is_named_competitor",
 ]
 
 _CHANGE_TYPE_DESCRIPTIONS = {
@@ -271,8 +287,45 @@ def _timing_points(trial_info, today, thresholds):
     return factors
 
 
+def _named_competitor_match(drug_info, trial_info, watchlist):
+    """Returns the FIRST watchlist competitor_companies entry whose
+    normalized words are a subset of (or contain) this trial's/drug's
+    own sponsor's normalized words -- e.g. watchlist entry "Eli Lilly"
+    matches ct.gov sponsor string "Eli Lilly and Company". Reuses
+    drug_classification.py's own word-overlap matcher (the same one
+    official-pipeline sponsor matching uses) rather than a naive
+    substring check, which would false-positive on e.g. "Roche" inside
+    "University of Rochester" or "Biogen" inside "NeuroBiogen Co., Ltd".
+
+    A drug can have multiple semicolon-joined sponsors (see
+    resolved_drugs_df's own sponsor field) -- checks all of them, not
+    just the first.
+    """
+    companies = watchlist.get("competitor_companies") or []
+    if not companies:
+        return None
+    sponsor_text = (trial_info or {}).get("sponsor") or (drug_info or {}).get("sponsor") or ""
+    sponsor_parts = [normalize_text(p) for p in str(sponsor_text).split(";") if p.strip()]
+    sponsor_parts = [p for p in sponsor_parts if p]
+    if not sponsor_parts:
+        return None
+    for company in companies:
+        company_norm = normalize_text(company)
+        if not company_norm:
+            continue
+        for sponsor_norm in sponsor_parts:
+            if _company_matches(company_norm, sponsor_norm):
+                return company
+    return None
+
+
 def _similarity_points(drug_info, trial_info, watchlist):
     factors = []
+
+    matched_company = _named_competitor_match(drug_info, trial_info, watchlist)
+    if matched_company:
+        factors.append((POINTS_NAMED_COMPETITOR, f"named competitor on watchlist ({matched_company})"))
+
     if drug_info is not None:
         score = drug_info.get("aribio_relevance_score")
         if pd.notna(score) and score:
@@ -389,8 +442,9 @@ def score_row(change_row, drug_lookup, trial_lookup, watchlist, today):
     score = max(0, min(100, raw_score))
 
     factors = _describe_factors(change_type_factor, phase_points, phase_label, timing_factors, similarity_factors, penalty)
+    is_named_competitor = _named_competitor_match(drug_info, trial_info, watchlist) is not None
 
-    return score, factors, drug_info, trial_info
+    return score, factors, drug_info, trial_info, is_named_competitor
 
 
 def compute_attention(changes_df, drugs_df, annotated_df, trials_df, watchlist, today=None):
@@ -409,7 +463,7 @@ def compute_attention(changes_df, drugs_df, annotated_df, trials_df, watchlist, 
         if not is_therapeutic(change_row, drug_lookup, trial_lookup):
             continue
 
-        score, factors, drug_info, trial_info = score_row(change_row, drug_lookup, trial_lookup, watchlist, today)
+        score, factors, drug_info, trial_info, is_named_competitor = score_row(change_row, drug_lookup, trial_lookup, watchlist, today)
 
         highest_phase = ""
         if change_row["entity_type"] == "drug":
@@ -455,6 +509,7 @@ def compute_attention(changes_df, drugs_df, annotated_df, trials_df, watchlist, 
             "relevance_factors": "; ".join(f"{label} ({'+' if pts >= 0 else ''}{pts})" for label, pts in factors),
             "source": change_row.get("source", ""),
             "needs_human_review": needs_human_review,
+            "is_named_competitor": is_named_competitor,
         })
 
     result = pd.DataFrame(rows, columns=ATTENTION_COLUMNS)

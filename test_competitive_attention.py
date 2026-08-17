@@ -270,6 +270,84 @@ def test_configured_endpoint_present_in_outcomes_text_awards_points():
 
 
 # ------------------------------------------------------------
+# named-competitor watchlist (config/aribio_watchlist.yaml's
+# competitor_companies) -- POINTS_NAMED_COMPETITOR + is_named_competitor
+# ------------------------------------------------------------
+
+def test_named_competitor_sponsor_awards_points_and_factor():
+    # "Eli Lilly" (the watchlist entry) must match ct.gov's real sponsor
+    # string "Eli Lilly and Company" via word-overlap, not an exact
+    # string match.
+    watchlist = {**WATCHLIST, "competitor_companies": ["Eli Lilly"]}
+    changes = _changes_df([_change_row(nct_id="NCT00000001", canonical_drug_name="Donanemab", change_type="status_change")])
+    trials = _trials_df([_trial_row("NCT00000001", sponsor="Eli Lilly and Company",
+                                     primary_completion="", completion="")])
+    annotated = _annotated_df([_annotated_row("NCT00000001", developed_drug="Donanemab")])
+    result = ca.compute_attention(changes, None, annotated, trials, watchlist, today=TODAY)
+    assert "named competitor on watchlist (Eli Lilly)" in result.iloc[0]["relevance_factors"]
+    assert result.iloc[0]["is_named_competitor"] == True  # noqa: E712 (want the actual bool, not just truthiness)
+
+
+def test_named_competitor_word_overlap_avoids_false_positive():
+    # A naive substring match on "Roche" would wrongly catch "University
+    # of Rochester" -- the real word-overlap matcher must not.
+    watchlist = {**WATCHLIST, "competitor_companies": ["Roche"]}
+    changes = _changes_df([_change_row(nct_id="NCT00000001", canonical_drug_name="TestDrug", change_type="status_change")])
+    trials = _trials_df([_trial_row("NCT00000001", sponsor="University of Rochester",
+                                     primary_completion="", completion="")])
+    annotated = _annotated_df([_annotated_row("NCT00000001")])
+    result = ca.compute_attention(changes, None, annotated, trials, watchlist, today=TODAY)
+    assert "named competitor" not in result.iloc[0]["relevance_factors"]
+    assert result.iloc[0]["is_named_competitor"] == False  # noqa: E712
+
+
+def test_named_competitor_no_match_when_list_empty():
+    # Default/empty competitor_companies must never award points --
+    # matches this project's existing behavior before the watchlist
+    # was populated.
+    watchlist = {**WATCHLIST, "competitor_companies": []}
+    changes = _changes_df([_change_row(nct_id="NCT00000001", canonical_drug_name="Donanemab", change_type="status_change")])
+    trials = _trials_df([_trial_row("NCT00000001", sponsor="Eli Lilly and Company",
+                                     primary_completion="", completion="")])
+    annotated = _annotated_df([_annotated_row("NCT00000001", developed_drug="Donanemab")])
+    result = ca.compute_attention(changes, None, annotated, trials, watchlist, today=TODAY)
+    assert "named competitor" not in result.iloc[0]["relevance_factors"]
+
+
+def test_named_competitor_matches_via_drug_level_sponsor():
+    # Drug-level changes (entity_type="drug") have no trial_info at all
+    # -- the match must fall back to the drug's own (semicolon-joinable)
+    # sponsor field.
+    watchlist = {**WATCHLIST, "competitor_companies": ["Biogen"]}
+    changes = _changes_df([_change_row(entity_type="drug", nct_id="", canonical_drug_name="TestBiogenDrug",
+                                        change_type="new_drug", old_value="", new_value="Phase 2")])
+    drugs = _drugs_df([_drug_row("TestBiogenDrug", sponsor="Biogen; Some Academic Hospital")])
+    result = ca.compute_attention(changes, drugs, None, None, watchlist, today=TODAY)
+    assert "named competitor on watchlist (Biogen)" in result.iloc[0]["relevance_factors"]
+
+
+def test_needs_attention_always_shows_named_competitor_beyond_top_n():
+    # A named-competitor row ranked BELOW the natural top_n cutoff must
+    # still appear -- guaranteed display, not just a higher rank (see
+    # render_needs_attention_section()).
+    base = {c: "" for c in ca.ATTENTION_COLUMNS}
+    top_rows = [
+        {**base, "relevance_score": 90 - i, "priority_level": "High",
+         "canonical_drug_name": f"HighDrug{i}", "nct_id": f"NCT0000000{i}",
+         "is_named_competitor": False}
+        for i in range(8)
+    ]
+    low_named_row = {**base, "relevance_score": 5, "priority_level": "Low",
+                      "canonical_drug_name": "LowRankedCompetitorDrug", "nct_id": "NCT99999999",
+                      "is_named_competitor": True, "relevance_factors": "named competitor on watchlist (Eisai) (+20)"}
+    attention_df = pd.DataFrame(top_rows + [low_named_row], columns=ca.ATTENTION_COLUMNS)
+
+    html = cav.render_needs_attention_section(attention_df, top_n=8)
+    assert "LowRankedCompetitorDrug" in html
+    assert "watchlist-company change" in html
+
+
+# ------------------------------------------------------------
 # deterministic scoring
 # ------------------------------------------------------------
 
@@ -335,7 +413,7 @@ def test_output_columns_match_required_schema():
         "canonical_drug_name", "nct_id", "company_or_sponsor", "change_type", "old_value", "new_value",
         "highest_phase", "modality", "target_pathways", "trial_status",
         "primary_completion_date", "completion_date", "why_it_matters",
-        "relevance_factors", "source", "needs_human_review",
+        "relevance_factors", "source", "needs_human_review", "is_named_competitor",
     ]
 
 
@@ -1052,6 +1130,11 @@ ALL_TESTS = [
     test_missing_drug_lookup_receives_no_similarity_points,
     test_missing_outcome_text_receives_no_endpoint_or_biomarker_points,
     test_configured_endpoint_present_in_outcomes_text_awards_points,
+    test_named_competitor_sponsor_awards_points_and_factor,
+    test_named_competitor_word_overlap_avoids_false_positive,
+    test_named_competitor_no_match_when_list_empty,
+    test_named_competitor_matches_via_drug_level_sponsor,
+    test_needs_attention_always_shows_named_competitor_beyond_top_n,
     test_scoring_is_deterministic_across_repeated_runs,
     test_low_confidence_penalty_is_deterministic_and_reduces_score,
     test_priority_rank_is_assigned_in_score_descending_order,

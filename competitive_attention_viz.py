@@ -190,9 +190,32 @@ def render_needs_attention_section(attention_df, top_n=8, exclude_nct_ids=None):
         count_note = "0 items"
     else:
         top = attention_df.head(top_n)
+        # Named-competitor changes (see competitive_attention.py's
+        # POINTS_NAMED_COMPETITOR / is_named_competitor) are shown
+        # unconditionally, not just ranked higher -- a change from a
+        # watchlist company (config/aribio_watchlist.yaml's
+        # competitor_companies) must never silently fall off this
+        # panel just because more than top_n other changes happened
+        # the same day. Appended after the natural top_n (which the
+        # scoring bonus already usually puts them inside anyway), kept
+        # in their own relevance_score order.
+        # .astype(bool) rather than a raw boolean & -- is_named_competitor
+        # arrives as a real bool from compute_attention(), but a
+        # hand-built test/empty-state DataFrame may default every
+        # ATTENTION_COLUMNS field (this one included) to "", which a
+        # bare `&` can't combine with a boolean mask. bool("") is
+        # correctly False, so this treats "unset" the same as "no".
+        is_named = attention_df["is_named_competitor"].astype(bool)
+        forced = attention_df[is_named & ~attention_df.index.isin(top.index)]
         count_note = f"showing top {len(top)} of {len(attention_df)}"
+        if not forced.empty:
+            count_note += f" (+{len(forced)} watchlist-company change{'s' if len(forced) != 1 else ''} shown regardless of rank)"
         rows_html = []
-        for _, row in top.iterrows():
+        # Two separate passes (not a DataFrame concat) so this module
+        # stays free of a pandas import -- attention_df is already a
+        # DataFrame handed in by the caller; this file only ever reads
+        # from it, never builds/merges DataFrames of its own.
+        for _, row in list(top.iterrows()) + list(forced.iterrows()):
             level = row["priority_level"]
             color = _PRIORITY_COLORS.get(level, "#9e9e9e")
             nct_id = _clean(row.get("nct_id")) or ""
