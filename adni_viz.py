@@ -120,58 +120,56 @@ PAGE_CSS = f"""
     background: #f4f5f8; margin: 0; padding: 0 0 60px; color: #1a1a1a;
   }}
   {NAV_CSS}
-  main {{ margin: 0; padding: 24px 96px 0 96px; }}
-  @media (max-width: 1100px) {{ main {{ padding: 20px 20px 0; }} }}
+  main {{ margin: 0 auto; max-width: 1360px; padding: 20px 32px 0; }}
+  @media (max-width: 1100px) {{ main {{ padding: 16px 16px 0; }} }}
 
-  .page-title-block {{ margin-bottom: 6px; }}
-  .page-title {{ font-size: 22px; font-weight: 700; letter-spacing: -0.01em; color: {NAV_BG}; }}
-  .page-title-sub {{ font-size: 13px; color: #666; margin-top: 4px; line-height: 1.5; }}
+  .page-title-block {{ margin-bottom: 8px; }}
+  .page-title {{ font-size: 21px; font-weight: 700; letter-spacing: -0.01em; color: {NAV_BG}; }}
+  .page-title-sub {{ font-size: 12.5px; color: #666; margin-top: 3px; line-height: 1.5; }}
+  .page-context-note {{
+    display: flex; align-items: center; gap: 7px; margin-top: 5px; color: #536176;
+    font-size: 11.5px; line-height: 1.4;
+  }}
+  .page-context-note-icon {{ flex-shrink: 0; color: {ARIBIO_BLUE}; font-size: 12px; }}
 
-  /* Header row: description/cohort-summary/legend/population-filter on
-     the left, Disease Continuum beside it on the right, instead of
-     stacked full-width -- wraps to a single column on narrow viewports.
-     align-items: stretch (the flex default) so both columns' BOTTOMS
-     line up -- but the actual white card in each column also has to
-     grow to fill that stretched height itself (flex: 1 / height: 100%
-     below), otherwise stretching just the outer column leaves a bare
-     gray gap below a shorter card instead of the card's own bottom
-     edge lining up with its neighbor. */
-  .header-continuum-row {{ display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch; margin-bottom: 20px; }}
-  .header-left-col {{ flex: 1 1 500px; min-width: 440px; display: flex; flex-direction: column; }}
-  /* header-info-card grows to fill the stretched column; the bottom
-     (cohort) card grows within it, and the population section -- its
-     own last always-present child -- absorbs the extra height, rather
-     than leaving a blank gap after it. (The POLARIS cohort-construction
-     detail nested inside that section only appears once selected, and
-     stays collapsed until clicked open, so it never itself needs to
-     absorb stretch height.) */
-  .header-left-col .header-info-card {{ flex: 1; display: flex; flex-direction: column; }}
-  .header-info-population {{ flex: 1; }}
-  .header-info-cohort-card {{ flex: 1; display: flex; flex-direction: column; }}
-  .header-right-col {{ flex: 1 1 500px; min-width: 440px; display: flex; }}
-  /* Same idea for Disease Continuum: the panel grows, and the heatmap
-     itself (not blank space below it) absorbs the extra height. */
-  .header-right-col section.panel {{ margin-bottom: 0; flex: 1; display: flex; flex-direction: column; }}
-  .header-right-col .continuum-card {{ flex: 1; }}
-  @media (max-width: 1300px) {{ .header-continuum-row {{ flex-direction: column; }} }}
+  /* Sticky step-flow navigator (A-G) -- lets the reader always see
+     where they are in the linear Define -> Eligibility -> Profile ->
+     Cognitive -> Biomarker -> Stats -> Methods narrative and jump
+     straight to any step, instead of the old 2-column header/trajectories
+     layout that put no explicit flow structure on screen at all.
+     Active-state highlighting is scroll-driven (IntersectionObserver,
+     see initFlowNav() in the JS), not just a click state. */
+  .flow-nav {{
+    position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: 2px;
+    background: white; border: 1px solid {SURFACE_BORDER}; border-radius: {CARD_RADIUS};
+    box-shadow: {CARD_SHADOW}; padding: 6px 10px; margin: 0 0 16px; overflow-x: auto;
+    width: max-content; max-width: 100%;
+  }}
+  .flow-nav-item {{
+    display: flex; align-items: center; gap: 6px; text-decoration: none; color: #556;
+    padding: 5px 9px; border-radius: 7px; white-space: nowrap; font-size: 12px; font-weight: 600;
+    transition: background-color 0.15s ease, color 0.15s ease; flex-shrink: 0;
+  }}
+  .flow-nav-item:hover {{ background: {SURFACE_TINT}; }}
+  .flow-nav-item.active {{ background: {ARIBIO_BLUE}; color: white; }}
+  .flow-nav-item.active .flow-nav-badge {{ background: white; color: {ARIBIO_BLUE}; }}
+  .flow-nav-badge {{
+    flex-shrink: 0; width: 19px; height: 19px; border-radius: 50%; background: {SURFACE_TINT}; color: {ARIBIO_BLUE};
+    font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }}
+  .flow-nav-arrow {{ color: #d5d9e0; font-size: 12px; flex-shrink: 0; }}
+  @media (max-width: 900px) {{ .flow-nav-label {{ display: none; }} }}
 
-  /* .header-right-col (Disease Continuum) and .trajectories-row's right
-     column (Plasma Biomarker Trajectories) share the IDENTICAL
-     flex-basis/min-width and the IDENTICAL wrap breakpoint as their
-     left-column siblings, so their edges line up vertically down the
-     page and both rows switch between 1-column/2-column together,
-     never independently. */
-
-  /* Cognitive Trajectories + Plasma Biomarker Trajectories side by
-     side on wide screens -- same bottom-alignment reasoning as the
-     header row above: stretch the row, and let each panel's own card
-     grow to fill it (flex: 1 1 500px already makes each panel a flex
-     item that stretches to the row's full height under the default
-     align-items: stretch). */
-  .trajectories-row {{ display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch; margin-bottom: 20px; }}
-  .trajectories-row > section.panel {{ flex: 1 1 500px; min-width: 440px; margin-bottom: 0; display: flex; flex-direction: column; }}
-  .trajectories-row > section.panel .chart-card {{ flex: 1; }}
-  @media (max-width: 1300px) {{ .trajectories-row {{ flex-direction: column; }} }}
+  /* Section header: a colored step badge (A-G) beside the title, so
+     the page's own linear order is visible at a glance on every panel,
+     not just in the flow-nav above. */
+  .step-header {{ display: flex; align-items: center; gap: 9px; margin-bottom: 4px; }}
+  .step-header h2 {{ margin: 0; }}
+  .step-badge {{
+    flex-shrink: 0; width: 25px; height: 25px; border-radius: 50%; background: {ARIBIO_BLUE}; color: white;
+    font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }}
+  .step-badge--sub {{ background: {SURFACE_TINT}; color: {ARIBIO_BLUE}; border: 1px solid {SURFACE_BORDER}; }}
 
   /* Header info card: two cards with the SAME border/bg treatment
      (SURFACE_TINT + SURFACE_BORDER + CARD_RADIUS -- the same tokens
@@ -186,106 +184,114 @@ PAGE_CSS = f"""
      Two-tier type scale across both cards -- 13px for body/description
      copy, 15px bold for labels/headlines -- consistent WITHIN each
      tier without forcing every line to the same size. */
-  .header-info-card {{ display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }}
-
-  .header-info-top-card {{
-    background: {SURFACE_TINT}; border: 1px solid {SURFACE_BORDER}; border-radius: {CARD_RADIUS};
-    overflow: hidden;
-  }}
-  .header-info-disclaimer {{ font-size: 13px; color: #45566b; line-height: 1.55; padding: 14px 20px; }}
-
-  /* Status legend -- symbols only, full definitions on hover (title
-     attr) and in the Analysis Details disclosure. */
-  .header-info-legend {{
-    display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 13px; color: #556;
-    padding: 10px 20px 14px; border-top: 1px solid {SURFACE_BORDER};
-  }}
-  .header-info-legend .cl-item {{ cursor: help; border-bottom: 1px dotted #bbb; }}
-  .header-info-legend .cl-info-btn {{
-    background: none; border: 1px solid {SURFACE_BORDER}; border-radius: 50%; width: 20px; height: 20px;
-    color: #888; cursor: pointer; font-size: 12px; line-height: 1; font-family: inherit;
+  .header-info-card {{
+    display: block; margin: 8px 0 12px;
   }}
 
-  .header-info-cohort-card {{
-    background: {SURFACE_TINT}; border: 1px solid {SURFACE_BORDER}; border-radius: {CARD_RADIUS};
-    box-shadow: {CARD_SHADOW}; overflow: hidden;
-  }}
-  .header-info-stats {{ padding: 16px 20px; }}
-  /* Big value, small label underneath -- a stat-tile look without the
-     bordered/shadowed tile itself -- just the number/label pair,
-     floating on the shared cohort card's own background. CN/MCI/
-     Dementia values reuse GROUP_COLORS (the same blue/orange/red used
-     for these groups on every chart on this page), so the same color
-     means the same group everywhere, not just in the charts. */
-  .header-info-stat-row {{ display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }}
-  @media (max-width: 620px) {{ .header-info-stat-row {{ grid-template-columns: repeat(3, 1fr); }} }}
-  .header-info-stat-item {{ display: flex; flex-direction: column; }}
-  .header-info-stat-value {{ font-size: 22px; font-weight: 700; color: {ARIBIO_BLUE}; letter-spacing: -0.01em; line-height: 1.15; }}
-  .header-info-stat-label {{ font-size: 11.5px; color: #666; margin-top: 3px; white-space: nowrap; }}
+  /* Line-style swatches (solid/dotted/gap) for buildGroupTraces()'s three
+     connector styles -- same hover-title-for-full-definition pattern as
+     the point-status glyphs above, just a drawn line instead of a symbol
+     since none of these three are single Unicode-representable marks. */
+  .cl-item .cl-swatch {{ display: inline-block; width: 18px; vertical-align: middle; margin-right: 3px; }}
+  .cl-swatch-solid {{ height: 0; border-top: 3px solid #556; }}
+  .cl-swatch-dotted {{ height: 0; border-top: 3px dotted #556; }}
+  .cl-swatch-gap {{ display: inline-flex; justify-content: space-between; }}
+  .cl-swatch-gap span {{ width: 6px; height: 0; border-top: 3px solid #556; align-self: center; }}
+  /* In-card line-style key for Cognitive Trajectories. Plasma Biomarker
+     Trajectories renders the identical row invisibly (visibility:
+     hidden, see render_biomarker_section()) purely to reserve the same
+     height, so both cards' population-note/toggle-row/chart still
+     start at the same Y position even though only one of them shows
+     a real key. */
+  /* NOTE: this previously carried a hardcoded `margin-top: -54px` left
+     over from an earlier header layout's exact spacing -- once the
+     content above it changed (step-badge headers, tighter panel
+     padding, the new compare-mode/diagnosis-group toggle rows), that
+     fixed offset pulled this legend row up into the panel-sub text
+     above it. Normal (non-negative) flow only, below. */
+  .panel-key-row {{ display: flex; flex-direction: column; gap: 4px; align-items: stretch; font-size: 12px; color: #556; margin: 2px 0 10px; }}
+  .panel-key-row .cl-item {{ display: grid; grid-template-columns: 22px 76px minmax(0, 1fr); align-items: center; cursor: help; }}
+  .panel-key-row .cl-label {{ font-weight: 600; color: #3f4a5a; }}
+  .panel-key-row .cl-description {{ color: #6b7280; line-height: 1.25; }}
 
-  /* Population section -- the one control in this card, restructured
-     as label -> toggle -> summary (the active population's name, n,
-     and a one-line description) instead of a wordy "Filter by
-     population:" sentence. Generous padding (the actual "blank space"
-     doing the separating work) plus a hairline divider is what sets it
-     apart from the stats above it. */
-  .header-info-population {{
-    border-top: 1px solid {SURFACE_BORDER}; padding: 16px 20px;
+  .header-info-stats {{
+    background: transparent; padding: 0; overflow: visible; display: flex; align-items: stretch;
   }}
-  /* label/toggle/summary on the left, the retention badge (POLARIS
-     only) on the right -- keeps the row from reading as half-empty on
-     wide cards once the wordy "Filter by population:" sentence was
-     replaced by the shorter label -> toggle -> summary stack. */
-  .population-header-row {{ display: flex; align-items: center; justify-content: space-between; gap: 16px; }}
-  .population-main {{ flex: 1; min-width: 0; }}
-  .population-label {{
-    font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #889;
-    margin: 0 0 10px;
+  /* Big value, small label underneath, each tile separated by a
+     hairline divider (not its own bordered/shadowed box) so the row
+     reads as one connected strip of numbers rather than a grid of
+     separate cards. Every tile gets a thin colored top accent -- the
+     three diagnosis groups reuse GROUP_COLORS (the same blue/orange/
+     red used everywhere else on the page, so the same color means the
+     same group in every chart), the rest share the neutral ARIBIO_BLUE
+     already used for their value text. */
+  .header-info-stat-row {{ display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); width: 100%; gap: 10px; }}
+  .header-info-stat-item {{
+    display: flex; flex-direction: column; justify-content: center; padding: 13px 15px 11px;
+    background: white; border: 1px solid {SURFACE_BORDER}; border-radius: 10px;
+    box-shadow: {CARD_SHADOW}; position: relative; min-width: 0; overflow: hidden;
   }}
-  .population-summary {{ margin-top: 12px; }}
-  .population-summary-name {{ font-size: 15px; font-weight: 700; color: {ARIBIO_BLUE}; }}
-  .population-summary-desc {{
-    display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; row-gap: 2px;
-    font-size: 13px; color: #445; line-height: 1.4; margin-top: 2px;
+  .header-info-stat-item::before {{
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--stat-accent, {ARIBIO_BLUE});
   }}
-  /* Only relevant while POLARIS is selected -- fully removed from flow
-     (not just visually hidden) the rest of the time, unlike .is-hidden
-     elsewhere on this page, since there's no fixed-height neighbor here
-     that needs its space reserved. */
-  .view-cohort-def-link {{
-    font-size: 12.5px; font-weight: 600; color: {ARIBIO_BLUE}; cursor: pointer; white-space: nowrap;
-    text-decoration: none; border-bottom: 1px solid transparent;
+  .header-info-stat-value {{ font-size: 28px; font-weight: 750; color: {ARIBIO_BLUE}; letter-spacing: -0.025em; line-height: 1.05; }}
+  .header-info-stat-label {{
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.02em; color: #778; margin-top: 3px; white-space: nowrap;
   }}
-  .view-cohort-def-link.is-hidden {{ display: none; }}
-  .view-cohort-def-link:hover {{ border-bottom-color: {ARIBIO_BLUE}; }}
+  .acronym-key {{
+    display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center;
+    margin-top: 7px; padding: 0 2px; color: #6b7280; font-size: 10.5px; line-height: 1.4;
+  }}
+  .acronym-key b {{ color: {ARIBIO_BLUE}; font-weight: 700; }}
+  @media (max-width: 980px) {{
+    .header-info-stat-row {{ grid-template-columns: repeat(3, 1fr); }}
+  }}
+  @media (max-width: 620px) {{
+    .header-info-stat-row {{ grid-template-columns: repeat(2, 1fr); }}
+  }}
 
-  /* Retention badge -- how much POLARIS eligibility filtering narrowed
-     Overall ADNI, at a glance, without reading the funnel below.
-     White + bordered (like .meta-chip) rather than SURFACE_TINT so it
-     still stands out against the tinted cohort card behind it. Overall
-     ADNI has nothing to compare against, so it's fully removed then,
-     not just faded. */
-  .population-retention {{
-    flex-shrink: 0; text-align: center; background: white; border: 1px solid {SURFACE_BORDER};
-    border-radius: 10px; padding: 8px 18px; box-shadow: {CARD_SHADOW};
-  }}
-  .population-retention.is-hidden {{ display: none; }}
-  .population-retention-pct {{ font-size: 20px; font-weight: 700; color: {ARIBIO_BLUE}; line-height: 1.1; white-space: nowrap; }}
-  .population-retention-detail {{ font-size: 10.5px; color: #667; margin-top: 3px; line-height: 1.35; white-space: nowrap; }}
-
-  .meta-row {{ display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }}
+  .meta-row {{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }}
   .meta-chip {{
-    background: white; border: 1px solid {SURFACE_BORDER}; border-radius: 999px; padding: 6px 14px;
-    font-size: 12.5px; color: #444; box-shadow: {CARD_SHADOW}; animation: contentFadeIn 0.3s ease;
+    background: white; border: 1px solid {SURFACE_BORDER}; border-radius: 999px; padding: 5px 12px;
+    font-size: 12px; color: #444; box-shadow: {CARD_SHADOW}; animation: contentFadeIn 0.3s ease;
   }}
   .meta-chip b {{ color: {ARIBIO_BLUE}; }}
 
+  /* D + E side by side on wide screens, with "corresponding elements
+     aligned" -- both cards stretch to the row's full height
+     (align-items: stretch), and everything ABOVE the chart (subtitle,
+     toggle rows, meta-row, notes-zone) gets a matched min-height
+     between the two cards, so both charts start at the identical Y
+     position even though the two cards' actual content differs (E's
+     toggle row has one more control group -- the platform switcher --
+     than D's, and both cards' toggle rows can independently show/hide
+     a 2nd "by diagnosis group" row). The reserved heights below are
+     sized for the WORST case (2-line-wrapped toggle row + the 2nd row
+     visible) so switching either card's controls never shifts its
+     neighbor. Falls back to a plain single column below 1300px, where
+     there's no side-by-side alignment left to preserve. */
+  .trajectories-row {{ display: flex; flex-wrap: wrap; gap: 14px; align-items: stretch; margin-bottom: 14px; }}
+  .trajectories-row > section.panel {{ flex: 1 1 480px; min-width: 420px; margin-bottom: 0; display: flex; flex-direction: column; }}
+  .trajectories-row > section.panel > .panel-sub {{ min-height: 50px; }}
+  .trajectories-row .toggle-row-block {{ min-height: 106px; }}
+  .trajectories-row .meta-row {{ min-height: 30px; }}
+  .trajectories-row .notes-zone {{ min-height: 26px; }}
+  .trajectories-row > section.panel .chart-card {{ flex: 1 1 auto; }}
+  @media (max-width: 1300px) {{
+    .trajectories-row {{ flex-direction: column; }}
+    .trajectories-row > section.panel > .panel-sub,
+    .trajectories-row .toggle-row-block,
+    .trajectories-row .meta-row,
+    .trajectories-row .notes-zone {{ min-height: 0; }}
+  }}
+
   section.panel {{
     background: white; border-radius: {CARD_RADIUS}; box-shadow: {CARD_SHADOW};
-    padding: 20px 24px; margin-bottom: 20px;
+    padding: 16px 20px; margin-bottom: 14px; scroll-margin-top: 56px;
   }}
-  section.panel h2 {{ font-size: 16px; font-weight: 700; margin: 0 0 4px; color: {NAV_BG}; }}
-  .panel-sub {{ font-size: 12.5px; color: #666; margin: 0 0 16px; line-height: 1.6; }}
+  section.panel h2 {{ font-size: 15.5px; font-weight: 700; margin: 0; color: {NAV_BG}; }}
+  .panel-sub {{ font-size: 12px; color: #666; margin: 0 0 12px; line-height: 1.55; max-width: 900px; }}
 
   .toggle-group {{ display: inline-flex; border: 1px solid {SURFACE_BORDER}; border-radius: 8px; overflow: hidden; margin: 0 10px 10px 0; }}
   .toggle-btn {{
@@ -393,9 +399,9 @@ PAGE_CSS = f"""
   #biomarkerPlatformGroup {{ animation: contentFadeIn 0.3s ease; }}
 
   /* Compact per-section population label ("Population: Overall ADNI" /
-     "Population: POLARIS AD-Aligned - n=620 baseline eligible") -- the
-     explicit boundary marker required wherever a chart could otherwise
-     be mistaken for having silently switched population. */
+     "Population: Demo - n=620 baseline eligible") -- the explicit
+     boundary marker required wherever a chart could otherwise be
+     mistaken for having silently switched population. */
   .population-note {{
     font-size: 11.5px; font-weight: 700; color: {ARIBIO_BLUE}; background: {SURFACE_TINT};
     border-radius: 6px; padding: 4px 10px; display: inline-block; margin: 0 0 10px;
@@ -411,32 +417,18 @@ PAGE_CSS = f"""
     transition: opacity 0.2s ease; animation: contentFadeIn 0.3s ease;
   }}
 
-  /* POLARIS cohort-construction detail (funnel + population profile) --
-     nested inside .header-info-population, directly under the summary
-     line, with no gap and no background of its own. Its title uses
-     ARIBIO_ACCENT (the same "worth a second glance" color as the AR1001
-     star and manual-review flags elsewhere) so it still reads as its
-     own distinct sub-topic without a colored fill. Starts collapsed
-     (the standard .collapsible-body open/close animation) and only
-     expands on an explicit "View cohort definition" click
-     (togglePolarisCohortDefinition() in the JS) -- selecting Overall
-     ADNI resets it back to collapsed rather than leaving it open. */
-  #polarisCollapsibleBody h2 {{ color: {ARIBIO_ACCENT}; }}
-  .polaris-context-box {{
-    background: {SURFACE_TINT}; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #33475b;
-    line-height: 1.6; margin-bottom: 14px;
-  }}
-  .polaris-disclaimer {{ display: inline-block; margin-top: 6px; color: {ARIBIO_ACCENT}; font-weight: 600; }}
-
-  .polaris-funnel {{ display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 10px 0 20px; }}
+  /* Horizontal flow (row, wrapping), not the old vertical stack -- more
+     compact and reads left-to-right like the rest of the page's flow
+     metaphor (flow-nav above, step badges on every section). */
+  .polaris-funnel {{ display: flex; flex-wrap: wrap; align-items: stretch; gap: 3px; margin: 6px 0 2px; }}
   .funnel-step {{
-    background: {SURFACE_TINT}; border: 1px solid {SURFACE_BORDER}; border-radius: 8px; padding: 8px 18px;
-    text-align: center; min-width: 300px; animation: contentFadeIn 0.35s ease;
+    background: {SURFACE_TINT}; border: 1px solid {SURFACE_BORDER}; border-radius: 8px; padding: 7px 12px;
+    text-align: center; flex: 1 1 130px; min-width: 120px; animation: contentFadeIn 0.35s ease;
   }}
-  .funnel-step-label {{ font-size: 12px; color: #556; font-weight: 600; }}
-  .funnel-step-n {{ font-size: 18px; font-weight: 700; color: {ARIBIO_BLUE}; }}
-  .funnel-step-meta {{ font-size: 11px; color: #888; margin-top: 2px; }}
-  .funnel-arrow {{ font-size: 14px; color: #999; line-height: 1.2; padding: 2px 0; }}
+  .funnel-step-label {{ font-size: 10.5px; color: #556; font-weight: 600; line-height: 1.25; }}
+  .funnel-step-n {{ font-size: 17px; font-weight: 700; color: {ARIBIO_BLUE}; }}
+  .funnel-step-meta {{ font-size: 9.5px; color: #888; margin-top: 1px; line-height: 1.3; }}
+  .funnel-arrow {{ font-size: 13px; color: #ccc; flex-shrink: 0; align-self: center; padding: 0 1px; }}
 
   .profile-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-top: 4px; }}
   .profile-card {{ border: 1px solid {SURFACE_BORDER}; border-radius: 8px; padding: 10px 12px; animation: contentFadeIn 0.35s ease; }}
@@ -447,6 +439,25 @@ PAGE_CSS = f"""
   .profile-bar {{ flex: 1; height: 10px; border-radius: 5px; overflow: hidden; display: flex; background: #eee; }}
   .profile-bar-seg {{ height: 100%; }}
   .profile-note {{ font-size: 10.5px; color: #888; margin-top: 6px; line-height: 1.5; }}
+
+  /* A. Define Target Population -- preset picker cards. Forced to
+     exactly one row (repeat(6, 1fr), not auto-fit) so all 6 presets
+     are visible and comparable at a glance without scrolling past
+     them -- cards shrink to fit rather than wrapping to a 2nd row. */
+  .preset-card-grid {{ display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }}
+  @media (max-width: 900px) {{ .preset-card-grid {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }} }}
+  @media (max-width: 560px) {{ .preset-card-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }} }}
+  .preset-card {{
+    text-align: left; border: 1.5px solid {SURFACE_BORDER}; border-radius: 9px; padding: 9px 10px;
+    background: white; cursor: pointer; font-family: inherit; min-width: 0;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }}
+  .preset-card:hover {{ border-color: {ARIBIO_BLUE}; }}
+  .preset-card.active {{ border-color: {ARIBIO_ACCENT}; box-shadow: 0 0 0 1px {ARIBIO_ACCENT}; background: {ACCENT_BG}; }}
+  .preset-card-label {{ font-size: 12px; font-weight: 700; color: #1a1a1a; margin-bottom: 3px; line-height: 1.3; }}
+  .preset-card-desc {{ font-size: 10.5px; color: #667; line-height: 1.35; margin-bottom: 6px; }}
+  .preset-card-n {{ font-size: 11.5px; font-weight: 700; color: {ARIBIO_BLUE}; }}
+  .preset-summary-row {{ font-size: 13px; color: #333; margin-top: 12px; padding-top: 10px; border-top: 1px dashed {SURFACE_BORDER}; }}
 """
 
 
@@ -495,92 +506,161 @@ def _fmt_p(p):
 def render_header_section():
     return f"""
     <div class="header-info-card">
-      <div class="header-info-top-card">
-        <div class="header-info-section header-info-disclaimer">ADNI is an observational natural-history cohort, not a randomized clinical trial and not an external control arm. Results describe disease progression and should not be interpreted as treatment effects.</div>
-        <div class="header-info-section header-info-legend" id="statusLegend">
-          <span class="cl-item" title="Prespecified ANCOVA fit; HC3 robust inference displayed.">&#9679; Adjusted</span>
-          <span class="cl-item" title="Insufficient subgroup sample size for inferential model; descriptive value shown instead (no p-value, no adjustment).">&#9675; Descriptive</span>
-          <span class="cl-item" title="Result materially changed under HC3 and/or influence analysis.">&#9888; Sensitivity concern</span>
-          <button type="button" class="cl-info-btn" onclick="toggleCollapsible(document.getElementById('analysisDetailsToggle'))" title="Full definitions in Analysis Details">&#9432;</button>
+      <div class="header-info-stats">
+        <div class="header-info-stat-row">
+          <div class="header-info-stat-item">
+            <div class="header-info-stat-value">3,030</div>
+            <div class="header-info-stat-label">Overall ADNI participants</div>
+          </div>
+          <div class="header-info-stat-item" style="--stat-accent:{D.GROUP_COLORS['CN']}">
+            <div class="header-info-stat-value" style="color:{D.GROUP_COLORS['CN']}">1,215</div>
+            <div class="header-info-stat-label">CN</div>
+          </div>
+          <div class="header-info-stat-item" style="--stat-accent:{D.GROUP_COLORS['MCI']}">
+            <div class="header-info-stat-value" style="color:{D.GROUP_COLORS['MCI']}">1,338</div>
+            <div class="header-info-stat-label">MCI</div>
+          </div>
+          <div class="header-info-stat-item" style="--stat-accent:{D.GROUP_COLORS['Dementia']}">
+            <div class="header-info-stat-value" style="color:{D.GROUP_COLORS['Dementia']}">477</div>
+            <div class="header-info-stat-label">Dementia</div>
+          </div>
+          <div class="header-info-stat-item">
+            <div class="header-info-stat-value">7</div>
+            <div class="header-info-stat-label">endpoints</div>
+          </div>
+          <div class="header-info-stat-item">
+            <div class="header-info-stat-value">48</div>
+            <div class="header-info-stat-label">months (max)</div>
+          </div>
         </div>
       </div>
-      <div class="header-info-cohort-card">
-        <div class="header-info-section header-info-stats">
-          <div class="header-info-stat-row">
-            <div class="header-info-stat-item">
-              <div class="header-info-stat-value">3,030</div>
-              <div class="header-info-stat-label">participants</div>
-            </div>
-            <div class="header-info-stat-item">
-              <div class="header-info-stat-value" style="color:{D.GROUP_COLORS['CN']}">1,215</div>
-              <div class="header-info-stat-label">CN</div>
-            </div>
-            <div class="header-info-stat-item">
-              <div class="header-info-stat-value" style="color:{D.GROUP_COLORS['MCI']}">1,338</div>
-              <div class="header-info-stat-label">MCI</div>
-            </div>
-            <div class="header-info-stat-item">
-              <div class="header-info-stat-value" style="color:{D.GROUP_COLORS['Dementia']}">477</div>
-              <div class="header-info-stat-label">Dementia</div>
-            </div>
-            <div class="header-info-stat-item">
-              <div class="header-info-stat-value">7</div>
-              <div class="header-info-stat-label">endpoints</div>
-            </div>
-            <div class="header-info-stat-item">
-              <div class="header-info-stat-value">48</div>
-              <div class="header-info-stat-label">months (max)</div>
-            </div>
-          </div>
-        </div>
-        <div class="header-info-section header-info-population">
-          <div class="population-header-row">
-            <div class="population-main">
-              <div class="population-label">Population</div>
-              <div class="toggle-group" id="populationToggleGroup">
-                <button class="toggle-btn active" data-population="overall" onclick="setPopulation('overall')">Overall ADNI</button>
-                <button class="toggle-btn" data-population="polaris" onclick="setPopulation('polaris')">POLARIS AD&ndash;Aligned</button>
-              </div>
-              <div class="population-summary">
-                <div class="population-summary-name" id="populationSummaryName">Overall ADNI &middot; n&nbsp;=&nbsp;{OVERALL_ADNI_N:,}</div>
-                <div class="population-summary-desc">
-                  <span id="populationSummaryDesc">Broad natural-history cohort.</span>
-                  <a href="javascript:void(0)" class="view-cohort-def-link is-hidden" id="viewCohortDefLink" onclick="togglePolarisCohortDefinition()">View cohort definition</a>
-                </div>
-              </div>
-            </div>
-            <div class="population-retention is-hidden" id="populationRetention">
-              <div class="population-retention-pct" id="populationRetentionPct"></div>
-              <div class="population-retention-detail">of Overall ADNI<br><span id="populationRetentionN"></span></div>
-            </div>
-          </div>
-          <div class="collapsible-body" id="polarisCollapsibleBody">
-            <div class="polaris-context-box" id="polarisContextBox"></div>
-            <div class="polaris-funnel" id="polarisFunnel"></div>
-            <h2 style="font-size:14px;margin:4px 0 2px;">Overall ADNI vs. POLARIS AD&ndash;Aligned &mdash; Population Profile</h2>
-            <p class="panel-sub">How eligibility filtering changed the population. Descriptive comparison only &mdash; not a statistical test of comparability.</p>
-            <div class="profile-grid" id="polarisProfileGrid"></div>
-          </div>
-        </div>
+      <div class="acronym-key" aria-label="Acronym key">
+        <span><b>ADNI</b> &mdash; Alzheimer&rsquo;s Disease Neuroimaging Initiative</span>
+        <span><b>CN</b> &mdash; Cognitively Normal</span>
+        <span><b>MCI</b> &mdash; Mild Cognitive Impairment</span>
       </div>
     </div>
     """
 
 
 # ------------------------------------------------------------------
-# Disease Continuum -- Overall ADNI only (population-aware trajectories
-# do NOT extend here yet; a POLARIS-specific continuum is an explicit
-# future decision, not silently computed now). #diseaseContinuumPolarisNote
-# is shown only when POLARIS is the active population, via JS.
+# Sticky step-flow navigator -- the A-G anchors every section header's
+# own step-badge points back to. Active-state highlighting is scroll-
+# driven (see initFlowNav() in the JS), not just a click state.
+# ------------------------------------------------------------------
+
+FLOW_STEPS = [
+    ("step-a", "A", "Define"),
+    ("step-b", "B", "Eligibility"),
+    ("step-c", "C", "Profile"),
+    ("step-d", "D", "Cognitive"),
+    ("step-e", "E", "Biomarker"),
+    ("step-f", "F", "Stats"),
+    ("step-g", "G", "Methods"),
+]
+
+
+def render_flow_nav():
+    items = []
+    for i, (anchor, letter, label) in enumerate(FLOW_STEPS):
+        if i > 0:
+            items.append('<span class="flow-nav-arrow">&#8594;</span>')
+        items.append(
+            f'<a href="#{anchor}" class="flow-nav-item" data-step="{anchor}">'
+            f'<span class="flow-nav-badge">{letter}</span><span class="flow-nav-label">{html.escape(label)}</span></a>'
+        )
+    return f'<nav class="flow-nav" id="flowNav">{"".join(items)}</nav>'
+
+
+def _step_header(letter, title):
+    return f'<div class="step-header"><span class="step-badge">{letter}</span><h2>{html.escape(title)}</h2></div>'
+
+
+# ------------------------------------------------------------------
+# A. Define Target Population -- a compact, honestly-labeled preset
+# picker (NOT a live filter builder -- see the module docstring and
+# adni_eligibility.PRESET_LIBRARY). POLARIS-like eligibility is simply
+# the first card, not a structurally distinct "the only alternative"
+# population anymore.
+# ------------------------------------------------------------------
+
+
+def render_define_population_section(preset_catalog):
+    cards = []
+    for p in preset_catalog:
+        cards.append(f"""
+          <button type="button" class="preset-card" data-preset="{html.escape(p['id'])}" onclick="selectPreset('{p['id']}')">
+            <div class="preset-card-label">{html.escape(p['label'])}</div>
+            <div class="preset-card-desc">{html.escape(p['description'])}</div>
+            <div class="preset-card-n">n = {p['n']:,}</div>
+          </button>""")
+    return f"""
+    <section class="panel" id="step-a">
+      {_step_header('A', 'Define Target Population')}
+      <p class="panel-sub">Choose an eligibility preset to build a natural-history / placebo-reference population. Presets are precomputed, not a live filter &mdash; see Methods for why.</p>
+      <div class="preset-card-grid">{"".join(cards)}</div>
+      <div class="preset-summary-row" id="targetPopulationSummary"></div>
+    </section>
+    """
+
+
+# ------------------------------------------------------------------
+# B. Eligibility / Cohort Flow -- the funnel + eligible/ineligible/
+# not-evaluable breakdown, answering "how did 3,030 ADNI participants
+# become this target cohort?"
+# ------------------------------------------------------------------
+
+
+def render_eligibility_funnel_section():
+    return f"""
+    <section class="panel" id="step-b">
+      {_step_header('B', 'Eligibility / Cohort Flow')}
+      <p class="panel-sub">Each step narrows the cohort by one condition. &ldquo;Available&rdquo; steps flag missing data; other steps flag a threshold not met.</p>
+      <div id="eligibilitySummary"></div>
+      <div class="polaris-funnel" id="eligibilityFunnel"></div>
+    </section>
+    """
+
+
+# ------------------------------------------------------------------
+# C. Target Population Profile vs Overall ADNI -- compact cards by
+# default (age, MMSE, diagnosis, Centiloid), full baseline-
+# characteristics detail (sex, APOE4, biomarker availability, ADAS-
+# Cog13) available on expansion. Purely descriptive, same n/mean/sd/
+# median/percent shape the POLARIS profile already used -- no p-value.
+# ------------------------------------------------------------------
+
+
+def render_population_profile_section():
+    return f"""
+    <section class="panel" id="step-c">
+      {_step_header('C', 'Target Population Profile vs Overall ADNI')}
+      <p class="panel-sub">Baseline characteristics, descriptive only &mdash; Target is a subset of Overall ADNI, so no statistical test applies.</p>
+      <div class="profile-grid" id="populationProfileGrid"></div>
+      <div class="collapsible-toggle" onclick="toggleCollapsible(this)">
+        <span style="font-size:13px;font-weight:600;color:#2e5fa3;">More baseline characteristics (sex, APOE4, biomarker availability, ADAS-Cog13)</span>
+        <span class="chev">&#9656;</span>
+      </div>
+      <div class="collapsible-body">
+        <div class="profile-grid" id="populationProfileGridDetail" style="margin-top:12px;"></div>
+      </div>
+    </section>
+    """
+
+
+# ------------------------------------------------------------------
+# Disease Continuum -- Overall ADNI only, moved to Section G (no
+# longer interrupts the primary A-through-E workflow). Population-
+# aware trajectories do NOT extend here (an explicit future decision,
+# not silently computed now).
 # ------------------------------------------------------------------
 
 
 def render_disease_continuum_section():
     return f"""
     <section class="panel">
-      <h2>Disease Continuum</h2>
-      <p class="panel-sub"><b>Darker = greater disease-associated abnormality within each endpoint. Colors are not comparable across endpoints.</b> Row labels show which direction is worse for that endpoint. Baseline (month 0) values. Hover a cell for the exact value, n, and 95% descriptive CI.</p>
-      <div class="population-note is-hidden" id="diseaseContinuumPolarisNote">Disease Continuum shown from Overall ADNI baseline reference.</div>
+      <h2>Disease Continuum (Overall ADNI)</h2>
+      <p class="panel-sub"><b>Darker = greater abnormality (not comparable across endpoints).</b> Baseline values, Overall ADNI only.</p>
       <div id="diseaseContinuumChart" class="continuum-card"></div>
     </section>
     """
@@ -591,57 +671,106 @@ def render_disease_continuum_section():
 # ------------------------------------------------------------------
 
 
-def render_cognitive_section():
+# Line-style key row, reusing the page header's .cl-item/.cl-swatch
+# markup. It lives above the population note on
+# the Cognitive card (where the chart it explains actually is) --
+# Plasma Biomarker Trajectories carries the SAME markup, character for
+# character, but invisible (visibility:hidden, not display:none, so it
+# still reserves its layout height) purely so both cards' population-
+# note/toggle-row/meta-row/chart start at the identical Y position
+# again once Cognitive gains this extra row. See CHART_LINE_STYLE_KEY_HTML.
+CHART_LINE_STYLE_KEY_HTML = """
+        <span class="cl-item" title="Connects two Adjusted or Sensitivity-concern points -- the model-adjusted, trustworthy trend."><span class="cl-swatch cl-swatch-solid"></span><span class="cl-label">Solid line</span><span class="cl-description">Model-adjusted trend between supported points.</span></span>
+        <span class="cl-item" title="Connects a pair of points where at least one is Descriptive only -- real, connected data, just never model-adjusted."><span class="cl-swatch cl-swatch-dotted"></span><span class="cl-label">Dotted line</span><span class="cl-description">Descriptive trend; at least one point is unadjusted.</span></span>
+        <span class="cl-item" title="No connecting line -- no usable data for that month, or the neighboring point is too sparse (isolated) to connect to."><span class="cl-swatch cl-swatch-gap"><span></span><span></span></span><span class="cl-label">Gap</span><span class="cl-description">Missing or too-sparse neighboring data.</span></span>
+"""
+
+
+def render_cognitive_progression_section():
     endpoint_btns = "".join(
         f'<button class="toggle-btn{" active" if i == 0 else ""}" data-endpoint="{e["key"]}" onclick="setCognitiveEndpoint(\'{e["key"]}\')">{html.escape(e["label"])}</button>'
         for i, e in enumerate(COGNITIVE_ENDPOINTS)
     )
+    dx_btns = "".join(
+        f'<button class="toggle-btn{" active" if g == "MCI" else ""}" data-cognitive-dxgroup="{g}" onclick="setCognitiveCompareGroup(\'{g}\')">{g}</button>'
+        for g in ["CN", "MCI", "Dementia"]
+    )
     return f"""
-    <section class="panel">
-      <h2>Cognitive Trajectories</h2>
-      <p class="panel-sub">Adjusted analyses use ANCOVA with HC3 robust inference, controlling for baseline score, age, and sex. Absolute view is always descriptive (no adjustment applies to a raw score).</p>
-      <div class="population-note" id="cognitivePopulationLabel">Population: Overall ADNI</div>
-      <div class="toggle-row">
-        <div class="toggle-group">{endpoint_btns}</div>
-        <div class="toggle-group">
-          <button class="toggle-btn active" data-view="absolute" onclick="setCognitiveView('absolute')">Absolute</button>
-          <button class="toggle-btn" data-view="change" onclick="setCognitiveView('change')">Change from baseline</button>
+    <section class="panel" id="step-d">
+      {_step_header('D', 'Cognitive Progression Comparison')}
+      <p class="panel-sub">Overall ADNI and Target Population plotted together &mdash; descriptive, never tested against each other. Pooled view is always descriptive; switch to By diagnosis group for adjusted (HC3) estimates.</p>
+      <div class="panel-key-row">{CHART_LINE_STYLE_KEY_HTML}</div>
+      <div class="population-note" id="cognitivePopulationLabel">Target: none selected</div>
+      <div class="toggle-row-block">
+        <div class="toggle-row">
+          <div class="toggle-group">{endpoint_btns}</div>
+          <div class="toggle-group" id="cognitiveCompareModeGroup">
+            <button class="toggle-btn active" data-mode="pooled" onclick="setCognitiveCompareMode('pooled')">Pooled (all diagnoses)</button>
+            <button class="toggle-btn" data-mode="byGroup" onclick="setCognitiveCompareMode('byGroup')">By diagnosis group</button>
+          </div>
+          <div class="toggle-group">
+            <button class="toggle-btn" data-view="absolute" onclick="setCognitiveView('absolute')">Absolute</button>
+            <button class="toggle-btn active" data-view="change" onclick="setCognitiveView('change')">Change from baseline</button>
+          </div>
+        </div>
+        <div class="toggle-row" id="cognitiveCompareGroupRow" style="display:none;">
+          <div class="toggle-group">{dx_btns}</div>
         </div>
       </div>
-      <div id="cognitiveDataSupport" class="data-support-note" style="display:none;"></div>
-      <div id="cognitiveWarn"></div>
+      <div class="meta-row" id="cognitiveMetaRow"></div>
+      <div class="notes-zone">
+        <div id="cognitiveDataSupport" class="data-support-note" style="display:none;"></div>
+        <div id="cognitiveWarn"></div>
+      </div>
       <div id="cognitiveChart" class="chart-card"></div>
+      <div class="interpretation-note" style="visibility:hidden;" aria-hidden="true">placeholder</div>
       <div id="cognitiveKeyPattern" class="key-pattern"></div>
     </section>
     """
 
 
 # ------------------------------------------------------------------
-# Plasma Biomarker Trajectories
+# E. Biomarker Progression Comparison
 # ------------------------------------------------------------------
 
 
-def render_biomarker_section():
+def render_biomarker_progression_section():
     biomarker_btns = "".join(
         f'<button class="toggle-btn{" active" if i == 0 else ""}" data-biomarker="{b["key"]}" onclick="setBiomarker(\'{b["key"]}\')">{html.escape(b["label"])}</button>'
         for i, b in enumerate(BIOMARKER_SPECS)
     )
+    dx_btns = "".join(
+        f'<button class="toggle-btn{" active" if g == "MCI" else ""}" data-biomarker-dxgroup="{g}" onclick="setBiomarkerCompareGroup(\'{g}\')">{g}</button>'
+        for g in ["CN", "MCI", "Dementia"]
+    )
     return f"""
-    <section class="panel">
-      <h2>Plasma Biomarker Trajectories</h2>
-      <p class="panel-sub"><b>Absolute</b> shows the actual concentration at each disease stage (geometric mean, always descriptive) -- the question "how do levels differ across CN/MCI/Dementia and at each stage over time." <b>% change from baseline</b> shows adjusted (ANCOVA + HC3 95% CI) or descriptive geometric mean percent change -- the question "how does this biomarker move over time." Never combines values across assays/platforms.</p>
-      <div class="population-note" id="biomarkerPopulationLabel">Population: Overall ADNI</div>
-      <div class="toggle-row">
-        <div class="toggle-group">{biomarker_btns}</div>
-        <div class="toggle-group">
-          <button class="toggle-btn active" data-view="absolute" onclick="setBiomarkerView('absolute')">Absolute</button>
-          <button class="toggle-btn" data-view="change" onclick="setBiomarkerView('change')">% change from baseline</button>
+    <section class="panel" id="step-e">
+      {_step_header('E', 'Biomarker Progression Comparison')}
+      <p class="panel-sub">Overall ADNI and Target Population plotted together. Pooled view uses each biomarker's primary assay; never combines platforms.</p>
+      <div class="panel-key-row" style="visibility:hidden;" aria-hidden="true">{CHART_LINE_STYLE_KEY_HTML}</div>
+      <div class="population-note" id="biomarkerPopulationLabel">Target: none selected</div>
+      <div class="toggle-row-block">
+        <div class="toggle-row">
+          <div class="toggle-group">{biomarker_btns}</div>
+          <div class="toggle-group" id="biomarkerCompareModeGroup">
+            <button class="toggle-btn active" data-mode="pooled" onclick="setBiomarkerCompareMode('pooled')">Pooled (all diagnoses)</button>
+            <button class="toggle-btn" data-mode="byGroup" onclick="setBiomarkerCompareMode('byGroup')">By diagnosis group</button>
+          </div>
+          <div class="toggle-group">
+            <button class="toggle-btn" data-view="absolute" onclick="setBiomarkerView('absolute')">Absolute</button>
+            <button class="toggle-btn active" data-view="change" onclick="setBiomarkerView('change')">% change from baseline</button>
+          </div>
+          <div class="toggle-group" id="biomarkerPlatformGroup"></div>
         </div>
-        <div class="toggle-group" id="biomarkerPlatformGroup"></div>
+        <div class="toggle-row" id="biomarkerCompareGroupRow" style="display:none;">
+          <div class="toggle-group">{dx_btns}</div>
+        </div>
       </div>
       <div class="meta-row" id="biomarkerMetaRow"></div>
-      <div id="biomarkerDataSupport" class="data-support-note" style="display:none;"></div>
-      <div id="biomarkerWarn"></div>
+      <div class="notes-zone">
+        <div id="biomarkerDataSupport" class="data-support-note" style="display:none;"></div>
+        <div id="biomarkerWarn"></div>
+      </div>
       <div id="biomarkerChart" class="chart-card"></div>
       <div id="biomarkerInterpretation" class="interpretation-note"></div>
       <div id="biomarkerKeyPattern" class="key-pattern"></div>
@@ -665,14 +794,15 @@ def render_results_table_section():
             endpoint_options += f'<option value="{b["key"]}|{platform}|{analysis_type}">{html.escape(b["label"])} ({html.escape(label)})</option>'
 
     return f"""
-    <section class="panel">
+    <section class="panel" id="step-f">
       <div class="collapsible-toggle" onclick="toggleCollapsible(this)">
-        <h2 style="margin:0;">Statistical Results</h2>
+        {_step_header('F', 'Statistical Results')}
         <span class="chev">&#9656;</span>
       </div>
       <div class="collapsible-body">
-        <p class="panel-sub" style="margin-top:12px;">All p-values are exploratory and unadjusted for multiplicity. Click a row to expand HC3 / conventional / influence-sensitivity detail. Results shown here are for the Change-from-baseline (adjusted) analysis -- the Absolute view above is always descriptive and has no model to expand.</p>
+        <p class="panel-sub" style="margin-top:12px;">Exploratory p-values, unadjusted for multiplicity. Click a row for HC3/influence detail. One population at a time &mdash; not a Target-vs-Overall test.</p>
         <div class="population-note" id="resultsPopulationLabel">Population: Overall ADNI</div>
+        <div class="toggle-row"><div class="toggle-group" id="resultsPopulationGroup"></div></div>
         <select class="toggle-btn" style="width:100%;max-width:340px;padding:8px 12px;margin-bottom:12px;" id="resultsTableSelect" onchange="renderResultsTable()">{endpoint_options}</select>
         <div style="overflow-x:auto;">
           <table class="results-table" id="resultsTable">
@@ -711,12 +841,15 @@ def render_analysis_details_section():
         "<b>Sensitivity concern</b> -- An adjusted result that changed materially under HC3 robust covariance and/or influence-observation exclusion; see Statistical Results for the comparison.",
         "<b>Not available</b> -- No usable data at this group/month cell (n = 0).",
         "<b>Absolute view</b> -- Always descriptive: no ANCOVA was ever fit against an absolute score/concentration, only against change-from-baseline, so there is no adjusted absolute value to show.",
+        "<b>Solid line</b> -- Connects two adjacent Adjusted or Sensitivity-concern points. The boldest element on each chart, since it's the part of the trend backed by the prespecified model.",
+        "<b>Dotted line</b> -- Connects a pair of adjacent points where at least one is Descriptive only. Still real, connected data -- just never model-adjusted, so it's drawn lighter than a Solid line.",
+        "<b>Gap (no line)</b> -- No connecting line is drawn where a month has no usable data, or where a point is too sparse (isolated, n below the reporting threshold) to connect to its neighbor.",
     ]
     legend_html = "".join(f"<li>{item}</li>" for item in legend_items)
     return f"""
     <section class="panel">
       <div class="collapsible-toggle" id="analysisDetailsToggle" onclick="toggleCollapsible(this)">
-        <h2 style="margin:0;">Analysis Details</h2>
+        <div class="step-header"><span class="step-badge step-badge--sub">F</span><h2>Analysis Details</h2></div>
         <span class="chev">&#9656;</span>
       </div>
       <div class="collapsible-body">
@@ -749,20 +882,25 @@ METHODS_ITEMS = [
     "pTau217: ADNI4 Batch 3 reagent-lot QC-drift records excluded from primary analysis; included in a labeled sensitivity analysis.",
     "Sensitivity analyses: MMSE screening-to-baseline interval, pTau217 lot-bias inclusion, GFAP/NfL platform, HC3 vs. conventional covariance, and influential-observation exclusion.",
     "Absolute-value views (Disease Continuum, Absolute trajectories) are purely descriptive summaries (n, mean/geometric mean, one-sample t-interval 95% CI) of the same observed-case data -- no model fit, no covariate adjustment.",
+    "Target Population presets (adni_eligibility.PRESET_LIBRARY) are precomputed offline, not a live filter: the dashboard is a single static HTML file with no backend, and the governed visualization loader (adni_viz_data.py) structurally refuses any participant-level data or .parquet file -- so an arbitrary, freely-typed eligibility query can never be evaluated in the browser. Each preset is instead computed once by run_adni_target_populations.py against the locked processed/ tables, producing governed aggregate CSVs the dashboard only ever reads. Requesting a new population means adding a preset to that pipeline's config and re-running it, not typing a new query here.",
+    "Overall ADNI vs. Target Population comparisons (population profile, pooled trajectory) are purely descriptive -- no p-value or test statistic is computed anywhere for them. A Target Population is always a SUBSET of Overall ADNI (nested, non-independent samples), so no independent-samples test in this pipeline (all built for mutually-exclusive CN/MCI/Dementia comparison) is methodologically valid between them -- the same reasoning already applied to POLARIS vs. Overall ADNI before this feature existed.",
+    "Pooled (non-diagnosis-stratified) trajectories reuse the identical descriptive one-sample mean/CI primitive (adni_stats.descriptive_mean_ci()) used elsewhere in this pipeline, called on the whole population instead of split by diagnosis group -- always classified Descriptive only or Not available, never Adjusted, since there is no ANCOVA group term once there is no group split.",
 ]
 
 LIMITATIONS_ITEMS = [
     "ADNI is observational and non-randomized.",
     "Results are natural-history associations, not treatment effects.",
-    "Sample size differs substantially across endpoints and timepoints.",
+    "A Target Population is an eligibility-filtered subset of ADNI, not a propensity-score-matched cohort, and must not be interpreted as an external control arm for any specific trial.",
+    "Sample size differs substantially across endpoints and timepoints, and is smaller yet again within any Target Population preset -- some presets (e.g. the biomarker-availability preset) are expected to hit small-cell suppression earlier than Overall ADNI does.",
     "Many biomarker timepoints are descriptive only.",
     "GFAP/NfL do not support the planned month-specific ANCOVA under the prespecified sample-size rule.",
     "Different plasma biomarkers/platforms must not be directly equated.",
     "pTau217 contains a documented assay lot-bias sensitivity issue.",
     "Multiple comparisons are exploratory and unadjusted.",
     "Several fitted models show influential-observation sensitivity.",
-    "Disease Continuum heatmap coloring is normalized independently within each endpoint row and must never be compared across rows/endpoints.",
-    "Cross-study comparison with AR1001 requires caution due to cohort, assay, endpoint, and study-design differences.",
+    "Disease Continuum heatmap coloring is normalized independently within each endpoint row and must never be compared across rows/endpoints; it reflects Overall ADNI only, not the selected Target Population.",
+    "The MMSE bands used by some Target Population presets (mild-to-moderate/mild-dementia/prodromal-MCI) are general placeholders for commonly-used trial ranges, not any specific trial's actual protocol -- pending clinical review.",
+    "Cross-study comparison with any specific trial requires caution due to cohort, assay, endpoint, and study-design differences, even when a Target Population preset was chosen to approximate that trial's eligibility.",
 ]
 
 
@@ -770,9 +908,10 @@ def render_methods_limitations_section():
     methods_html = "".join(f"<li>{html.escape(m)}</li>" for m in METHODS_ITEMS)
     limitations_html = "".join(f"<li>{html.escape(l)}</li>" for l in LIMITATIONS_ITEMS)
     return f"""
-    <section class="panel">
+    {render_disease_continuum_section()}
+    <section class="panel" id="step-g">
       <div class="collapsible-toggle" onclick="toggleCollapsible(this)">
-        <h2 style="margin:0;">Methods</h2>
+        {_step_header('G', 'Methods')}
         <span class="chev">&#9656;</span>
       </div>
       <div class="collapsible-body">
@@ -781,7 +920,7 @@ def render_methods_limitations_section():
     </section>
     <section class="panel">
       <div class="collapsible-toggle" onclick="toggleCollapsible(this)">
-        <h2 style="margin:0;">Limitations</h2>
+        <div class="step-header"><span class="step-badge step-badge--sub">G</span><h2>Limitations</h2></div>
         <span class="chev">&#9656;</span>
       </div>
       <div class="collapsible-body">
@@ -933,19 +1072,26 @@ def _absolute_key_pattern(points, label, higher_is_worse):
 # estimate fields.
 # ------------------------------------------------------------------
 
-POLARIS_COHORT_LABEL = "POLARIS AD–Aligned"
-POLARIS_KEY_PATTERN_FOOTER = (
-    " This describes the 620 eligibility-filtered POLARIS AD-Aligned participants only -- "
-    "not a treatment effect, and not compared statistically to Overall ADNI."
-)
+# Generic replacement for the old POLARIS-only POLARIS_COHORT_LABEL/
+# POLARIS_KEY_PATTERN_FOOTER constants: every non-Overall-ADNI
+# population is now one of adni_eligibility.PRESET_LIBRARY's N presets
+# (POLARIS-like included, as just the first one), each with its own
+# label and n -- so this footer/label must be a function of the
+# specific preset being rendered, not a single hardcoded pair.
+def _target_population_key_pattern_footer(cohort_label, cohort_n):
+    n_text = f"{cohort_n} " if cohort_n is not None else ""
+    return (
+        f" This describes the {n_text}eligibility-filtered {cohort_label} participants only -- "
+        "not a treatment effect, and not compared statistically to Overall ADNI."
+    )
 
 
-def _polaris_sparse_tail_note(points, group_levels=None, min_n=MIN_GROUP_N_FOR_DISPLAY):
+def _target_population_sparse_tail_note(points, cohort_label, group_levels=None, min_n=MIN_GROUP_N_FOR_DISPLAY):
     """Deterministic sparse-later-follow-up clause shared by both
-    POLARIS Key Pattern variants: the latest month at which every
-    group still has n >= min_n ("well supported"), plus which group(s)
-    fall short of that threshold at the latest AVAILABLE month, if
-    different. Returns (sentence, last_well_supported_month_or_None).
+    target-population Key Pattern variants: the latest month at which
+    every group still has n >= min_n ("well supported"), plus which
+    group(s) fall short of that threshold at the latest AVAILABLE
+    month, if different. Returns (sentence, last_well_supported_month_or_None).
     """
     group_levels = group_levels or D.GROUP_ORDER
     by_month = {}
@@ -954,7 +1100,7 @@ def _polaris_sparse_tail_note(points, group_levels=None, min_n=MIN_GROUP_N_FOR_D
             by_month.setdefault(p["month"], {})[p["group"]] = p["n"]
     non_baseline_months = sorted(m for m in by_month if m > 0)
     if not non_baseline_months:
-        return "No POLARIS follow-up data are available beyond baseline.", None
+        return f"No {cohort_label} follow-up data are available beyond baseline.", None
 
     well_supported = [m for m in non_baseline_months if all(by_month[m].get(g, 0) >= min_n for g in group_levels)]
     last_available = max(non_baseline_months)
@@ -973,17 +1119,18 @@ def _polaris_sparse_tail_note(points, group_levels=None, min_n=MIN_GROUP_N_FOR_D
     return "Follow-up data are too sparse across all three groups at every timepoint beyond baseline to characterize a reliable pattern.", None
 
 
-def _polaris_change_key_pattern(points, label, higher_is_worse):
-    """POLARIS analogue of _change_key_pattern() -- prioritizes the
-    latest WELL-SUPPORTED month (not simply the latest fitted one) when
-    both exist, and always appends the sparse-tail caveat plus the
-    POLARIS population footer."""
-    sparse_note, last_wm = _polaris_sparse_tail_note(points)
+def _target_population_change_key_pattern(points, label, higher_is_worse, cohort_label, cohort_n):
+    """Target-population analogue of _change_key_pattern() -- prioritizes
+    the latest WELL-SUPPORTED month (not simply the latest fitted one)
+    when both exist, and always appends the sparse-tail caveat plus the
+    population footer, both parameterized by which preset this is."""
+    footer = _target_population_key_pattern_footer(cohort_label, cohort_n)
+    sparse_note, last_wm = _target_population_sparse_tail_note(points, cohort_label)
     fitted = [p for p in points if p["classification"] in (D.CLASS_ADJUSTED, D.CLASS_SENSITIVITY_CONCERN) and p["estimate"] is not None]
     if not fitted:
         return (
-            f"<b>Key pattern —</b> In the {POLARIS_COHORT_LABEL} cohort, no adjusted (HC3) timepoint is "
-            f"currently available for {label} under the prespecified small-cell rule. {sparse_note}{POLARIS_KEY_PATTERN_FOOTER}"
+            f"<b>Key pattern —</b> In the {cohort_label} cohort, no adjusted (HC3) timepoint is "
+            f"currently available for {label} under the prespecified small-cell rule. {sparse_note}{footer}"
         )
 
     fitted_months = {p["month"] for p in fitted}
@@ -991,8 +1138,8 @@ def _polaris_change_key_pattern(points, label, higher_is_worse):
     at_eval = {p["group"]: p for p in fitted if p["month"] == eval_month}
     if len(at_eval) < 3:
         return (
-            f"<b>Key pattern —</b> In the {POLARIS_COHORT_LABEL} cohort, HC3-adjusted results for {label} are "
-            f"not available for all three diagnosis groups at month {int(eval_month)}. {sparse_note}{POLARIS_KEY_PATTERN_FOOTER}"
+            f"<b>Key pattern —</b> In the {cohort_label} cohort, HC3-adjusted results for {label} are "
+            f"not available for all three diagnosis groups at month {int(eval_month)}. {sparse_note}{footer}"
         )
 
     values = {g: at_eval[g]["estimate"] for g in D.GROUP_ORDER}
@@ -1006,19 +1153,20 @@ def _polaris_change_key_pattern(points, label, higher_is_worse):
             f"the HC3-adjusted change from baseline is {magnitude_word} larger progressing from CN through "
             f"Dementia by month {int(eval_month)}, consistent with the expected disease-severity gradient"
         )
-    sentence = f"<b>Key pattern —</b> In the {POLARIS_COHORT_LABEL} cohort, {pattern}."
+    sentence = f"<b>Key pattern —</b> In the {cohort_label} cohort, {pattern}."
     if concern:
         sentence += " At least one group at this timepoint is flagged as a sensitivity concern -- see Statistical Results."
-    sentence += f" {sparse_note}{POLARIS_KEY_PATTERN_FOOTER}"
+    sentence += f" {sparse_note}{footer}"
     return sentence
 
 
-def _polaris_absolute_key_pattern(points, label, higher_is_worse):
-    """POLARIS analogue of _absolute_key_pattern() -- same baseline-
-    separation-then-persistence structure, with the shared sparse-tail
-    helper and the POLARIS population footer. Never turns a
-    descriptive-only later value into a stronger claim than the
-    baseline-separation finding itself."""
+def _target_population_absolute_key_pattern(points, label, higher_is_worse, cohort_label, cohort_n):
+    """Target-population analogue of _absolute_key_pattern() -- same
+    baseline-separation-then-persistence structure, with the shared
+    sparse-tail helper and the population footer, both parameterized by
+    which preset this is. Never turns a descriptive-only later value
+    into a stronger claim than the baseline-separation finding itself."""
+    footer = _target_population_key_pattern_footer(cohort_label, cohort_n)
     by_month = {}
     for p in points:
         if p["estimate"] is not None:
@@ -1027,35 +1175,35 @@ def _polaris_absolute_key_pattern(points, label, higher_is_worse):
     baseline = by_month.get(0, {})
     if len(baseline) < 3:
         return (
-            f"<b>Key pattern —</b> In the {POLARIS_COHORT_LABEL} cohort, baseline data for {label} are not "
-            f"available for all three groups, so a reliable CN/MCI/Dementia comparison cannot be made.{POLARIS_KEY_PATTERN_FOOTER}"
+            f"<b>Key pattern —</b> In the {cohort_label} cohort, baseline data for {label} are not "
+            f"available for all three groups, so a reliable CN/MCI/Dementia comparison cannot be made.{footer}"
         )
 
     baseline_values = {g: baseline[g]["estimate"] for g in D.GROUP_ORDER}
     ordered, magnitude = _classify_group_separation(baseline_values, higher_is_worse)
-    sparse_note, _ = _polaris_sparse_tail_note(points)
+    sparse_note, _ = _target_population_sparse_tail_note(points, cohort_label)
     if not ordered:
         return (
-            f"<b>Key pattern —</b> In the {POLARIS_COHORT_LABEL} cohort, baseline {label} does not show a "
-            f"consistent CN &rarr; MCI &rarr; Dementia separation. {sparse_note}{POLARIS_KEY_PATTERN_FOOTER}"
+            f"<b>Key pattern —</b> In the {cohort_label} cohort, baseline {label} does not show a "
+            f"consistent CN &rarr; MCI &rarr; Dementia separation. {sparse_note}{footer}"
         )
 
     magnitude_word = "markedly" if magnitude == "marked" else "modestly"
     sentence = (
-        f"<b>Key pattern —</b> In the {POLARIS_COHORT_LABEL} cohort, baseline {label} remains {magnitude_word} "
+        f"<b>Key pattern —</b> In the {cohort_label} cohort, baseline {label} remains {magnitude_word} "
         f"separated across CN, MCI and Dementia, consistent with the expected disease-severity gradient."
     )
-    sentence += f" {sparse_note}{POLARIS_KEY_PATTERN_FOOTER}"
+    sentence += f" {sparse_note}{footer}"
     return sentence
 
 
-def build_cognitive_data_support_summary(points):
-    """Compact, deterministic data-support line for the POLARIS
+def build_cognitive_data_support_summary(points, cohort_label="this population"):
+    """Compact, deterministic data-support line for a target-population
     cognitive chart -- reuses the identical sparse-tail logic behind
-    _polaris_sparse_tail_note(), phrased for a status line rather than
-    a Key Pattern sentence. No endpoint-specific text is hardcoded --
-    everything is derived from the points' own n values."""
-    note, last_wm = _polaris_sparse_tail_note(points)
+    _target_population_sparse_tail_note(), phrased for a status line
+    rather than a Key Pattern sentence. No endpoint-specific text is
+    hardcoded -- everything is derived from the points' own n values."""
+    note, last_wm = _target_population_sparse_tail_note(points, cohort_label)
     if last_wm is not None:
         by_month = {}
         for p in points:
@@ -1130,9 +1278,13 @@ def build_biomarker_absolute_support_summary(points, label, min_n=MIN_GROUP_N_FO
     return f"{label}: absolute levels are descriptive with limited support (n<{min_n} per group) at every follow-up month."
 
 
-def build_key_patterns(data, population="overall"):
-    change_fn = _change_key_pattern if population == "overall" else _polaris_change_key_pattern
-    absolute_fn = _absolute_key_pattern if population == "overall" else _polaris_absolute_key_pattern
+def build_key_patterns(data, population="overall", cohort_label=None, cohort_n=None):
+    if population == "overall":
+        change_fn = lambda pts, label, hiw: _change_key_pattern(pts, label, hiw)
+        absolute_fn = lambda pts, label, hiw: _absolute_key_pattern(pts, label, hiw)
+    else:
+        change_fn = lambda pts, label, hiw: _target_population_change_key_pattern(pts, label, hiw, cohort_label, cohort_n)
+        absolute_fn = lambda pts, label, hiw: _target_population_absolute_key_pattern(pts, label, hiw, cohort_label, cohort_n)
 
     cognitive_change, cognitive_absolute = {}, {}
     for e in COGNITIVE_ENDPOINTS:
@@ -1158,14 +1310,14 @@ def build_key_patterns(data, population="overall"):
     }
 
 
-def build_polaris_cognitive_data_support(data):
-    """Cognitive data-support summaries -- POLARIS only (Overall ADNI's
-    cognitive section is unchanged by this redesign; see
-    render_cognitive_section, out of scope for the biomarker redesign)."""
+def build_target_population_cognitive_data_support(data, cohort_label):
+    """Cognitive data-support summaries for one target-population preset
+    (Overall ADNI's cognitive section has no data-support line; see
+    render_cognitive_section)."""
     cognitive = {}
     for e in COGNITIVE_ENDPOINTS:
         pts = D.build_cognitive_chart_data(data, e["key"], "primary")
-        cognitive[e["key"]] = build_cognitive_data_support_summary(pts)
+        cognitive[e["key"]] = build_cognitive_data_support_summary(pts, cohort_label)
     return cognitive
 
 
@@ -1242,7 +1394,17 @@ def build_population_payload(data):
     }
 
 
-def build_payload(data, polaris_data=None, polaris_traj_data=None):
+def build_payload(data, target_population_data=None):
+    """`target_population_data`: adni_viz_data.load_target_population_data()'s
+    output (the 7 governed adni_target_population_*.csv tables), or None
+    for a standalone `python3 adni_viz.py` run with no target-population
+    stage output yet -- degrades to Overall-ADNI-only, same honest-empty-
+    state convention used throughout this dashboard suite. Every preset
+    in adni_eligibility.PRESET_LIBRARY (POLARIS-like included, as simply
+    the first one) becomes one populations["target_<id>"] entry, built
+    identically via build_population_payload() -- there is no longer a
+    separate hardcoded "polaris" population key or POLARIS-specific
+    payload path."""
     disease_continuum = []
     for row in D.build_disease_continuum_data(data):
         meta = DISEASE_CONTINUUM_META[row["key"]]
@@ -1264,7 +1426,7 @@ def build_payload(data, polaris_data=None, polaris_traj_data=None):
     populations = {"overall": overall_population}
 
     payload = {
-        "groupColors": D.GROUP_COLORS,
+        "groupColors": {**D.GROUP_COLORS, "Overall ADNI": "#6b7280", "Target Population": ARIBIO_ACCENT},
         "groupOrder": D.GROUP_ORDER,
         "targetMonths": D.TARGET_MONTHS,
         "minGroupN": MIN_GROUP_N_FOR_DISPLAY,
@@ -1272,25 +1434,53 @@ def build_payload(data, polaris_data=None, polaris_traj_data=None):
         "biomarkerSpecs": BIOMARKER_SPECS,
         "diseaseContinuum": disease_continuum,
         "populations": populations,
+        "presetCatalog": [],
+        "targetPopulations": {},
     }
-    if polaris_data is not None:
-        funnel = D.build_polaris_funnel(polaris_data["attrition"])
-        payload["polaris"] = {
-            "funnel": funnel,
-            "profile": D.build_polaris_profile(polaris_data["profile"]),
-        }
-        if polaris_traj_data is not None:
-            polaris_n = funnel[-1]["remaining_n"] if funnel else None
-            polaris_population = build_population_payload(polaris_traj_data)
-            polaris_population.update({
-                "label": POLARIS_COHORT_LABEL,
-                "populationNote": f"n={polaris_n} baseline eligible" if polaris_n is not None else "",
-                "n": polaris_n,
-                "keyPatterns": build_key_patterns(polaris_traj_data, population="polaris"),
-                "cognitiveDataSupport": build_polaris_cognitive_data_support(polaris_traj_data),
-                "biomarkerDataSupport": build_biomarker_data_support(polaris_traj_data),
+
+    if target_population_data is not None:
+        preset_catalog = D.build_preset_catalog(target_population_data["presets"])
+        payload["presetCatalog"] = preset_catalog
+
+        primary_platform_by_biomarker = {b["key"]: b["platforms"][0][0] for b in BIOMARKER_SPECS}
+
+        for preset in preset_catalog:
+            preset_id = preset["id"]
+            pop_key = f"target_{preset_id}"
+
+            attrition_sub = target_population_data["attrition"]
+            attrition_sub = attrition_sub[attrition_sub["preset_id"] == preset_id].drop(columns=["preset_id"])
+            profile_sub = target_population_data["profile"]
+            profile_sub = profile_sub[profile_sub["preset_id"] == preset_id].drop(columns=["preset_id"])
+            funnel = D.build_target_population_funnel(attrition_sub)
+            profile = D.build_target_population_profile(profile_sub)
+
+            preset_view = D.preset_data_view(target_population_data, preset_id)
+            preset_population = build_population_payload(preset_view)
+            preset_population.update({
+                "label": preset["label"],
+                "populationNote": f"n={preset['n']} eligible",
+                "n": preset["n"],
+                "keyPatterns": build_key_patterns(preset_view, population="target", cohort_label=preset["label"], cohort_n=preset["n"]),
+                "cognitiveDataSupport": build_target_population_cognitive_data_support(preset_view, preset["label"]),
+                "biomarkerDataSupport": build_biomarker_data_support(preset_view),
             })
-            populations["polaris"] = polaris_population
+            populations[pop_key] = preset_population
+
+            pooled = {}
+            for e in COGNITIVE_ENDPOINTS:
+                pooled[e["key"]] = D.build_pooled_trajectory_chart_data(target_population_data["pooled"], preset_id, e["key"])
+            for b in BIOMARKER_SPECS:
+                pooled[b["key"]] = D.build_pooled_trajectory_chart_data(
+                    target_population_data["pooled"], preset_id, b["key"], primary_platform_by_biomarker[b["key"]]
+                )
+
+            payload["targetPopulations"][preset_id] = {
+                "id": preset_id, "label": preset["label"], "description": preset["description"],
+                "n": preset["n"], "isPolarisEquivalent": preset["isPolarisEquivalent"],
+                "populationKey": pop_key,
+                "funnel": funnel, "profile": profile, "pooled": pooled,
+            }
     return payload
 
 
@@ -1661,79 +1851,70 @@ const CATEGORICAL_DISPLAY = {
   },
 };
 
-let currentPopulation = "overall";
-let polarisRendered = false;
-
-// The ONLY place population selection touches the trajectory/results
-// charts: everything downstream (buildGroupTraces, key patterns,
-// results table) reads DATA.populations[currentPopulation] -- there is
+// ------------------------------------------------------------------
+// Target Population selection (Section A: Define Target Population).
+// Every criterion/funnel/profile/trajectory number was already
+// computed server-side by run_adni_target_populations.py -- there is
 // no in-browser filtering, refitting, or participant-level access
-// anywhere in this file; every number was already computed server-side
-// (adni_viz_data.polaris_data_view() / run_adni_polaris_trajectories.py)
-// and simply selected here.
-function currentPop() {
-  return DATA.populations[currentPopulation];
+// anywhere in this file; selecting a preset just re-indexes into the
+// already-baked DATA.targetPopulations[id] / DATA.populations[...]
+// payload, exactly the same "no client-side computation" contract the
+// old Overall/POLARIS toggle already followed.
+// ------------------------------------------------------------------
+
+let selectedPresetId = (DATA.presetCatalog[0] && DATA.presetCatalog[0].id) || null;
+let resultsPopulationKey = "overall";
+
+function currentTargetEntry() {
+  return selectedPresetId ? DATA.targetPopulations[selectedPresetId] : null;
 }
 
-function populationLabelText(pop) {
-  return "Population: " + pop.label + (pop.populationNote ? " · " + pop.populationNote : "");
-}
+function selectPreset(presetId) {
+  selectedPresetId = presetId;
+  document.querySelectorAll('[data-preset]').forEach(function (b) { b.classList.toggle('active', b.dataset.preset === presetId); });
 
-const POPULATION_SUMMARY_DESC = {
-  overall: "Broad natural-history cohort.",
-  polaris: "Trial-aligned cohort based on POLARIS eligibility criteria.",
-};
-
-function setPopulation(pop) {
-  currentPopulation = pop;
-  document.querySelectorAll('[data-population]').forEach(function (b) { b.classList.toggle('active', b.dataset.population === pop); });
-
-  const pd = currentPop();
-  document.getElementById("populationSummaryName").textContent = pd.label + " · n = " + pd.n.toLocaleString();
-  document.getElementById("populationSummaryDesc").textContent = POPULATION_SUMMARY_DESC[pop] || "";
-
-  // Retention badge -- only meaningful for POLARIS (a fraction of
-  // Overall ADNI); fully removed, not just faded, when Overall ADNI
-  // itself is selected since there's nothing to compare it to.
-  if (pop === "polaris") {
-    const overallN = DATA.populations.overall.n;
-    document.getElementById("populationRetentionPct").textContent = (pd.n / overallN * 100).toFixed(1) + "%";
-    document.getElementById("populationRetentionN").textContent = pd.n.toLocaleString() + " / " + overallN.toLocaleString();
-  }
-  document.getElementById("populationRetention").classList.toggle("is-hidden", pop !== "polaris");
-
-  // visibility, not display -- the note always reserves its own line
-  // in Disease Continuum's card so switching population can't grow it
-  // (and its stretch-aligned header-card sibling) taller.
-  document.getElementById("diseaseContinuumPolarisNote").classList.toggle("is-hidden", pop !== "polaris");
-
-  // The "View cohort definition" link only exists for POLARIS -- fully
-  // removed (see .view-cohort-def-link.is-hidden), not just visually
-  // disabled. Leaving POLARIS always resets its detail back to
-  // collapsed, so re-selecting POLARIS later never shows it already
-  // expanded.
-  document.getElementById("viewCohortDefLink").classList.toggle("is-hidden", pop !== "polaris");
-  document.getElementById("viewCohortDefLink").textContent = "View cohort definition";
-  document.getElementById("polarisCollapsibleBody").classList.remove("open");
-
-  if (pop === "polaris" && !polarisRendered) {
-    renderPolarisPanel();
-    polarisRendered = true;
+  const entry = currentTargetEntry();
+  const overallN = DATA.populations.overall.n;
+  if (entry) {
+    document.getElementById("targetPopulationSummary").innerHTML =
+      "<b>" + entry.label + "</b> &middot; n = " + entry.n.toLocaleString() +
+      " (" + (entry.n / overallN * 100).toFixed(1) + "% of Overall ADNI)";
   }
 
-  const label = populationLabelText(currentPop());
+  renderEligibilityFunnel();
+  renderPopulationProfile();
+
+  const label = "Target: " + (entry ? entry.label : "none selected");
   document.getElementById("cognitivePopulationLabel").innerHTML = fadeSpan(label);
   document.getElementById("biomarkerPopulationLabel").innerHTML = fadeSpan(label);
-  document.getElementById("resultsPopulationLabel").innerHTML = fadeSpan(label);
 
   renderCognitiveChart();
   renderBiomarkerChart();
   renderResultsTable();
 }
 
-function togglePolarisCohortDefinition() {
-  const open = document.getElementById("polarisCollapsibleBody").classList.toggle("open");
-  document.getElementById("viewCohortDefLink").textContent = open ? "Hide cohort definition" : "View cohort definition";
+function setResultsPopulation(popKey) {
+  resultsPopulationKey = popKey;
+  document.querySelectorAll('[data-results-population]').forEach(function (b) { b.classList.toggle('active', b.dataset.resultsPopulation === popKey); });
+  const pd = DATA.populations[popKey];
+  document.getElementById("resultsPopulationLabel").innerHTML = fadeSpan("Population: " + pd.label + (pd.populationNote ? " · " + pd.populationNote : ""));
+  renderResultsTable();
+}
+
+function resultsPopulationOptions() {
+  const entry = currentTargetEntry();
+  const opts = [{ key: "overall", label: "Overall ADNI" }];
+  if (entry) opts.push({ key: entry.populationKey, label: entry.label });
+  return opts;
+}
+
+function renderResultsPopulationToggle() {
+  const opts = resultsPopulationOptions();
+  if (!opts.some(function (o) { return o.key === resultsPopulationKey; })) resultsPopulationKey = "overall";
+  document.getElementById("resultsPopulationGroup").innerHTML = opts.map(function (o) {
+    return '<button class="toggle-btn' + (o.key === resultsPopulationKey ? ' active' : '') + '" data-results-population="' + o.key +
+      '" onclick="setResultsPopulation(\'' + o.key + '\')">' + o.label + '</button>';
+  }).join("");
 }
 
 function fmtNumericSummary(s) {
@@ -1742,13 +1923,13 @@ function fmtNumericSummary(s) {
   return '<span class="profile-numeric-value">' + fmtNum(s.mean, 1) + sdStr + " (n=" + s.n.toLocaleString() + ")</span>";
 }
 
-function buildProfileGridHtml(profile) {
+function buildProfileGridHtml(profile, targetLabel) {
   return profile.map(function (v) {
     if (v.kind === "numeric") {
       return '<div class="profile-card">' +
         '<div class="profile-var-label">' + v.variable + '</div>' +
         '<div class="profile-pop-row"><span class="profile-pop-tag">Overall ADNI</span>' + fmtNumericSummary(v.overall) + '</div>' +
-        '<div class="profile-pop-row"><span class="profile-pop-tag">POLARIS</span>' + fmtNumericSummary(v.polaris) + '</div>' +
+        '<div class="profile-pop-row"><span class="profile-pop-tag">' + targetLabel + '</span>' + fmtNumericSummary(v.polaris) + '</div>' +
         (v.note ? '<div class="profile-note">' + v.note + '</div>' : '') +
         '</div>';
     }
@@ -1770,28 +1951,49 @@ function buildProfileGridHtml(profile) {
     }).join(" &nbsp; ");
     const apoeNote = v.variable === "APOE4 carrier"
       ? '<div class="profile-note">APOE4-carrier prevalence differs between the overall and eligibility-filtered populations.</div>' : "";
+    if (!presentLevels.length) {
+      // Availability-flag variables (pTau181 available, etc.) aren't in
+      // CATEGORICAL_DISPLAY's curated order/color map -- fall back to
+      // whatever levels are actually present (usually True/False).
+      const fallbackLevels = v.levels.map(function (l) { return l.level; });
+      const fallbackBar = function (popKey) {
+        return fallbackLevels.map(function (lvl) {
+          const entry = v.levels.find(function (l) { return l.level === lvl; });
+          const pct = entry[popKey].percent;
+          if (pct === null || pct === undefined) return "";
+          const color = lvl === "True" ? "#2e5fa3" : "#c8ccd4";
+          return '<div class="profile-bar-seg" style="width:' + pct + '%;background:' + color + ';" title="' + lvl + " " + pct + '%"></div>';
+        }).join("");
+      };
+      const fallbackLegend = fallbackLevels.map(function (lvl) {
+        const color = lvl === "True" ? "#2e5fa3" : "#c8ccd4";
+        return '<span style="color:' + color + ';">&#9679;</span> ' + lvl;
+      }).join(" &nbsp; ");
+      return '<div class="profile-card">' +
+        '<div class="profile-var-label">' + v.variable + '</div>' +
+        '<div class="profile-pop-row"><span class="profile-pop-tag">Overall ADNI</span><div class="profile-bar">' + fallbackBar("overall") + '</div></div>' +
+        '<div class="profile-pop-row"><span class="profile-pop-tag">' + targetLabel + '</span><div class="profile-bar">' + fallbackBar("polaris") + '</div></div>' +
+        '<div class="profile-note">' + fallbackLegend + '</div>' +
+        '</div>';
+    }
     return '<div class="profile-card">' +
       '<div class="profile-var-label">' + v.variable + '</div>' +
       '<div class="profile-pop-row"><span class="profile-pop-tag">Overall ADNI</span><div class="profile-bar">' + barHtml("overall") + '</div></div>' +
-      '<div class="profile-pop-row"><span class="profile-pop-tag">POLARIS</span><div class="profile-bar">' + barHtml("polaris") + '</div></div>' +
+      '<div class="profile-pop-row"><span class="profile-pop-tag">' + targetLabel + '</span><div class="profile-bar">' + barHtml("polaris") + '</div></div>' +
       '<div class="profile-note">' + legendHtml + '</div>' +
       apoeNote +
       '</div>';
   }).join("");
 }
 
-function renderPolarisPanel() {
-  const funnel = DATA.polaris.funnel;
-  const finalStep = funnel[funnel.length - 1];
-
-  document.getElementById("polarisContextBox").innerHTML =
-    "<b>" + finalStep.remaining_n.toLocaleString() + "</b> ADNI participants meet the validated eligibility definition: " +
-    "baseline MMSE &ge;20 and QC-passed amyloid PET Centiloid &ge;30 within &plusmn;90 days of clinical baseline.<br>" +
-    '<span class="polaris-disclaimer">This cohort has been eligibility-filtered only. It has <b>not</b> been propensity-score ' +
-    "matched to an AR1001 trial cohort and should not be interpreted as an external control.</span>";
+function renderEligibilityFunnel() {
+  const entry = currentTargetEntry();
+  const container = document.getElementById("eligibilityFunnel");
+  const summaryEl = document.getElementById("eligibilitySummary");
+  if (!entry) { container.innerHTML = ""; summaryEl.innerHTML = ""; return; }
 
   let funnelHtml = "";
-  funnel.forEach(function (s, i) {
+  entry.funnel.forEach(function (s, i) {
     funnelHtml += '<div class="funnel-step"><div class="funnel-step-label">' + s.step + '</div>' +
       '<div class="funnel-step-n">' + s.remaining_n.toLocaleString() + "</div>" +
       (i > 0
@@ -1799,11 +2001,33 @@ function renderPolarisPanel() {
           (s.percent_retained_of_previous === null ? "—" : s.percent_retained_of_previous + "%") + " retained from previous step</div>"
         : "") +
       "</div>";
-    if (i < funnel.length - 1) funnelHtml += '<div class="funnel-arrow">&#8595;</div>';
+    if (i < entry.funnel.length - 1) funnelHtml += '<div class="funnel-arrow">&#8594;</div>';
   });
-  document.getElementById("polarisFunnel").innerHTML = funnelHtml;
+  container.innerHTML = funnelHtml;
 
-  document.getElementById("polarisProfileGrid").innerHTML = buildProfileGridHtml(DATA.polaris.profile);
+  const overallN = DATA.populations.overall.n;
+  const dxProfile = entry.profile.find(function (p) { return p.variable === "Baseline diagnosis"; });
+  const dxHtml = dxProfile ? dxProfile.levels.map(function (l) {
+    const s = l.polaris;
+    return '<div class="meta-chip">' + l.level + ': <b>' + (s.n === null ? "—" : s.n.toLocaleString()) + '</b>' +
+      (s.percent !== null ? " (" + s.percent + "%)" : "") + '</div>';
+  }).join("") : "";
+  summaryEl.innerHTML =
+    '<p class="panel-sub" style="margin:0 0 8px;"><b>' + entry.n.toLocaleString() + '</b> of ' + overallN.toLocaleString() +
+    ' (' + (entry.n / overallN * 100).toFixed(1) + '%) meet the criteria.</p>' +
+    '<div class="meta-row">' + dxHtml + '</div>';
+}
+
+function renderPopulationProfile() {
+  const entry = currentTargetEntry();
+  const container = document.getElementById("populationProfileGrid");
+  const detailContainer = document.getElementById("populationProfileGridDetail");
+  if (!entry) { container.innerHTML = ""; if (detailContainer) detailContainer.innerHTML = ""; return; }
+  const compactVars = ["Baseline age (years)", "Baseline MMSE", "Baseline diagnosis", "Baseline Centiloid"];
+  const compact = entry.profile.filter(function (p) { return compactVars.indexOf(p.variable) !== -1; });
+  const rest = entry.profile.filter(function (p) { return compactVars.indexOf(p.variable) === -1; });
+  container.innerHTML = buildProfileGridHtml(compact, entry.label);
+  if (detailContainer) detailContainer.innerHTML = buildProfileGridHtml(rest, entry.label);
 }
 
 // ------------------------------------------------------------------
@@ -1867,7 +2091,9 @@ function renderDiseaseContinuum() {
 // ------------------------------------------------------------------
 
 let cognitiveEndpointKey = DATA.cognitiveEndpoints[0].key;
-let cognitiveView = "absolute";
+let cognitiveView = "change";
+let cognitiveCompareMode = "pooled";
+let cognitiveCompareGroup = "MCI";
 
 function setCognitiveEndpoint(key) {
   cognitiveEndpointKey = key;
@@ -1882,49 +2108,107 @@ function setCognitiveView(view) {
       b.classList.toggle('active', b.dataset.view === view);
     }
   });
+  // Absolute has no pooled counterpart (see setCognitiveCompareMode's
+  // comment) -- selecting it implies "by diagnosis group" automatically
+  // rather than silently doing nothing in pooled mode.
+  if (view === 'absolute' && cognitiveCompareMode === 'pooled') { setCognitiveCompareMode('byGroup'); return; }
   renderCognitiveChart();
 }
 
-function renderCognitiveChart() {
-  const pop = currentPop();
-  const spec = DATA.cognitiveEndpoints.find(function (e) { return e.key === cognitiveEndpointKey; });
-  const seriesSource = cognitiveView === "absolute" ? pop.cognitiveAbsolute : pop.cognitiveChange;
-  const series = seriesSource[cognitiveEndpointKey];
-  const pointsByGroup = {};
-  DATA.groupOrder.forEach(function (g) { pointsByGroup[g] = series.filter(function (p) { return p.group === g; }); });
+// Pooled trajectories (run_adni_target_populations.py's
+// compute_pooled_trajectory_rows()) are computed ONLY on the change-
+// from-baseline scale -- pooling raw Absolute scores across very
+// different baseline severities is a materially different, less
+// meaningful question than pooling their CHANGE, so it was never
+// computed; the Absolute view is only ever available per-diagnosis-
+// group (byGroup mode), same as before this feature.
+function setCognitiveCompareMode(mode) {
+  cognitiveCompareMode = mode;
+  document.querySelectorAll('#cognitiveCompareModeGroup .toggle-btn').forEach(function (b) { b.classList.toggle('active', b.dataset.mode === mode); });
+  document.getElementById('cognitiveCompareGroupRow').style.display = mode === 'byGroup' ? '' : 'none';
+  if (mode === 'pooled' && cognitiveView === 'absolute') { setCognitiveView('change'); return; }
+  renderCognitiveChart();
+}
 
-  const supportDiv = document.getElementById("cognitiveDataSupport");
-  const supportText = pop.cognitiveDataSupport && pop.cognitiveDataSupport[cognitiveEndpointKey];
-  if (supportText) {
-    supportDiv.innerHTML = fadeSpan(supportText);
-    supportDiv.style.display = "";
-  } else {
-    supportDiv.style.display = "none";
+function setCognitiveCompareGroup(g) {
+  cognitiveCompareGroup = g;
+  document.querySelectorAll('[data-cognitive-dxgroup]').forEach(function (b) { b.classList.toggle('active', b.dataset.cognitiveDxgroup === g); });
+  renderCognitiveChart();
+}
+
+// Reshapes a flat points array (each carrying its own p.group) into
+// Plotly-ready {groupLabel: [points]} buckets -- shared by both the
+// pooled default view (points already labeled "Overall ADNI"/"Target
+// Population" by build_pooled_trajectory_chart_data()) and the
+// by-diagnosis-group drill-down (points relabeled here from their
+// original DX code to a population label, since buildGroupTraces()
+// colors/names/legends purely off the OUTER dict key, never a point's
+// own .group field).
+function pooledPointsByPopulation(pooledPoints) {
+  const out = { "Overall ADNI": [], "Target Population": [] };
+  (pooledPoints || []).forEach(function (p) { if (out[p.group]) out[p.group].push(p); });
+  return out;
+}
+
+function byGroupPointsByPopulation(overallSeries, targetSeries, dxGroup) {
+  const relabel = function (points, label) {
+    return (points || []).filter(function (p) { return p.group === dxGroup; }).map(function (p) {
+      const copy = Object.assign({}, p); copy.group = label; return copy;
+    });
+  };
+  return { "Overall ADNI": relabel(overallSeries, "Overall ADNI"), "Target Population": relabel(targetSeries, "Target Population") };
+}
+
+function renderCognitiveChart() {
+  const entry = currentTargetEntry();
+  const spec = DATA.cognitiveEndpoints.find(function (e) { return e.key === cognitiveEndpointKey; });
+  const chartEl = document.getElementById("cognitiveChart");
+  if (!entry) {
+    Plotly.purge(chartEl);
+    document.getElementById("cognitiveMetaRow").innerHTML = "";
+    document.getElementById("cognitiveKeyPattern").innerHTML = fadeSpan("Select a Target Population preset above to compare its progression against Overall ADNI.");
+    return;
   }
+
+  let pointsByGroup, targetPop;
+  if (cognitiveCompareMode === "pooled") {
+    pointsByGroup = pooledPointsByPopulation(entry.pooled[cognitiveEndpointKey]);
+    targetPop = DATA.populations[entry.populationKey];
+  } else {
+    const seriesSource = cognitiveView === "absolute" ? "cognitiveAbsolute" : "cognitiveChange";
+    const overallSeries = DATA.populations.overall[seriesSource][cognitiveEndpointKey];
+    targetPop = DATA.populations[entry.populationKey];
+    const targetSeries = targetPop[seriesSource][cognitiveEndpointKey];
+    pointsByGroup = byGroupPointsByPopulation(overallSeries, targetSeries, cognitiveCompareGroup);
+  }
+
+  const allPoints = pointsByGroup["Overall ADNI"].concat(pointsByGroup["Target Population"]);
+  const metaRow = document.getElementById("cognitiveMetaRow");
+  const availableMonths = [...new Set(allPoints.filter(function (p) { return p.classification !== CLASS_D; }).map(function (p) { return p.month; }))].sort(function (a, b) { return a - b; });
+  metaRow.innerHTML =
+    '<div class="meta-chip">Endpoint: <b>' + spec.label + '</b></div>' +
+    '<div class="meta-chip">Comparison: <b>' + (cognitiveCompareMode === "pooled" ? "Pooled (all diagnoses)" : "Diagnosis: " + cognitiveCompareGroup) + '</b></div>' +
+    '<div class="meta-chip">Available timepoints: <b>' + (availableMonths.length ? availableMonths.join(", ") : "none") + '</b></div>';
 
   const warnDiv = document.getElementById("cognitiveWarn");
-  warnDiv.innerHTML = cognitiveView === "change" ? computeCompactWarnHtml(pointsByGroup) : "";
+  warnDiv.innerHTML = (cognitiveCompareMode === "byGroup" && cognitiveView === "change") ? computeCompactWarnHtml(pointsByGroup) : "";
 
-  // Same rule as the biomarker chart: the y-axis range is sized off
-  // point estimates plus the CI of non-isolated (n >= minGroupN) points
-  // only -- an isolated, faded-out point's own huge error bar (still
-  // drawn on the chart, still visible on hover) must not stretch the
-  // axis and flatten every well-supported point's real signal.
+  const supportDiv = document.getElementById("cognitiveDataSupport");
+  const supportText = cognitiveCompareMode === "byGroup" ? (targetPop.cognitiveDataSupport && targetPop.cognitiveDataSupport[cognitiveEndpointKey]) : null;
+  if (supportText) { supportDiv.innerHTML = fadeSpan(supportText); supportDiv.style.display = ""; } else { supportDiv.style.display = "none"; }
+
   const yRange = computeSensibleYRange(pointsByGroup);
+  const showAbsolute = cognitiveCompareMode === "byGroup" && cognitiveView === "absolute";
+  const traces = buildGroupTraces(pointsByGroup, showAbsolute ? (spec.label + " score") : "Change from baseline", "");
+  const layout = showAbsolute
+    ? absoluteLayout(spec.label + " score (↑ " + spec.up_label + " / ↓ " + spec.down_label + ")")
+    : baseLayout("Change from baseline", spec.up_label, spec.down_label);
+  if (yRange) layout.yaxis.range = yRange;
+  Plotly.react("cognitiveChart", traces, layout, { displayModeBar: false, responsive: true });
 
-  if (cognitiveView === "absolute") {
-    const traces = buildGroupTraces(pointsByGroup, spec.label + " score", "");
-    const layout = absoluteLayout(spec.label + " score (↑ " + spec.up_label + " / ↓ " + spec.down_label + ")");
-    if (yRange) layout.yaxis.range = yRange;
-    Plotly.react("cognitiveChart", traces, layout, { displayModeBar: false, responsive: true });
-  } else {
-    const traces = buildGroupTraces(pointsByGroup, "Change from baseline", "");
-    const layout = baseLayout("Change from baseline", spec.up_label, spec.down_label);
-    if (yRange) layout.yaxis.range = yRange;
-    Plotly.react("cognitiveChart", traces, layout, { displayModeBar: false, responsive: true });
-  }
-
-  document.getElementById("cognitiveKeyPattern").innerHTML = fadeSpan(pop.keyPatterns.cognitive[cognitiveView][cognitiveEndpointKey]);
+  document.getElementById("cognitiveKeyPattern").innerHTML = fadeSpan(
+    targetPop.keyPatterns.cognitive[showAbsolute ? "absolute" : "change"][cognitiveEndpointKey]
+  );
 }
 
 // ------------------------------------------------------------------
@@ -1934,7 +2218,9 @@ function renderCognitiveChart() {
 let currentBiomarker = DATA.biomarkerSpecs[0].key;
 let currentPlatform = null;
 let currentAnalysisType = null;
-let biomarkerView = "absolute";
+let biomarkerView = "change";
+let biomarkerCompareMode = "pooled";
+let biomarkerCompareGroup = "MCI";
 
 function setBiomarker(key) {
   const spec = DATA.biomarkerSpecs.find(function (b) { return b.key === key; });
@@ -1945,7 +2231,7 @@ function setBiomarker(key) {
 
   const platformGroup = document.getElementById("biomarkerPlatformGroup");
   if (spec.platforms.length > 1) {
-    platformGroup.style.display = "inline-flex";
+    platformGroup.style.display = biomarkerCompareMode === 'byGroup' ? "inline-flex" : "none";
     platformGroup.innerHTML = spec.platforms.map(function (p, i) {
       return '<button class="toggle-btn' + (i === 0 ? ' active' : '') + '" data-platform="' + p[0] + '" data-analysis="' + p[1] + '" onclick="setBiomarkerToggle(\'' + p[0] + '\',\'' + p[1] + '\')">' + p[2] + '</button>';
     }).join("");
@@ -1972,58 +2258,95 @@ function setBiomarkerView(view) {
       b.classList.toggle('active', b.dataset.view === view);
     }
   });
+  if (view === 'absolute' && biomarkerCompareMode === 'pooled') { setBiomarkerCompareMode('byGroup'); return; }
+  renderBiomarkerChart();
+}
+
+// Pooled biomarker trajectories are computed only for each biomarker's
+// PRIMARY assay/platform (see run_adni_target_populations.py's
+// POOLED_BIOMARKER_SPECS) -- the pooled default view always shows that
+// primary platform; switching platform/sensitivity-analysis type is
+// only available in byGroup mode, same scoping as the Absolute-view
+// restriction on the cognitive chart above.
+function setBiomarkerCompareMode(mode) {
+  biomarkerCompareMode = mode;
+  document.querySelectorAll('#biomarkerCompareModeGroup .toggle-btn').forEach(function (b) { b.classList.toggle('active', b.dataset.mode === mode); });
+  document.getElementById('biomarkerCompareGroupRow').style.display = mode === 'byGroup' ? '' : 'none';
+  // Platform/sensitivity-type switching only has an effect in byGroup
+  // mode -- pooled always uses each biomarker's primary platform (see
+  // POOLED_BIOMARKER_SPECS in run_adni_target_populations.py) -- so the
+  // control is hidden rather than shown-but-inert in pooled mode.
+  const spec = DATA.biomarkerSpecs.find(function (b) { return b.key === currentBiomarker; });
+  const platformGroup = document.getElementById("biomarkerPlatformGroup");
+  platformGroup.style.display = (mode === 'byGroup' && spec.platforms.length > 1) ? "inline-flex" : "none";
+  if (mode === 'pooled' && biomarkerView === 'absolute') { setBiomarkerView('change'); return; }
+  renderBiomarkerChart();
+}
+
+function setBiomarkerCompareGroup(g) {
+  biomarkerCompareGroup = g;
+  document.querySelectorAll('[data-biomarker-dxgroup]').forEach(function (b) { b.classList.toggle('active', b.dataset.biomarkerDxgroup === g); });
   renderBiomarkerChart();
 }
 
 function renderBiomarkerChart() {
-  const pop = currentPop();
+  const entry = currentTargetEntry();
   const spec = DATA.biomarkerSpecs.find(function (b) { return b.key === currentBiomarker; });
-  const seriesSource = biomarkerView === "absolute" ? pop.biomarkersAbsolute : pop.biomarkersChange;
-  const seriesByGroupList = seriesSource[currentBiomarker][currentPlatform][currentAnalysisType];
+  const chartEl = document.getElementById("biomarkerChart");
+  if (!entry) {
+    Plotly.purge(chartEl);
+    document.getElementById("biomarkerMetaRow").innerHTML = "";
+    document.getElementById("biomarkerKeyPattern").innerHTML = fadeSpan("Select a Target Population preset above to compare its progression against Overall ADNI.");
+    return;
+  }
 
+  let pointsByGroup, targetPop;
+  if (biomarkerCompareMode === "pooled") {
+    pointsByGroup = pooledPointsByPopulation(entry.pooled[currentBiomarker]);
+    targetPop = DATA.populations[entry.populationKey];
+  } else {
+    const seriesSource = biomarkerView === "absolute" ? "biomarkersAbsolute" : "biomarkersChange";
+    const overallSeries = DATA.populations.overall[seriesSource][currentBiomarker][currentPlatform][currentAnalysisType];
+    targetPop = DATA.populations[entry.populationKey];
+    const targetSeries = targetPop[seriesSource][currentBiomarker][currentPlatform][currentAnalysisType];
+    pointsByGroup = byGroupPointsByPopulation(overallSeries, targetSeries, biomarkerCompareGroup);
+  }
+
+  const allPoints = pointsByGroup["Overall ADNI"].concat(pointsByGroup["Target Population"]);
   const metaRow = document.getElementById("biomarkerMetaRow");
-  const availableMonths = [...new Set(seriesByGroupList.filter(function (p) { return p.classification !== CLASS_D; }).map(function (p) { return p.month; }))].sort(function (a, b) { return a - b; });
+  const availableMonths = [...new Set(allPoints.filter(function (p) { return p.classification !== CLASS_D; }).map(function (p) { return p.month; }))].sort(function (a, b) { return a - b; });
+  const platformLabel = biomarkerCompareMode === "pooled" ? spec.platforms[0][2] : currentPlatform.replace(/_/g, " ");
   metaRow.innerHTML =
-    '<div class="meta-chip">Assay/platform: <b>' + currentPlatform.replace(/_/g, " ") + '</b></div>' +
-    '<div class="meta-chip">Analysis type: <b>' + currentAnalysisType.replace(/_/g, " ") + '</b></div>' +
+    '<div class="meta-chip">Assay/platform: <b>' + platformLabel + '</b></div>' +
+    '<div class="meta-chip">Comparison: <b>' + (biomarkerCompareMode === "pooled" ? "Pooled (all diagnoses)" : "Diagnosis: " + biomarkerCompareGroup) + '</b></div>' +
     '<div class="meta-chip">Available timepoints: <b>' + (availableMonths.length ? availableMonths.join(", ") : "none") + '</b></div>';
 
   const supportDiv = document.getElementById("biomarkerDataSupport");
-  const supportEntry = pop.biomarkerDataSupport && pop.biomarkerDataSupport[currentBiomarker] &&
-    pop.biomarkerDataSupport[currentBiomarker][currentPlatform] && pop.biomarkerDataSupport[currentBiomarker][currentPlatform][currentAnalysisType];
+  const supportEntry = biomarkerCompareMode === "byGroup" && targetPop.biomarkerDataSupport && targetPop.biomarkerDataSupport[currentBiomarker] &&
+    targetPop.biomarkerDataSupport[currentBiomarker][currentPlatform] && targetPop.biomarkerDataSupport[currentBiomarker][currentPlatform][currentAnalysisType];
   const supportText = supportEntry && supportEntry[biomarkerView];
-  if (supportText) {
-    supportDiv.innerHTML = fadeSpan(supportText);
-    supportDiv.style.display = "";
-  } else {
-    supportDiv.style.display = "none";
-  }
-
-  const pointsByGroup = {};
-  DATA.groupOrder.forEach(function (g) { pointsByGroup[g] = seriesByGroupList.filter(function (p) { return p.group === g; }); });
+  if (supportText) { supportDiv.innerHTML = fadeSpan(supportText); supportDiv.style.display = ""; } else { supportDiv.style.display = "none"; }
 
   const warnDiv = document.getElementById("biomarkerWarn");
-  warnDiv.innerHTML = biomarkerView === "change" ? computeCompactWarnHtml(pointsByGroup) : "";
+  warnDiv.innerHTML = (biomarkerCompareMode === "byGroup" && biomarkerView === "change") ? computeCompactWarnHtml(pointsByGroup) : "";
 
   const yRange = computeSensibleYRange(pointsByGroup);
+  const showAbsolute = biomarkerCompareMode === "byGroup" && biomarkerView === "absolute";
   // Error bars hidden on-chart for biomarkers -- CI is still exact and
   // available via hover; the isolated/dashed/solid marker styling
   // already carries the confidence signal without the visual weight
   // of a permanently-drawn bar on every point (see buildTooltip()).
-  if (biomarkerView === "absolute") {
-    const traces = buildGroupTraces(pointsByGroup, spec.label + " concentration", "", false);
-    const layout = absoluteLayout(spec.label + " geometric mean concentration");
-    if (yRange) layout.yaxis.range = yRange;
-    Plotly.react("biomarkerChart", traces, layout, { displayModeBar: false, responsive: true });
-  } else {
-    const traces = buildGroupTraces(pointsByGroup, "Geometric mean % change", "%", false);
-    const layout = baseLayout("Geometric mean % change from baseline");
-    if (yRange) layout.yaxis.range = yRange;
-    Plotly.react("biomarkerChart", traces, layout, { displayModeBar: false, responsive: true });
-  }
+  const traces = buildGroupTraces(pointsByGroup, showAbsolute ? (spec.label + " concentration") : "Geometric mean % change", showAbsolute ? "" : "%", false);
+  const layout = showAbsolute
+    ? absoluteLayout(spec.label + " geometric mean concentration")
+    : baseLayout("Geometric mean % change from baseline");
+  if (yRange) layout.yaxis.range = yRange;
+  Plotly.react("biomarkerChart", traces, layout, { displayModeBar: false, responsive: true });
 
   document.getElementById("biomarkerInterpretation").innerHTML = fadeSpan(spec.interpretation);
-  document.getElementById("biomarkerKeyPattern").innerHTML = fadeSpan(pop.keyPatterns.biomarkers[biomarkerView][currentBiomarker][currentPlatform][currentAnalysisType]);
+  document.getElementById("biomarkerKeyPattern").innerHTML = fadeSpan(
+    targetPop.keyPatterns.biomarkers[showAbsolute ? "absolute" : "change"][currentBiomarker][currentPlatform][currentAnalysisType]
+  );
 }
 
 function toggleCollapsible(headerEl) {
@@ -2037,8 +2360,9 @@ function statusPill(cls) {
 }
 
 function renderResultsTable() {
+  renderResultsPopulationToggle();
   const key = document.getElementById("resultsTableSelect").value;
-  const rows = currentPop().resultsTable[key] || [];
+  const rows = (DATA.populations[resultsPopulationKey].resultsTable || {})[key] || [];
   const tbody = document.getElementById("resultsTableBody");
   let html = "";
   rows.forEach(function (r, i) {
@@ -2080,8 +2404,28 @@ function toggleDetailRow(id) {
   document.getElementById(id).classList.toggle("open");
 }
 
+// Highlights the flow-nav item for whichever A-G section is currently
+// most in view -- purely a display aid (click-to-jump already works
+// via the anchors' native href behavior without this); degrades to no
+// highlighting at all if IntersectionObserver isn't available, never
+// breaks navigation itself.
+function initFlowNav() {
+  var items = Array.prototype.slice.call(document.querySelectorAll(".flow-nav-item"));
+  if (!items.length || !window.IntersectionObserver) return;
+  var sections = items.map(function (a) { return document.getElementById(a.dataset.step); }).filter(Boolean);
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      items.forEach(function (a) { a.classList.toggle("active", a.dataset.step === entry.target.id); });
+    });
+  }, { rootMargin: "-10% 0px -75% 0px", threshold: 0 });
+  sections.forEach(function (s) { observer.observe(s); });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+  initFlowNav();
   renderDiseaseContinuum();
+  if (selectedPresetId) selectPreset(selectedPresetId);
   renderCognitiveChart();
   setBiomarker(DATA.biomarkerSpecs[0].key);
   renderResultsTable();
@@ -2095,37 +2439,43 @@ document.addEventListener("DOMContentLoaded", function () {
 # ------------------------------------------------------------------
 
 
-def render_page(data, polaris_data=None, polaris_traj_data=None):
-    payload = build_payload(data, polaris_data, polaris_traj_data)
+def render_page(data, target_population_data=None):
+    payload = build_payload(data, target_population_data)
     payload_json = json.dumps(payload)
     plotlyjs_lib = pyo.get_plotlyjs()
 
     js = DASHBOARD_JS.replace("__PAYLOAD_JSON__", payload_json)
 
-    header_continuum_row = f"""
-    <div class="header-continuum-row">
-      <div class="header-left-col">
-        <div class="page-title-block">
-          <div class="page-title">ADNI Natural History Dashboard</div>
-          <div class="page-title-sub">Cognitive and biomarker progression across the Alzheimer's disease continuum &middot; Source: ADNI</div>
-        </div>
-        {render_header_section()}
-      </div>
-      <div class="header-right-col">
-        {render_disease_continuum_section()}
-      </div>
+    preset_catalog = payload["presetCatalog"]
+
+    header_row = f"""
+    <div class="page-title-block">
+      <div class="page-title">ADNI Natural History Dashboard</div>
+      <div class="page-title-sub">Define a target population, see who is eligible, and compare its cognitive/biomarker progression against Overall ADNI &middot; Source: ADNI</div>
+      <div class="page-context-note"><span class="page-context-note-icon">&#9432;</span><span>ADNI is observational, not a randomized trial or true external control arm. Results describe disease progression, never a treatment effect.</span></div>
     </div>
+    {render_header_section()}
+    {render_flow_nav()}
     """
 
+    # A -> B -> C -> D -> E -> F -> G: the primary analytical narrative
+    # (requirement: "Define Target Population" through "Cognitive/
+    # Biomarker Progression Comparison") comes first; Statistical/
+    # Robustness Details and Methods & Limitations (which now also
+    # carries the deprioritized Disease Continuum heatmap) support that
+    # workflow rather than interrupting it.
     trajectories_row = f"""
     <div class="trajectories-row">
-      {render_cognitive_section()}
-      {render_biomarker_section()}
+      {render_cognitive_progression_section()}
+      {render_biomarker_progression_section()}
     </div>
     """
 
     body = (
-        trajectories_row
+        render_define_population_section(preset_catalog)
+        + render_eligibility_funnel_section()
+        + render_population_profile_section()
+        + trajectories_row
         + render_results_table_section()
         + render_analysis_details_section()
         + render_methods_limitations_section()
@@ -2135,13 +2485,14 @@ def render_page(data, polaris_data=None, polaris_traj_data=None):
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ADNI Natural History</title>
 <style>{PAGE_CSS}</style>
 </head>
 <body>
 {render_nav_bar('biomarker')}
 <main>
-  {header_continuum_row}
+  {header_row}
   {body}
 </main>
 <script>{plotlyjs_lib}</script>
@@ -2157,11 +2508,17 @@ def build_dashboard_html(outputs_dir=ADNI_OUTPUTS_DIR):
     touched (the loader itself raises on any violation), and returns
     the full HTML string. Raises adni_viz_data.DataGovernanceError if
     governance is violated -- never falls back to a partial page.
+    `target_population_data` degrades to None (Overall-ADNI-only) if
+    run_adni_target_populations.py hasn't been run yet against this
+    outputs_dir -- same honest-empty-state convention as the rest of
+    this dashboard suite, not a hard failure.
     """
     data = D.load_all(outputs_dir)
-    polaris_data = D.load_polaris_data(outputs_dir)
-    polaris_traj_data = D.polaris_data_view(outputs_dir)
-    return render_page(data, polaris_data, polaris_traj_data)
+    try:
+        target_population_data = D.load_target_population_data(outputs_dir)
+    except D.DataGovernanceError:
+        target_population_data = None
+    return render_page(data, target_population_data)
 
 
 if __name__ == "__main__":

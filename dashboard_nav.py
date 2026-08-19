@@ -27,17 +27,40 @@ NAV_LINK = "#a0b7d5"        # lighten(ARIBIO_BLUE, 0.55)
 
 NAV_CSS = f"""
   .dash-nav {{
-    display: flex; align-items: center; gap: 2px; background: {NAV_BG}; padding: 0 20px;
-    height: 44px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex; align-items: center; gap: 2px; padding: 0 22px; width: 100%;
+    height: 48px; min-height: 48px; max-height: 48px; flex: 0 0 48px; box-sizing: border-box;
+    background: linear-gradient(120deg, #16304f 0%, {NAV_BG} 55%, #24466f 100%);
+    box-shadow: 0 2px 10px rgba(10, 20, 40, 0.18);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }}
-  .dash-nav-brand {{ color: white; font-weight: 700; font-size: 13px; margin-right: 18px; white-space: nowrap; }}
+  .dash-nav-brand {{
+    display: flex; align-items: center; gap: 7px; color: white; font-weight: 700; font-size: 13.5px;
+    letter-spacing: 0.01em; line-height: 1; margin-right: 22px; white-space: nowrap;
+  }}
+  /* Small accent dot standing in for a logo mark -- ARIBIO_ACCENT is
+     already reserved page-wide for "the one thing worth a second
+     glance"; here that's simply the brand itself. */
+  .dash-nav-brand-mark {{
+    width: 7px; height: 7px; border-radius: 50%; background: {ARIBIO_ACCENT}; flex-shrink: 0;
+    box-shadow: 0 0 0 3px rgba(194, 37, 92, 0.25);
+  }}
   .dash-nav a {{
     color: {NAV_LINK}; text-decoration: none; font-size: 13px; font-weight: 600;
-    padding: 0 14px; height: 44px; display: flex; align-items: center;
-    border-bottom: 2px solid transparent;
+    padding: 0 15px; height: 48px; min-height: 48px; line-height: 1; display: flex; align-items: center; position: relative;
+    transition: color 0.15s ease;
   }}
   .dash-nav a:hover {{ color: white; }}
-  .dash-nav a.active {{ color: white; border-bottom-color: {ARIBIO_ACCENT}; }}
+  .dash-nav a.active {{ color: white; }}
+  /* Animated underline (scaled, not a static border) -- full color and
+     width for the active tab, a faint preview on hover for anything
+     else, so the active state still reads as clearly the "on" one. */
+  .dash-nav a::after {{
+    content: ""; position: absolute; left: 15px; right: 15px; bottom: 0; height: 3px;
+    background: {ARIBIO_ACCENT}; border-radius: 3px 3px 0 0;
+    transform: scaleX(0); transform-origin: center; transition: transform 0.2s ease, opacity 0.2s ease;
+  }}
+  .dash-nav a.active::after {{ transform: scaleX(1); }}
+  .dash-nav a:not(.active):hover::after {{ transform: scaleX(1); opacity: 0.45; }}
 """
 
 # (key, label, href) — order is display order in the bar
@@ -58,6 +81,6 @@ def render_nav_bar(active):
         for key, label, href in _TABS
     )
     return f"""<nav class="dash-nav">
-      <span class="dash-nav-brand">AriBio Alzheimer's Intelligence</span>
+      <span class="dash-nav-brand"><span class="dash-nav-brand-mark"></span>AriBio Alzheimer's Intelligence</span>
       {links}
     </nav>"""

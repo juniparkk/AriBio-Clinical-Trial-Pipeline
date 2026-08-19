@@ -286,12 +286,13 @@ def test_cohort_attrition_final_step_matches_620():
 
 
 def test_dashboard_governance_module_untouched_by_this_stage():
-    """This stage must not have added any new required file or any new
-    forbidden-column exception to the dashboard's governance loader --
-    REQUIRED_AGGREGATE_FILES stays exactly what it was before this PET
-    eligibility work, since the dashboard itself was explicitly not
-    changed yet."""
-    assert D.REQUIRED_AGGREGATE_FILES == [
+    """This stage must not have added any new forbidden-column exception
+    to the dashboard's governance loader. REQUIRED_AGGREGATE_FILES has
+    since grown (the run_adni_target_populations.py / adni_eligibility.py
+    target-population feature added its own 7 files, tracked separately
+    by test_adni_target_populations.py) -- this PET-eligibility stage's
+    own contribution to the list is still exactly its original 6 files."""
+    assert D.REQUIRED_AGGREGATE_FILES[:6] == [
         "adni_dashboard_eligibility.csv", "adni_cognitive_summary.csv", "adni_biomarker_summary.csv",
         "adni_pairwise_results.csv", "adni_robustness_summary.csv", "adni_sensitivity_summary.csv",
     ]

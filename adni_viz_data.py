@@ -52,6 +52,13 @@ REQUIRED_AGGREGATE_FILES = [
     "adni_pairwise_results.csv",
     "adni_robustness_summary.csv",
     "adni_sensitivity_summary.csv",
+    "adni_target_population_presets.csv",
+    "adni_target_population_cohort_attrition.csv",
+    "adni_target_population_profile.csv",
+    "adni_target_population_cognitive_trajectories.csv",
+    "adni_target_population_biomarker_trajectories.csv",
+    "adni_target_population_trajectory_status.csv",
+    "adni_target_population_pooled_trajectories.csv",
 ]
 
 
@@ -188,6 +195,175 @@ def polaris_data_view(outputs_dir):
         "robustness": status_df,
         "pairwise": polaris_pairwise_view(status_df),
     }
+
+
+# ------------------------------------------------------------------
+# Target Population presets (generalized cohort-definition tool) --
+# loaded through the identical governed load_aggregate_csv() entry
+# point as everything else in this module, then reshaped into the SAME
+# dict shapes polaris_data_view()/build_polaris_funnel()/
+# build_polaris_profile() already produce, so build_population_payload()
+# and every existing chart-data builder above work completely
+# unmodified against any preset. No new statistic is computed anywhere
+# in this reshape -- adni_target_population_*.csv already carries
+# every number (produced entirely by run_adni_target_populations.py,
+# the statistical/preprocessing stage, not this module).
+# ------------------------------------------------------------------
+
+
+def load_target_population_data(outputs_dir):
+    """The only sanctioned way the dashboard reads the target-population
+    aggregate outputs -- all seven go through load_aggregate_csv()."""
+    return {
+        "presets": load_aggregate_csv(outputs_dir, "adni_target_population_presets.csv"),
+        "attrition": load_aggregate_csv(outputs_dir, "adni_target_population_cohort_attrition.csv"),
+        "profile": load_aggregate_csv(outputs_dir, "adni_target_population_profile.csv"),
+        "cognitive": load_aggregate_csv(outputs_dir, "adni_target_population_cognitive_trajectories.csv"),
+        "biomarker": load_aggregate_csv(outputs_dir, "adni_target_population_biomarker_trajectories.csv"),
+        "status": load_aggregate_csv(outputs_dir, "adni_target_population_trajectory_status.csv"),
+        "pooled": load_aggregate_csv(outputs_dir, "adni_target_population_pooled_trajectories.csv"),
+    }
+
+
+def build_preset_catalog(presets_df):
+    """One entry per preset, in adni_eligibility.PRESET_LIBRARY order
+    (the CSV is already written in that order) -- for the "Define
+    Target Population" picker."""
+    return [
+        {
+            "id": r["id"], "label": r["label"], "description": r["description"],
+            "n": int(r["n"]), "isPolarisEquivalent": bool(r["is_polaris_equivalent"]),
+        }
+        for _, r in presets_df.iterrows()
+    ]
+
+
+def preset_data_view(target_data, preset_id):
+    """Assembles one preset's equivalent of load_all()'s dict, filtered
+    from the wide adni_target_population_*.csv tables loaded by
+    load_target_population_data(). Identical shape to polaris_data_view()
+    -- "eligibility" and "robustness" both point at the same status_df,
+    "pairwise" is the same reshape polaris_pairwise_view() already
+    performs (that function is not actually POLARIS-specific in its
+    body; it operates on any status_df sharing the schema, which this
+    one -- adni_target_population_trajectory_status.csv, minus its
+    preset_id column -- is schema-locked to match, see
+    test_adni_target_populations.py)."""
+    status_df = target_data["status"][target_data["status"]["preset_id"] == preset_id].drop(columns=["preset_id"]).reset_index(drop=True)
+    cognitive_df = target_data["cognitive"][target_data["cognitive"]["preset_id"] == preset_id].drop(columns=["preset_id"]).reset_index(drop=True)
+    biomarker_df = target_data["biomarker"][target_data["biomarker"]["preset_id"] == preset_id].drop(columns=["preset_id"]).reset_index(drop=True)
+    return {
+        "eligibility": status_df,
+        "cognitive": cognitive_df,
+        "biomarker": biomarker_df,
+        "robustness": status_df,
+        "pairwise": polaris_pairwise_view(status_df),
+    }
+
+
+TARGET_POPULATION_NUMERIC_VARIABLES = [
+    {"variable": "Baseline age (years)"},
+    {"variable": "Baseline MMSE"},
+    {"variable": "Baseline ADAS-Cog13"},
+    {
+        "variable": "Baseline Centiloid",
+        "note": "Overall ADNI Centiloid reflects only the subset with an available near-baseline PET scan; the two denominators can differ from the Target Population's.",
+    },
+]
+
+TARGET_POPULATION_CATEGORICAL_VARIABLES = [
+    "Baseline diagnosis", "Sex", "APOE4 carrier",
+    "pTau181 available", "pTau217 available", "Aβ42/Aβ40 ratio available", "GFAP available", "NfL available",
+]
+
+
+def build_target_population_funnel(attrition_df):
+    """Same reshape as build_polaris_funnel() -- that function's body
+    is already population-agnostic (a plain iteration over an
+    already-governed attrition table's rows, computing only the ratio
+    of consecutive remaining_n values), so this is a thin, distinctly-
+    named wrapper for API clarity at the new preset-driven call sites,
+    not a duplicate implementation."""
+    return build_polaris_funnel(attrition_df)
+
+
+def build_target_population_profile(profile_df, overall_label="Overall ADNI", target_label="Target Population"):
+    """Generalized version of build_polaris_profile(): same reshape
+    logic, parameterized population labels instead of the hardcoded
+    POLARIS_OVERALL_LABEL/POLARIS_ALIGNED_LABEL, and an extended
+    variable set that also covers the five biomarker-availability rows
+    adni_eligibility.build_preset_profile() adds. Pure lookup/reshape --
+    computes no new statistic, makes no inferential or causal claim."""
+    rows = []
+    for spec in TARGET_POPULATION_NUMERIC_VARIABLES:
+        var = spec["variable"]
+        sub = profile_df[profile_df["variable"] == var]
+        overall = sub[sub["population"] == overall_label]
+        target = sub[sub["population"] == target_label]
+        if overall.empty and target.empty:
+            continue
+        rows.append({
+            "variable": var, "kind": "numeric",
+            "overall": _polaris_numeric_summary(overall),
+            "polaris": _polaris_numeric_summary(target),
+            "note": spec.get("note"),
+        })
+
+    for var in TARGET_POPULATION_CATEGORICAL_VARIABLES:
+        sub = profile_df[profile_df["variable"] == var]
+        if sub.empty:
+            continue
+        levels_seen = list(dict.fromkeys(sub["level"].dropna().tolist()))
+        levels = []
+        for level in levels_seen:
+            level_sub = sub[sub["level"] == level]
+            levels.append({
+                "level": level,
+                "overall": _polaris_categorical_summary(level_sub[level_sub["population"] == overall_label]),
+                "polaris": _polaris_categorical_summary(level_sub[level_sub["population"] == target_label]),
+            })
+        rows.append({"variable": var, "kind": "categorical", "levels": levels})
+    return rows
+
+
+def build_pooled_trajectory_chart_data(pooled_df, preset_id, entity, assay_platform="", analysis_type="primary"):
+    """Per-(month, population) point for the dual-population default
+    chart view -- 2 lines (Overall ADNI vs Target Population), pooled
+    across diagnosis group. Same point shape as build_cognitive_chart_
+    data()/build_biomarker_chart_data() (month, group, classification,
+    reason, n, estimate, ci_lower, ci_upper, is_descriptive_ci), with
+    `group` meaning a POPULATION label here, not a diagnosis code --
+    downstream JS trace-building treats both the same way. Always
+    CLASS_DESCRIPTIVE or CLASS_NOT_AVAILABLE, per
+    run_adni_target_populations.py's pooled computation (no ANCOVA
+    "group" term applies once there is no diagnosis-group split)."""
+    sub = pooled_df[
+        (pooled_df["preset_id"] == preset_id) & (pooled_df["entity"] == entity)
+        & (pooled_df["assay_platform"].apply(_platform_key) == _platform_key(assay_platform))
+        & (pooled_df["analysis_type"] == analysis_type)
+    ]
+    points = []
+    for month in TARGET_MONTHS:
+        for population, group_label in (("overall", "Overall ADNI"), ("target", "Target Population")):
+            row = sub[(sub["month"] == month) & (sub["population"] == population)]
+            n = int(row.iloc[0]["n"]) if not row.empty and pd.notna(row.iloc[0]["n"]) else 0
+            if row.empty or n == 0:
+                points.append({
+                    "month": month, "group": group_label, "n": n, "estimate": None,
+                    "ci_lower": None, "ci_upper": None, "is_descriptive_ci": False,
+                    "classification": CLASS_NOT_AVAILABLE, "reason": "No data at this timepoint.",
+                })
+                continue
+            r = row.iloc[0]
+            points.append({
+                "month": month, "group": group_label, "n": n,
+                "estimate": _safe_float(r.get("estimate")),
+                "ci_lower": _safe_float(r.get("ci_lower")), "ci_upper": _safe_float(r.get("ci_upper")),
+                "is_descriptive_ci": n >= 2,
+                "classification": CLASS_DESCRIPTIVE,
+                "reason": "Pooled (non-diagnosis-stratified) descriptive trend -- not compared statistically to the other population.",
+            })
+    return points
 
 
 # ------------------------------------------------------------------
@@ -677,7 +853,7 @@ POLARIS_NUMERIC_VARIABLES = [
         "variable": "Baseline Centiloid",
         "note": (
             "Overall ADNI Centiloid reflects only the subset with an available near-baseline "
-            "PET scan; POLARIS AD-Aligned Centiloid reflects the full eligible cohort by "
+            "PET scan; Demo Centiloid reflects the full eligible cohort by "
             "definition -- the two denominators differ."
         ),
     },

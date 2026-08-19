@@ -15,6 +15,7 @@
 #  `.venv/bin/python adni_viz.py`)
 # ============================================================
 
+import html
 import json
 import os
 import re
@@ -55,7 +56,17 @@ def _load_overall_payload():
 
 
 def _load_polaris_payload():
-    return _load_payload()["populations"]["polaris"]
+    """The POLARIS-like preset's chart/table payload -- since the
+    Target Population generalization, POLARIS is populations["target_
+    polaris_like"] (one of N presets, not a hardcoded "polaris" key)."""
+    return _load_payload()["populations"]["target_polaris_like"]
+
+
+def _load_target_population_entry(preset_id="polaris_like"):
+    """The preset's own funnel/profile/pooled entry --
+    payload["targetPopulations"][preset_id], distinct from the
+    populations[...] chart/table payload above."""
+    return _load_payload()["targetPopulations"][preset_id]
 
 
 # ------------------------------------------------------------------
@@ -303,7 +314,16 @@ def test_gfap_nfl_descriptive_points_have_no_p_value_or_hc3_wording():
 
 def test_group_colors_consistent():
     payload = _load_payload()
-    assert payload["groupColors"] == {"CN": "#2196F3", "MCI": "#FF9800", "Dementia": "#F44336"}
+    assert payload["groupColors"]["CN"] == "#2196F3"
+    assert payload["groupColors"]["MCI"] == "#FF9800"
+    assert payload["groupColors"]["Dementia"] == "#F44336"
+    # Extended with the two population-comparison colors used by the
+    # dual-population (Overall ADNI vs Target Population) charts --
+    # distinct from the three DX-group colors above so the two
+    # encodings never visually collide.
+    assert "Overall ADNI" in payload["groupColors"]
+    assert "Target Population" in payload["groupColors"]
+    assert payload["groupColors"]["Overall ADNI"] != payload["groupColors"]["Target Population"]
     html_source = _load_dashboard_html()
     for color in ["#2196F3", "#FF9800", "#F44336"]:
         assert color in html_source
@@ -559,7 +579,7 @@ def test_key_pattern_never_claims_causality():
 
 def test_disease_continuum_explanation_is_the_required_short_form():
     html_source = _load_dashboard_html()
-    assert "Darker = greater disease-associated abnormality within each endpoint. Colors are not comparable across endpoints." in html_source
+    assert "Darker = greater abnormality (not comparable across endpoints)." in html_source
 
 
 def test_disease_continuum_row_labels_carry_direction_arrows():
@@ -582,56 +602,49 @@ def test_navigation_label_renamed():
     html_source = _load_dashboard_html()
     assert "ADNI Natural History" in html_source
     assert "Biomarker Dashboard" not in html_source
-    assert "Cognitive and biomarker progression across the Alzheimer's disease continuum" in html_source
+    assert "Define a target population, see who is eligible, and compare its cognitive/biomarker progression against Overall ADNI" in html_source
 
 
 # ------------------------------------------------------------------
-# POLARIS AD-aligned cohort -- dashboard UI integration
+# Target Population presets -- dashboard UI integration (generalized
+# from the old hardcoded Overall/POLARIS toggle; POLARIS-like is now
+# just the first preset card, see adni_eligibility.PRESET_LIBRARY)
 # ------------------------------------------------------------------
 
 
 def test_population_selector_renders():
     html_source = _load_dashboard_html()
-    assert 'id="populationToggleGroup"' in html_source
-    assert 'data-population="overall"' in html_source
-    assert 'data-population="polaris"' in html_source
+    assert 'class="preset-card-grid"' in html_source
+    assert 'data-preset="polaris_like"' in html_source
+    assert 'data-preset="mild_moderate_amyloid"' in html_source
     assert "Overall ADNI" in html_source
-    assert "POLARIS AD" in html_source
-    assert "Broad validated ADNI natural-history cohort." in html_source
-    assert "ADNI participants meeting validated MMSE and amyloid-PET eligibility criteria" in html_source
+    assert "Preset: Broad amyloid-confirmed cohort" in html_source
+    assert "targetPopulationSummary" in html_source
 
 
 def test_population_selector_default_is_overall_adni():
     html_source = _load_dashboard_html()
-    # The "overall" button is statically rendered active; "polaris" is not.
-    overall_btn = re.search(r'<button class="toggle-btn[^"]*" data-population="overall"[^>]*>', html_source)
-    polaris_btn = re.search(r'<button class="toggle-btn[^"]*" data-population="polaris"[^>]*>', html_source)
-    assert overall_btn and "active" in overall_btn.group(0)
-    assert polaris_btn and "active" not in polaris_btn.group(0)
-    # The POLARIS panel's helper text and the Disease-Continuum POLARIS
-    # note are hidden by default. The Cohort Construction toggle itself
-    # is NOT display:none (it stays in flow at a fixed height so
-    # switching population never shifts the page) -- it starts disabled
-    # instead.
-    assert 'class="population-helper is-hidden" id="populationHelperPolaris"' in html_source
-    assert 'class="population-note is-hidden" id="diseaseContinuumPolarisNote"' in html_source
-    assert 'polaris-panel--disabled' in html_source
-    # The per-section population labels default to Overall ADNI.
-    assert 'id="cognitivePopulationLabel">Population: Overall ADNI<' in html_source
-    assert 'id="biomarkerPopulationLabel">Population: Overall ADNI<' in html_source
-    assert 'id="resultsPopulationLabel">Population: Overall ADNI<' in html_source
+    # No preset card is statically rendered active -- selection happens
+    # client-side on DOMContentLoaded (selectPreset(selectedPresetId)),
+    # defaulting to the first preset in the catalog.
+    assert 'selectedPresetId = (DATA.presetCatalog[0] && DATA.presetCatalog[0].id) || null;' in html_source
+    assert 'if (selectedPresetId) selectPreset(selectedPresetId);' in html_source
+    # The per-section population labels default to "none selected"
+    # before the DOMContentLoaded handler runs selectPreset().
+    assert 'id="cognitivePopulationLabel">Target: none selected<' in html_source
+    assert 'id="biomarkerPopulationLabel">Target: none selected<' in html_source
 
 
 def test_polaris_cohort_final_n_is_620():
     payload = _load_payload()
-    funnel = payload["polaris"]["funnel"]
-    assert funnel[-1]["step"] == "Final POLARIS-aligned cohort"
+    funnel = payload["targetPopulations"]["polaris_like"]["funnel"]
+    assert funnel[-1]["step"] == "Final Broad amyloid-confirmed cohort"
     assert funnel[-1]["remaining_n"] == 620
 
 
 def test_polaris_diagnosis_composition_matches_validated_target():
     payload = _load_payload()
-    dx_row = next(v for v in payload["polaris"]["profile"] if v["variable"] == "Baseline diagnosis")
+    dx_row = next(v for v in payload["targetPopulations"]["polaris_like"]["profile"] if v["variable"] == "Baseline diagnosis")
     by_level = {lvl["level"]: lvl["polaris"]["n"] for lvl in dx_row["levels"]}
     assert by_level["CN"] == 151
     assert by_level["MCI"] == 309
@@ -639,19 +652,27 @@ def test_polaris_diagnosis_composition_matches_validated_target():
 
 
 def test_polaris_funnel_matches_governed_attrition_csv():
+    """Every field matches the original, already-approved POLARIS
+    attrition file byte-for-byte EXCEPT the final step's label text,
+    which is deliberately relabeled away from the original "POLARIS"
+    branding to this preset's own display name (see
+    run_adni_target_populations.py) -- counts/ordering are untouched."""
     attrition = D.load_aggregate_csv(ADNI_OUTPUTS_DIR, "adni_polaris_cohort_attrition.csv")
     payload = _load_payload()
-    funnel = payload["polaris"]["funnel"]
+    funnel = payload["targetPopulations"]["polaris_like"]["funnel"]
     assert len(funnel) == len(attrition) == 7
-    for step, (_, row) in zip(funnel, attrition.iterrows()):
-        assert step["step"] == row["step"]
+    for i, (step, (_, row)) in enumerate(zip(funnel, attrition.iterrows())):
+        if i == len(funnel) - 1:
+            assert step["step"] == "Final Broad amyloid-confirmed cohort"
+        else:
+            assert step["step"] == row["step"]
         assert step["remaining_n"] == int(row["remaining_n"])
         assert step["excluded_n"] == int(row["excluded_n"])
 
 
 def test_polaris_funnel_step_over_step_percent_is_a_ratio_of_governed_counts():
     payload = _load_payload()
-    funnel = payload["polaris"]["funnel"]
+    funnel = payload["targetPopulations"]["polaris_like"]["funnel"]
     assert funnel[0]["percent_retained_of_previous"] is None
     for prev, cur in zip(funnel, funnel[1:]):
         expected = round(cur["remaining_n"] / prev["remaining_n"] * 100, 1)
@@ -660,7 +681,7 @@ def test_polaris_funnel_step_over_step_percent_is_a_ratio_of_governed_counts():
 
 def test_polaris_population_profile_covers_requested_variables():
     payload = _load_payload()
-    variables = {v["variable"] for v in payload["polaris"]["profile"]}
+    variables = {v["variable"] for v in payload["targetPopulations"]["polaris_like"]["profile"]}
     assert variables == {
         "Baseline age (years)", "Baseline MMSE", "Baseline ADAS-Cog13", "Baseline Centiloid",
         "Baseline diagnosis", "Sex", "APOE4 carrier",
@@ -670,18 +691,20 @@ def test_polaris_population_profile_covers_requested_variables():
 def test_polaris_population_profile_matches_governed_csv():
     profile_csv = D.load_aggregate_csv(ADNI_OUTPUTS_DIR, "adni_polaris_population_profile.csv")
     payload = _load_payload()
-    age_row = next(v for v in payload["polaris"]["profile"] if v["variable"] == "Baseline age (years)")
+    age_row = next(v for v in payload["targetPopulations"]["polaris_like"]["profile"] if v["variable"] == "Baseline age (years)")
     csv_overall = profile_csv[(profile_csv["variable"] == "Baseline age (years)") & (profile_csv["population"] == "Overall ADNI")].iloc[0]
     assert age_row["overall"]["n"] == int(csv_overall["n"])
     assert abs(age_row["overall"]["mean"] - float(csv_overall["mean"])) < 1e-9
 
 
 def test_not_propensity_score_matched_disclaimer_present():
+    """This disclaimer now lives in Limitations (a per-preset dynamic
+    JS-built version was retired along with the old POLARIS-only
+    panel) -- still present, still makes the same substantive claims."""
     html_source = _load_dashboard_html()
-    assert "been propensity-score" in html_source
-    assert "matched to an AR1001 trial cohort" in html_source
-    assert "should not be interpreted as an external control" in html_source
-    assert "eligibility-filtered only" in html_source
+    assert "not a propensity-score-matched cohort" in html_source
+    assert "external control arm for any specific trial" in html_source
+    assert "eligibility-filtered" in html_source
 
 
 def test_apoe4_context_text_is_neutral_not_causal():
@@ -694,32 +717,35 @@ def test_apoe4_context_text_is_neutral_not_causal():
         assert forbidden not in window.lower()
 
 
-def test_disease_continuum_polaris_note_present_and_labeled():
-    """Disease Continuum stays Overall-ADNI-only (population-aware
-    trajectories do not extend there) -- the subtle note explaining
-    this must be present in the markup (JS toggles its visibility)."""
+def test_disease_continuum_stays_overall_only_and_is_labeled():
+    """Disease Continuum stays Overall-ADNI-only (population-aware/
+    Target-Population trajectories do not extend there) -- the heading
+    and sub-text must say so explicitly, not just implicitly."""
     html_source = _load_dashboard_html()
-    assert "Disease Continuum shown from Overall ADNI baseline reference." in html_source
-    assert 'id="diseaseContinuumPolarisNote"' in html_source
+    assert "Disease Continuum (Overall ADNI)" in html_source
+    assert "Overall ADNI only" in html_source
 
 
-def test_existing_trajectory_payload_unchanged_by_polaris_addition():
-    """Adding the polaris key to the payload must not alter a single
-    value in the existing trajectory/statistics keys -- build the
-    payload with and without polaris_data from the same underlying
-    data and diff everything except the new "polaris" key."""
+def test_existing_trajectory_payload_unchanged_by_target_population_addition():
+    """Adding target_population_data to the payload must not alter a
+    single value in the Overall-ADNI-only keys -- build the payload
+    with and without it from the same underlying data and diff
+    everything except the new presetCatalog/targetPopulations keys
+    (and populations, which gains target_<id> entries but keeps its
+    "overall" entry byte-identical)."""
     data = D.load_all(ADNI_OUTPUTS_DIR)
-    without_polaris = V.build_payload(data)
-    polaris_data = D.load_polaris_data(ADNI_OUTPUTS_DIR)
-    with_polaris = V.build_payload(data, polaris_data)
-    assert "polaris" not in without_polaris
-    assert "polaris" in with_polaris
-    shared_keys = set(without_polaris.keys())
-    assert shared_keys == set(with_polaris.keys()) - {"polaris"}
-    for key in shared_keys:
-        assert json.dumps(without_polaris[key], sort_keys=True) == json.dumps(with_polaris[key], sort_keys=True), (
-            f"payload key {key!r} changed after adding polaris_data"
-        )
+    without_targets = V.build_payload(data)
+    target_population_data = D.load_target_population_data(ADNI_OUTPUTS_DIR)
+    with_targets = V.build_payload(data, target_population_data)
+    assert without_targets["presetCatalog"] == []
+    assert without_targets["targetPopulations"] == {}
+    assert with_targets["presetCatalog"]
+    assert with_targets["targetPopulations"]
+    shared_keys = set(without_targets.keys())
+    assert shared_keys == set(with_targets.keys())
+    for key in shared_keys - {"populations", "presetCatalog", "targetPopulations"}:
+        assert json.dumps(without_targets[key], sort_keys=True) == json.dumps(with_targets[key], sort_keys=True)
+    assert json.dumps(without_targets["populations"]["overall"], sort_keys=True) == json.dumps(with_targets["populations"]["overall"], sort_keys=True)
 
 
 def test_real_dashboard_disease_continuum_and_cognitive_values_still_match_direct_computation():
@@ -794,23 +820,27 @@ def test_no_participant_level_pet_file_referenced_anywhere_in_viz_modules():
 
 def test_polaris_payload_contains_no_participant_identifiers():
     payload = _load_payload()
-    raw_json = json.dumps(payload["polaris"])
+    raw_json = json.dumps(payload["targetPopulations"]["polaris_like"])
     for forbidden in ["\"RID\"", "\"PTID\"", "\"LONIUID\"", "\"USUBJID\"", "\"SUBJID\""]:
         assert forbidden not in raw_json
 
 
 def test_existing_governance_protections_still_intact():
     """Re-affirms the governance boundary this stage was told to
-    preserve -- REQUIRED_AGGREGATE_FILES, DataGovernanceError, and
-    load_aggregate_csv's checks are all untouched by this dashboard
-    integration; the new polaris outputs are loaded through the same
-    single sanctioned entry point, not a parallel/looser path."""
-    assert D.REQUIRED_AGGREGATE_FILES == [
+    preserve -- DataGovernanceError and load_aggregate_csv's checks are
+    untouched by this dashboard integration; the polaris AND target-
+    population outputs are loaded through the same single sanctioned
+    entry point, not a parallel/looser path. REQUIRED_AGGREGATE_FILES
+    itself has grown (the target-population feature added 7 more
+    filenames, see test_adni_target_populations.py) -- the original
+    6-file POLARIS-era prefix is still exactly what it was."""
+    assert D.REQUIRED_AGGREGATE_FILES[:6] == [
         "adni_dashboard_eligibility.csv", "adni_cognitive_summary.csv", "adni_biomarker_summary.csv",
         "adni_pairwise_results.csv", "adni_robustness_summary.csv", "adni_sensitivity_summary.csv",
     ]
     assert hasattr(D, "DataGovernanceError")
     assert "load_aggregate_csv" in D.load_polaris_data.__code__.co_names
+    assert "load_aggregate_csv" in D.load_target_population_data.__code__.co_names
 
 
 # ------------------------------------------------------------------
@@ -823,7 +853,7 @@ def test_existing_governance_protections_still_intact():
 def test_population_selector_changes_cognitive_data_source():
     payload = _load_payload()
     overall_mmse = payload["populations"]["overall"]["cognitiveChange"]["MMSE"]
-    polaris_mmse = payload["populations"]["polaris"]["cognitiveChange"]["MMSE"]
+    polaris_mmse = payload["populations"]["target_polaris_like"]["cognitiveChange"]["MMSE"]
     assert overall_mmse != polaris_mmse
     # Real, population-specific n's -- not a coincidental reshuffle.
     overall_n_by_cell = {(p["month"], p["group"]): p["n"] for p in overall_mmse}
@@ -839,31 +869,11 @@ def test_population_selector_changes_cognitive_data_source():
 def test_population_selector_changes_biomarker_data_source():
     payload = _load_payload()
     overall_pts = payload["populations"]["overall"]["biomarkersChange"]["pTau181"]["Gothenburg_Simoa"]["primary"]
-    polaris_pts = payload["populations"]["polaris"]["biomarkersChange"]["pTau181"]["Gothenburg_Simoa"]["primary"]
+    polaris_pts = payload["populations"]["target_polaris_like"]["biomarkersChange"]["pTau181"]["Gothenburg_Simoa"]["primary"]
     assert overall_pts != polaris_pts
     overall_n_by_cell = {(p["month"], p["group"]): p["n"] for p in overall_pts}
     polaris_n_by_cell = {(p["month"], p["group"]): p["n"] for p in polaris_pts}
     assert overall_n_by_cell != polaris_n_by_cell
-
-
-def test_overall_population_unchanged_when_polaris_trajectories_are_added():
-    """The exact regression guard this task requires: build the payload
-    with NO polaris args at all, then with BOTH polaris_data and
-    polaris_traj_data, and diff the "overall" population sub-payload
-    (and the population-agnostic diseaseContinuum) byte-for-byte."""
-    data = D.load_all(ADNI_OUTPUTS_DIR)
-    polaris_data = D.load_polaris_data(ADNI_OUTPUTS_DIR)
-    polaris_traj_data = D.polaris_data_view(ADNI_OUTPUTS_DIR)
-
-    without_any_polaris = V.build_payload(data)
-    with_both = V.build_payload(data, polaris_data, polaris_traj_data)
-
-    assert json.dumps(without_any_polaris["populations"]["overall"], sort_keys=True) == json.dumps(
-        with_both["populations"]["overall"], sort_keys=True
-    ), "Overall ADNI population payload changed after adding POLARIS trajectory data"
-    assert json.dumps(without_any_polaris["diseaseContinuum"], sort_keys=True) == json.dumps(
-        with_both["diseaseContinuum"], sort_keys=True
-    )
 
 
 def test_polaris_baseline_values_match_validated_population_profile():
@@ -901,7 +911,7 @@ def test_polaris_status_classification_matches_governed_status_csv():
     expected_classification = row["classification"]
 
     payload = _load_payload()
-    pts = payload["populations"]["polaris"]["cognitiveChange"]["ADAS_COG13"]
+    pts = payload["populations"]["target_polaris_like"]["cognitiveChange"]["ADAS_COG13"]
     for p in pts:
         if p["month"] == 6:
             assert p["classification"] == expected_classification
@@ -915,7 +925,7 @@ def test_polaris_sparse_observations_remain_disconnected():
     wired into a solid connected trajectory line."""
     payload = _load_payload()
     min_group_n = payload["minGroupN"]
-    pts = payload["populations"]["polaris"]["cognitiveChange"]["MMSE"]
+    pts = payload["populations"]["target_polaris_like"]["cognitiveChange"]["MMSE"]
     month18 = [p for p in pts if p["month"] == 18]
     assert len(month18) == 3
     for p in month18:
@@ -926,10 +936,10 @@ def test_polaris_sparse_observations_remain_disconnected():
 def test_key_pattern_differs_and_is_explicitly_labeled_by_population():
     payload = _load_payload()
     overall_text = payload["populations"]["overall"]["keyPatterns"]["cognitive"]["change"]["ADAS_COG13"]
-    polaris_text = payload["populations"]["polaris"]["keyPatterns"]["cognitive"]["change"]["ADAS_COG13"]
+    polaris_text = payload["populations"]["target_polaris_like"]["keyPatterns"]["cognitive"]["change"]["ADAS_COG13"]
     assert overall_text != polaris_text
-    assert "POLARIS AD" in polaris_text
-    assert "POLARIS AD" not in overall_text
+    assert "Preset: Broad amyloid-confirmed cohort" in polaris_text
+    assert "Preset: Broad amyloid-confirmed cohort" not in overall_text
     assert "620" in polaris_text or "eligibility-filtered" in polaris_text
     # Never a treatment-effect claim, in either population.
     for text in (overall_text, polaris_text):
@@ -938,7 +948,7 @@ def test_key_pattern_differs_and_is_explicitly_labeled_by_population():
 
 def test_key_pattern_never_turns_descriptive_biomarker_into_a_strong_claim():
     payload = _load_payload()
-    gfap_text = payload["populations"]["polaris"]["keyPatterns"]["biomarkers"]["change"]["GFAP"]["Quanterix"]["primary"]
+    gfap_text = payload["populations"]["target_polaris_like"]["keyPatterns"]["biomarkers"]["change"]["GFAP"]["Quanterix"]["primary"]
     assert "no adjusted (hc3) timepoint" in gfap_text.lower() or "not available for all three" in gfap_text.lower()
     assert "markedly" not in gfap_text and "modestly" not in gfap_text
 
@@ -951,12 +961,12 @@ def test_cognitive_data_support_present_only_for_polaris_biomarker_for_both():
     assert payload["populations"]["overall"]["cognitiveDataSupport"] == {}
     assert payload["populations"]["overall"]["biomarkerDataSupport"] != {}
 
-    polaris_cog_support = payload["populations"]["polaris"]["cognitiveDataSupport"]
+    polaris_cog_support = payload["populations"]["target_polaris_like"]["cognitiveDataSupport"]
     assert set(polaris_cog_support.keys()) == {"ADAS_COG13", "MMSE"}
     for text in polaris_cog_support.values():
         assert text.startswith("Data support:")
 
-    polaris_bio_support = payload["populations"]["polaris"]["biomarkerDataSupport"]
+    polaris_bio_support = payload["populations"]["target_polaris_like"]["biomarkerDataSupport"]
     ptau181_change = polaris_bio_support["pTau181"]["Gothenburg_Simoa"]["primary"]["change"]
     gfap_change = polaris_bio_support["GFAP"]["Quanterix"]["primary"]["change"]
     assert ptau181_change != gfap_change
@@ -970,7 +980,7 @@ def test_disease_continuum_is_population_agnostic_and_stays_overall_only():
     for it to change when the Population selector is toggled."""
     payload = _load_payload()
     assert "diseaseContinuum" not in payload["populations"]["overall"]
-    assert "diseaseContinuum" not in payload["populations"]["polaris"]
+    assert "diseaseContinuum" not in payload["populations"]["target_polaris_like"]
     assert len(payload["diseaseContinuum"]) == 7
 
 
@@ -1011,7 +1021,7 @@ def test_polaris_data_view_rejects_participant_identifier_columns():
 
 def test_no_participant_level_data_in_polaris_population_payload():
     payload = _load_payload()
-    raw_json = json.dumps(payload["populations"]["polaris"])
+    raw_json = json.dumps(payload["populations"]["target_polaris_like"])
     for forbidden in ["\"RID\"", "\"PTID\"", "\"LONIUID\"", "\"USUBJID\"", "\"SUBJID\""]:
         assert forbidden not in raw_json
 
@@ -1129,7 +1139,7 @@ def test_biomarker_absolute_data_support_present_for_overall_and_polaris():
     does."""
     payload = _load_payload()
     overall_text = payload["populations"]["overall"]["biomarkerDataSupport"]["GFAP"]["Quanterix"]["primary"]["absolute"]
-    polaris_text = payload["populations"]["polaris"]["biomarkerDataSupport"]["GFAP"]["Quanterix"]["primary"]["absolute"]
+    polaris_text = payload["populations"]["target_polaris_like"]["biomarkerDataSupport"]["GFAP"]["Quanterix"]["primary"]["absolute"]
     assert overall_text.startswith("GFAP:")
     assert polaris_text.startswith("GFAP:")
     assert overall_text != polaris_text
@@ -1148,7 +1158,7 @@ def test_biomarker_data_support_distinguishes_change_and_absolute_questions():
 def test_population_switching_uses_correct_biomarker_absolute_data():
     payload = _load_payload()
     overall_abs = payload["populations"]["overall"]["biomarkersAbsolute"]["pTau181"]["Gothenburg_Simoa"]["primary"]
-    polaris_abs = payload["populations"]["polaris"]["biomarkersAbsolute"]["pTau181"]["Gothenburg_Simoa"]["primary"]
+    polaris_abs = payload["populations"]["target_polaris_like"]["biomarkersAbsolute"]["pTau181"]["Gothenburg_Simoa"]["primary"]
     assert overall_abs != polaris_abs
     overall_n = {(p["month"], p["group"]): p["n"] for p in overall_abs}
     polaris_n = {(p["month"], p["group"]): p["n"] for p in polaris_abs}
@@ -1242,16 +1252,14 @@ def test_biomarker_error_bars_hidden_on_chart_but_cognitive_unaffected():
     render_bio_start = html_source.index("function renderBiomarkerChart()")
     render_bio_end = html_source.index("function toggleCollapsible")
     render_bio_body = html_source[render_bio_start:render_bio_end]
-    assert 'buildGroupTraces(pointsByGroup, spec.label + " concentration", "", false)' in render_bio_body
-    assert 'buildGroupTraces(pointsByGroup, "Geometric mean % change", "%", false)' in render_bio_body
+    assert 'buildGroupTraces(pointsByGroup, showAbsolute ? (spec.label + " concentration") : "Geometric mean % change", showAbsolute ? "" : "%", false)' in render_bio_body
 
     render_cog_start = html_source.index("function renderCognitiveChart()")
     render_cog_end = html_source.index("function renderBiomarkerChart", render_cog_start)
     render_cog_body = html_source[render_cog_start:render_cog_end]
-    # Cognitive calls keep their original 3-argument form (default
-    # showErrorBars=true) -- no ", false)" 4th-argument opt-out.
-    assert 'buildGroupTraces(pointsByGroup, spec.label + " score", "");' in render_cog_body
-    assert 'buildGroupTraces(pointsByGroup, "Change from baseline", "");' in render_cog_body
+    # Cognitive calls keep the default (visible) showErrorBars behavior
+    # -- no 4th-argument opt-out, unlike the biomarker call above.
+    assert 'buildGroupTraces(pointsByGroup, showAbsolute ? (spec.label + " score") : "Change from baseline", "");' in render_cog_body
 
     # Hover still carries the exact CI regardless of on-chart visibility.
     assert '"95% CI (HC3)"' in html_source or "95% CI (HC3)" in html_source
@@ -1302,8 +1310,9 @@ def test_fade_span_helper_used_for_key_pattern_and_data_support_updates():
     though the container element itself is never recreated."""
     html_source = _load_dashboard_html()
     assert "function fadeSpan(html)" in html_source
-    assert 'innerHTML = fadeSpan(pop.keyPatterns.cognitive[cognitiveView][cognitiveEndpointKey])' in html_source
-    assert 'innerHTML = fadeSpan(pop.keyPatterns.biomarkers[biomarkerView][currentBiomarker][currentPlatform][currentAnalysisType])' in html_source
+    assert "targetPop.keyPatterns.cognitive[showAbsolute" in html_source
+    assert "targetPop.keyPatterns.biomarkers[showAbsolute" in html_source
+    assert "fadeSpan(" in html_source and "innerHTML = fadeSpan(" in html_source
     assert "supportDiv.innerHTML = fadeSpan(supportText)" in html_source
 
 
@@ -1352,246 +1361,257 @@ def test_trend_bolded_and_sparse_points_faded_in_buildGroupTraces():
     assert '"⚠ n="' in body
 
 
-def test_population_filter_reads_as_a_filter_and_lives_in_the_unified_header_card():
-    """Redesign requirements: (1) it must be unambiguous that this
-    control is a FILTER (explicit wording, an icon), and (2) it must be
-    visually consistent with its siblings -- one section of the shared
-    .header-info-card (same radius/shadow as the description/stats/
-    legend), not its own separately-shadowed, differently-rounded box."""
+def test_no_dead_two_column_layout_css_remains():
+    """The old 2-column HEADER layout (superseded by the linear A-G flow
+    + sticky flow-nav) must not leave orphaned CSS rules behind -- a
+    stale selector matching nothing is worse than no rule at all, since
+    it invites a future edit to "fix" markup that no longer exists.
+    .trajectories-row itself is NOT dead -- it was deliberately
+    reintroduced to put D and E side by side (see the alignment test
+    below); this only asserts on the OLD header-specific classes that
+    the reintroduced row does not use."""
     html_source = _load_dashboard_html()
-    assert "Filter by population:" in html_source
-    assert 'class="population-filter-icon"' in html_source
-
-    card_start = html_source.index('class="header-info-card"')
-    card_end = html_source.index("</main>", card_start)
-    card_html = html_source[card_start:card_end]
-    # All four sections share the same parent card.
-    assert "header-info-disclaimer" in card_html
-    assert "header-info-stats" in card_html
-    assert "header-info-legend" in card_html
-    assert "header-info-filter-row" in card_html
-
-    # The old separately-boxed/pill-shaped filter container is gone.
-    assert 'class="population-filter-bar"' not in html_source
-    assert 'class="population-panel"' not in html_source
-    assert 'class="population-toggle-row"' not in html_source
-
-    # Structural/behavioral pieces the JS still depends on are preserved.
-    assert 'id="populationToggleGroup"' in html_source
-    assert 'id="populationHelperOverall"' in html_source
-    assert 'class="population-helper is-hidden" id="populationHelperPolaris"' in html_source
+    for dead_class in (
+        ".header-continuum-row", ".header-left-col", ".header-right-col",
+        ".header-info-cohort-card", ".header-info-population",
+        ".population-header-row", ".population-summary-name", ".view-cohort-def-link",
+        ".population-retention", ".polaris-context-box", ".polaris-disclaimer",
+    ):
+        assert dead_class not in html_source, f"dead CSS class {dead_class!r} still present"
 
 
-def test_disease_continuum_sits_beside_header_description_labels_and_filter():
-    """Disease Continuum must render in a right-hand column next to a
-    left column holding the page description, cohort-summary
-    ("participants info"), status legend ("labels"), AND the Population
-    filter -- not as its own stacked, full-width section below them."""
-    html_source = _load_dashboard_html()
-    row_start = html_source.index('class="header-continuum-row"')
-    row_end = html_source.index("</main>", row_start)
-    row_html = html_source[row_start:row_end]
-
-    left_start = row_html.index('class="header-left-col"')
-    right_start = row_html.index('class="header-right-col"')
-    assert left_start < right_start, "left column must come before the right column"
-
-    left_html = row_html[left_start:right_start]
-    right_html = row_html[right_start:]
-    assert "ADNI Natural History Dashboard" in left_html  # description
-    assert "header-info-stats" in left_html  # participants info
-    assert "header-info-legend" in left_html  # labels
-    assert "header-info-filter-row" in left_html  # filter
-    assert "Disease Continuum" not in left_html
-    assert "Disease Continuum" in right_html
-    assert 'id="diseaseContinuumChart"' in right_html
-
-
-def test_cognitive_and_biomarker_trajectories_sit_side_by_side():
-    """On wide screens, Cognitive Trajectories and Plasma Biomarker
-    Trajectories must be two columns of one flex row (.trajectories-row),
-    not two independently stacked full-width sections."""
+def test_cognitive_and_biomarker_sections_are_side_by_side_and_aligned():
+    """D and E must render inside the same .trajectories-row flex
+    container (side by side on wide screens), and the shared sub-blocks
+    (subtitle, toggle-row-block, meta-row, notes-zone) must all carry a
+    matched min-height reservation so the two charts start at the same
+    Y position regardless of which card's controls are toggled."""
     html_source = _load_dashboard_html()
     row_start = html_source.index('class="trajectories-row"')
-    cognitive_h2 = html_source.index("<h2>Cognitive Trajectories</h2>")
-    biomarker_h2 = html_source.index("<h2>Plasma Biomarker Trajectories</h2>")
-    row_end = html_source.index("</div>", biomarker_h2)
-    # Both headings must fall inside the trajectories-row wrapper, and
-    # cognitive must come first (left column) per the existing page order.
-    assert row_start < cognitive_h2 < biomarker_h2
-    assert "flex: 1 1 500px" in html_source
+    d_pos = html_source.index('id="step-d"', row_start)
+    e_pos = html_source.index('id="step-e"', row_start)
+    row_end = html_source.index("</div>", e_pos)
+    assert row_start < d_pos < e_pos < row_end, "D and E must both sit inside .trajectories-row, D before E"
 
-
-def test_disease_continuum_and_biomarker_trajectories_columns_are_aligned():
-    """Disease Continuum's right column and Plasma Biomarker
-    Trajectories' right column must share the identical flex-basis/
-    min-width AND the identical wrap breakpoint as their left-column
-    siblings -- otherwise the two rows render different column widths
-    and can flip between 1-column/2-column independently, leaving the
-    panels visually misaligned down the page."""
-    html_source = _load_dashboard_html()
-    assert ".header-left-col { flex: 1 1 500px; min-width: 440px;" in html_source
-    assert ".header-right-col { flex: 1 1 500px; min-width: 440px;" in html_source
-    assert "@media (max-width: 1300px) { .header-continuum-row { flex-direction: column; } }" in html_source
-    assert "@media (max-width: 1300px) { .trajectories-row { flex-direction: column; } }" in html_source
-
-
-def test_paired_panel_bottoms_are_aligned_not_just_tops():
-    """Both row pairs (header card vs. Disease Continuum; Cognitive vs.
-    Biomarker Trajectories) must stretch to match heights (align-items:
-    stretch, the flex default) so their BOTTOM edges line up, and the
-    inner content (chart / heatmap / last filter section) -- not blank
-    space -- must be what absorbs any extra height, so a shorter panel
-    never shows a bare gap between its content and its own bottom edge."""
-    html_source = _load_dashboard_html()
+    assert ".trajectories-row { display: flex;" in html_source
     assert "align-items: stretch" in html_source
-    assert "align-items: flex-start" not in html_source  # the earlier tops-only approach is gone
+    assert ".trajectories-row > section.panel > .panel-sub { min-height:" in html_source
+    assert ".trajectories-row .toggle-row-block { min-height:" in html_source
+    assert ".trajectories-row .meta-row { min-height:" in html_source
+    assert ".trajectories-row .notes-zone { min-height:" in html_source
+    assert ".trajectories-row > section.panel .chart-card { flex: 1 1 auto; }" in html_source
 
-    # Header row: card and heatmap grow via flex: 1, not leftover blank space.
-    assert ".header-left-col .header-info-card { flex: 1;" in html_source
-    assert ".header-info-filter-row { flex: 1; }" in html_source
-    assert ".header-right-col section.panel { margin-bottom: 0; flex: 1;" in html_source
-    assert ".header-right-col .continuum-card { flex: 1; }" in html_source
-
-    # Trajectories row: each panel's own chart grows via flex: 1.
-    assert ".trajectories-row > section.panel .chart-card { flex: 1; }" in html_source
+    # Both cards wrap their toggle row(s) in the same alignment container.
+    assert html_source.count('class="toggle-row-block"') == 2
 
 
-def test_polaris_cohort_construction_does_not_auto_expand_when_polaris_selected():
-    """Selecting POLARIS AD-Aligned must only reveal the section HEADER
-    (title + one-line hint + chevron) -- the funnel/population-profile
-    body must stay collapsed until the user clicks it, using the same
-    .collapsible-toggle/.collapsible-body mechanism as Statistical
-    Results/Analysis Details rather than popping open automatically."""
+def test_panel_key_row_no_longer_has_a_negative_margin_overlap_bug():
+    """Regression guard for the reported Part-D overlap: the line-style
+    legend row must never use a large negative top margin (the old
+    hardcoded -54px, tuned for a header layout that no longer exists,
+    which pulled it up into the subtitle text above it)."""
     html_source = _load_dashboard_html()
-    panel_start = html_source.index('id="polarisPanel"')
-    panel_end = html_source.index("</section>", panel_start)
-    panel_html = html_source[panel_start:panel_end]
-
-    assert 'onclick="toggleCollapsible(this)"' in panel_html
-    assert 'class="collapsible-body"' in panel_html
-    # Neither the toggle header nor the body carries the "open" class by
-    # default -- collapsed until clicked.
-    assert 'class="collapsible-toggle open"' not in panel_html
-    assert 'class="collapsible-body open"' not in panel_html
-
-    # .collapsible-toggle's IMMEDIATE next sibling must be
-    # .collapsible-body (toggleCollapsible() uses nextElementSibling),
-    # so the hint text must live inside one of those two elements, not
-    # as a sibling paragraph in between that would break the toggle.
-    # Anchor on the chevron span (always the last child of
-    # .collapsible-toggle right before its own closing tag) rather than
-    # counting </div>s, since that count is fragile to nested markup.
-    chev_end = panel_html.index("</span>", panel_html.index('class="chev"')) + len("</span>")
-    toggle_close = panel_html.index("</div>", chev_end) + len("</div>")
-    assert panel_html[toggle_close:].lstrip().startswith('<div class="collapsible-body"')
-
-    # setPopulation() enables/disables the toggle based on population
-    # (never display:none, so switching population can't shift page
-    # layout) -- and resets it back to collapsed whenever POLARIS is
-    # deselected, so re-selecting it later never shows it pre-expanded.
-    assert 'polarisPanelEl.classList.toggle("polaris-panel--disabled", pop !== "polaris")' in html_source
-    assert 'polarisToggleHeader.classList.remove("open")' in html_source
+    rule = ".panel-key-row { display: flex; flex-direction: column; gap: 4px; align-items: stretch; font-size: 12px; color: #556; margin: 2px 0 10px; }"
+    assert rule in html_source
+    assert "margin: -54px" not in html_source
 
 
-def test_polaris_cohort_construction_appears_inside_header_card_under_filter():
-    """The POLARIS AD-Aligned Cohort Construction toggle must live
-    INSIDE .header-info-card, immediately after the population filter
-    row -- not as its own separate full-width section appearing
-    somewhere further down the page."""
+def test_preset_grid_fits_all_presets_in_one_row():
     html_source = _load_dashboard_html()
-    card_start = html_source.index('class="header-info-card"')
-    card_end = html_source.index("</main>", card_start)
-    card_html = html_source[card_start:card_end]
-
-    filter_row_pos = card_html.index("header-info-filter-row")
-    polaris_pos = card_html.index('id="polarisPanel"')
-    card_close_pos = card_html.index('<div class="header-right-col">')
-    assert filter_row_pos < polaris_pos < card_close_pos, (
-        "polarisPanel must sit inside header-info-card, after the filter row"
-    )
-    # It is no longer its own standalone section.panel.
-    assert 'class="panel polaris-panel"' not in html_source
-    assert 'class="header-info-section polaris-panel' in html_source
+    assert ".preset-card-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));" in html_source
 
 
-def test_switching_population_never_removes_polaris_toggle_from_layout():
-    """The POLARIS Cohort Construction toggle must never be display:none
-    -- it stays in the document flow at a fixed height regardless of
-    which population is selected, only its enabled/disabled look and
-    hint text change, so switching population can never shift the
-    header card's height (or anything below it on the page)."""
+def test_first_preset_is_not_named_polaris_like():
+    """Requirement: the first preset's user-visible label/description
+    must not expose "POLARIS" branding -- the internal id (data-preset
+    attribute, never rendered as visible text) is unaffected, and a
+    historical/technical reference in the Methods documentation (which
+    explains this feature's lineage, not a preset's display name) is
+    also unaffected."""
+    payload = _load_payload()
+    catalog = {p["id"]: p for p in payload["presetCatalog"]}
+    first = catalog["polaris_like"]
+    assert "polaris" not in first["label"].lower()
+    assert "polaris" not in first["description"].lower()
+
+    entry = _load_target_population_entry("polaris_like")
+    for step in entry["funnel"]:
+        assert "polaris" not in step["step"].lower()
+
     html_source = _load_dashboard_html()
-    id_pos = html_source.index('id="polarisPanel"')
-    tag_start = html_source.rindex("<div", 0, id_pos)
-    tag_end = html_source.index(">", id_pos)
-    opening_tag = html_source[tag_start:tag_end]
-    assert "style=" not in opening_tag or "display:none" not in opening_tag
-    assert "polaris-panel--disabled" in opening_tag  # starts disabled (Overall ADNI is the default)
-
-    # JS never sets display on polarisPanel -- only the disabled class
-    # and the hint text change.
-    assert 'polarisPanel").style.display' not in html_source
-    assert 'id="polarisHintDisabled"' in html_source
-    assert 'id="polarisHintEnabled"' in html_source
+    for marker_start, marker_end in [
+        ('class="preset-card-grid"', "</div>\n      <div class=\"preset-summary-row\""),
+        ('id="eligibilityFunnel"', "</div>\n    </section>"),
+        ('id="populationProfileGrid"', "</div>\n      <div class=\"collapsible-toggle\""),
+    ]:
+        start = html_source.index(marker_start)
+        end = html_source.index(marker_end, start)
+        assert "POLARIS" not in html_source[start:end], f"POLARIS text leaked into {marker_start}"
 
 
-def test_population_helper_text_height_is_reserved_for_both_sentences():
-    """The Overall/POLARIS helper sentences are very different lengths
-    (POLARIS's wraps onto an extra line at typical widths). Both must
-    be stacked in the SAME grid cell and toggled via a visibility class
-    (never display), so the row's height is always the taller of the
-    two regardless of which is shown -- otherwise switching population
-    grows the header card (and, since it's stretch-aligned, Disease
-    Continuum too) taller and shifts everything below on the page."""
+# ------------------------------------------------------------------
+# Interactive cohort-definition tool (new A-G workflow)
+# ------------------------------------------------------------------
+
+
+def test_page_sections_appear_in_a_through_g_order():
+    """Each section header is now a step-badge (A-G) + title, not a
+    contiguous "A. Title" string -- ordering is checked via the anchor
+    ids the flow-nav points at (id="step-a" etc.), and each title's own
+    text is checked separately for presence."""
     html_source = _load_dashboard_html()
-    assert 'class="population-helper-stack"' in html_source
-    assert ".population-helper-stack { display: grid;" in html_source
-    assert ".population-helper-stack > .population-helper { grid-area: 1 / 1; }" in html_source
-    assert ".is-hidden { visibility: hidden; }" in html_source
+    anchors = ["step-a", "step-b", "step-c", "step-d", "step-e", "step-f", "step-g"]
+    positions = [html_source.index(f'id="{a}"') for a in anchors]
+    assert positions == sorted(positions), "A-G sections must appear in order"
 
-    # Both sentences are present in markup at all times (only one has
-    # is-hidden initially) -- neither is display:none.
-    assert 'class="population-helper" id="populationHelperOverall"' in html_source
-    assert 'class="population-helper is-hidden" id="populationHelperPolaris"' in html_source
-    assert 'id="populationHelperOverall" style="display:none;"' not in html_source
-    assert 'id="populationHelperPolaris" style="display:none;"' not in html_source
+    titles = [
+        "Define Target Population", "Eligibility / Cohort Flow", "Target Population Profile vs Overall ADNI",
+        "Cognitive Progression Comparison", "Biomarker Progression Comparison", "Statistical Results",
+        "Analysis Details", "Methods", "Limitations",
+    ]
+    for title in titles:
+        assert title in html_source
 
-    # JS toggles the class, never .style.display, for either sentence.
-    assert 'populationHelperOverall").classList.toggle("is-hidden"' in html_source
-    assert 'populationHelperPolaris").classList.toggle("is-hidden"' in html_source
-    assert 'populationHelperOverall").style.display' not in html_source
-    assert 'populationHelperPolaris").style.display' not in html_source
+    # Disease Continuum no longer interrupts the primary workflow --
+    # it must appear after step-e (Biomarker Progression) and before step-g.
+    continuum_pos = html_source.index("Disease Continuum (Overall ADNI)")
+    assert positions[anchors.index("step-e")] < continuum_pos < positions[anchors.index("step-g")]
+
+    # The flow-nav itself must expose the same 7 anchors, in order.
+    nav_start = html_source.index('id="flowNav"')
+    nav_end = html_source.index("</nav>", nav_start)
+    nav_html = html_source[nav_start:nav_end]
+    nav_positions = [nav_html.index(f'href="#{a}"') for a in anchors]
+    assert nav_positions == sorted(nav_positions)
 
 
-def test_polaris_hint_and_disease_continuum_note_also_reserve_height():
-    """Two more spots with the identical population-dependent-text-
-    length problem: the POLARIS toggle's enabled hint sentence is much
-    longer than its disabled one (wraps an extra line), and the Disease
-    Continuum POLARIS note either exists or doesn't (a whole extra
-    line). Both must use the same stack-and-toggle-visibility pattern,
-    never display/textContent swaps, so neither can change its card's
-    height when population changes."""
+def test_preset_picker_renders_all_six_presets_with_criteria_and_n():
+    payload = _load_payload()
+    catalog = payload["presetCatalog"]
+    assert len(catalog) == 6
+    ids = {p["id"] for p in catalog}
+    assert ids == {
+        "polaris_like", "mild_moderate_amyloid", "mild_dementia_amyloid",
+        "prodromal_mci_amyloid", "biomarker_complete", "age_restricted_sensitivity",
+    }
+    for p in catalog:
+        assert p["n"] > 0
+        assert p["description"]
     html_source = _load_dashboard_html()
+    for p in catalog:
+        assert f'data-preset="{p["id"]}"' in html_source
+        assert html.escape(p["description"]) in html_source or p["description"] in html_source
 
-    # Hint stack: both sentences present, grid-stacked, toggled by class.
-    assert 'class="polaris-hint-stack"' in html_source
-    assert ".polaris-hint-stack { display: grid; }" in html_source
-    assert ".polaris-hint-stack > .polaris-hint { grid-area: 1 / 1;" in html_source
-    assert 'class="panel-sub polaris-hint" id="polarisHintDisabled"' in html_source
-    assert 'class="panel-sub polaris-hint is-hidden" id="polarisHintEnabled"' in html_source
-    assert 'polarisHintDisabled").classList.toggle("is-hidden"' in html_source
-    assert 'polarisHintEnabled").classList.toggle("is-hidden"' in html_source
-    assert 'getElementById("polarisToggleHint")' not in html_source
 
-    # Disease Continuum note: always present, never display:none,
-    # toggled by the same visibility class.
-    assert 'class="population-note is-hidden" id="diseaseContinuumPolarisNote"' in html_source
-    assert 'diseaseContinuumPolarisNote").classList.toggle("is-hidden"' in html_source
-    assert 'diseaseContinuumPolarisNote").style.display' not in html_source
+def test_polaris_like_preset_is_flagged_and_others_are_not():
+    payload = _load_payload()
+    catalog = {p["id"]: p for p in payload["presetCatalog"]}
+    assert catalog["polaris_like"]["isPolarisEquivalent"] is True
+    assert sum(1 for p in catalog.values() if p["isPolarisEquivalent"]) == 1
+
+
+def test_custom_population_is_honestly_scoped_to_curated_presets():
+    """Requirement: "Custom Population" must not imply free-form live
+    filtering -- the page copy must say so explicitly, both at the
+    picker (Section A) and in the full Methods explanation."""
+    html_source = _load_dashboard_html()
+    assert "not a live filter" in html_source
+    assert "single static HTML file with no backend" in html_source
+    assert "can never be evaluated in the browser" in html_source
+
+
+def test_eligibility_funnel_distinguishes_available_from_threshold_steps():
+    entry = _load_target_population_entry("mild_moderate_amyloid")
+    steps = [s["step"] for s in entry["funnel"]]
+    assert any("available" in s.lower() for s in steps)
+    assert any("MMSE" in s and "available" not in s.lower() for s in steps)
+    assert steps[0] == "Validated ADNI cohort"
+    assert entry["funnel"][-1]["remaining_n"] == entry["n"]
+
+
+def test_target_population_profile_is_purely_descriptive():
+    entry = _load_target_population_entry("mild_moderate_amyloid")
+    forbidden = {"p_value", "p", "t_stat", "f_stat", "test_statistic"}
+    for row in entry["profile"]:
+        assert forbidden.isdisjoint({k.lower() for k in row.keys()})
+
+
+def test_dual_population_pooled_chart_has_overall_and_target_series():
+    entry = _load_target_population_entry("polaris_like")
+    points = entry["pooled"]["ADAS_COG13"]
+    groups = {p["group"] for p in points}
+    assert groups == {"Overall ADNI", "Target Population"}
+    # 7 months x 2 populations
+    assert len(points) == 14
+
+
+def test_pooled_trajectory_never_carries_a_test_statistic_or_p_value():
+    entry = _load_target_population_entry("polaris_like")
+    for points in entry["pooled"].values():
+        for p in points:
+            assert "overall_p_hc3" not in p or p.get("overall_p_hc3") is None
+            assert p["classification"] in ("B. Descriptive only", "D. Not available")
+
+
+def test_pooled_default_mode_is_wired_in_javascript():
+    html_source = _load_dashboard_html()
+    assert 'let cognitiveCompareMode = "pooled";' in html_source
+    assert 'let biomarkerCompareMode = "pooled";' in html_source
+    assert "function pooledPointsByPopulation(pooledPoints)" in html_source
+    assert "function byGroupPointsByPopulation(overallSeries, targetSeries, dxGroup)" in html_source
+
+
+def test_by_group_drilldown_never_shows_more_than_two_series_at_once():
+    """Requirement: never explode into population x diagnosis (6 lines)
+    -- the drill-down relabels points down to exactly 2 outer keys
+    (Overall ADNI / Target Population) for one chosen diagnosis group,
+    it never keeps a 3rd/4th/5th/6th group key alive simultaneously."""
+    html_source = _load_dashboard_html()
+    func_start = html_source.index("function byGroupPointsByPopulation(")
+    func_end = html_source.index("\n}\n", func_start)
+    body = html_source[func_start:func_end]
+    assert body.count('out["Overall ADNI"]') <= 1 or "\"Overall ADNI\": relabel" in body
+    assert "return { \"Overall ADNI\": relabel(overallSeries, \"Overall ADNI\"), \"Target Population\": relabel(targetSeries, \"Target Population\") };" in body
+
+
+def test_target_population_files_have_no_participant_identifiers():
+    for name in ["presets", "cohort_attrition", "profile", "cognitive_trajectories", "biomarker_trajectories", "trajectory_status", "pooled_trajectories"]:
+        df = D.load_aggregate_csv(ADNI_OUTPUTS_DIR, f"adni_target_population_{name}.csv")
+        forbidden = {c.upper() for c in D._FORBIDDEN_COLUMNS}
+        assert forbidden.isdisjoint({c.upper() for c in df.columns})
+
+
+def test_no_subset_vs_superset_statistical_test_anywhere_in_payload():
+    """The most important methodological guardrail: Target Population is
+    always a subset of Overall ADNI, so no p-value/test-statistic
+    comparing them may exist anywhere in the target-population part of
+    the payload."""
+    entry = _load_target_population_entry("polaris_like")
+    payload_json = json.dumps(entry)
+    for forbidden_key in ['"p_value"', '"t_stat"', '"f_stat"', '"test_statistic"']:
+        assert forbidden_key not in payload_json
+
+
+def test_reframed_natural_history_placebo_reference_copy_present():
+    html_source = _load_dashboard_html()
+    assert "natural-history / placebo-reference population" in html_source
+    assert "not a true external control arm" in html_source
 
 
 ALL_TESTS = [
+    test_page_sections_appear_in_a_through_g_order,
+    test_preset_picker_renders_all_six_presets_with_criteria_and_n,
+    test_polaris_like_preset_is_flagged_and_others_are_not,
+    test_custom_population_is_honestly_scoped_to_curated_presets,
+    test_eligibility_funnel_distinguishes_available_from_threshold_steps,
+    test_target_population_profile_is_purely_descriptive,
+    test_dual_population_pooled_chart_has_overall_and_target_series,
+    test_pooled_trajectory_never_carries_a_test_statistic_or_p_value,
+    test_pooled_default_mode_is_wired_in_javascript,
+    test_by_group_drilldown_never_shows_more_than_two_series_at_once,
+    test_target_population_files_have_no_participant_identifiers,
+    test_no_subset_vs_superset_statistical_test_anywhere_in_payload,
+    test_reframed_natural_history_placebo_reference_copy_present,
     test_governance_rejects_raw_interim_processed_paths,
     test_governance_rejects_parquet_files,
     test_governance_rejects_participant_identifier_columns,
@@ -1642,8 +1662,8 @@ ALL_TESTS = [
     test_polaris_population_profile_matches_governed_csv,
     test_not_propensity_score_matched_disclaimer_present,
     test_apoe4_context_text_is_neutral_not_causal,
-    test_disease_continuum_polaris_note_present_and_labeled,
-    test_existing_trajectory_payload_unchanged_by_polaris_addition,
+    test_disease_continuum_stays_overall_only_and_is_labeled,
+    test_existing_trajectory_payload_unchanged_by_target_population_addition,
     test_real_dashboard_disease_continuum_and_cognitive_values_still_match_direct_computation,
     test_polaris_loader_uses_only_governed_aggregate_csv_entry_point,
     test_polaris_loader_rejects_participant_identifier_columns,
@@ -1652,7 +1672,6 @@ ALL_TESTS = [
     test_existing_governance_protections_still_intact,
     test_population_selector_changes_cognitive_data_source,
     test_population_selector_changes_biomarker_data_source,
-    test_overall_population_unchanged_when_polaris_trajectories_are_added,
     test_polaris_baseline_values_match_validated_population_profile,
     test_polaris_status_classification_matches_governed_status_csv,
     test_polaris_sparse_observations_remain_disconnected,
@@ -1682,16 +1701,11 @@ ALL_TESTS = [
     test_fade_span_helper_used_for_key_pattern_and_data_support_updates,
     test_disease_continuum_spells_out_group_abbreviations_directly_on_the_chart,
     test_trend_bolded_and_sparse_points_faded_in_buildGroupTraces,
-    test_population_filter_reads_as_a_filter_and_lives_in_the_unified_header_card,
-    test_disease_continuum_sits_beside_header_description_labels_and_filter,
-    test_cognitive_and_biomarker_trajectories_sit_side_by_side,
-    test_disease_continuum_and_biomarker_trajectories_columns_are_aligned,
-    test_paired_panel_bottoms_are_aligned_not_just_tops,
-    test_polaris_cohort_construction_does_not_auto_expand_when_polaris_selected,
-    test_polaris_cohort_construction_appears_inside_header_card_under_filter,
-    test_switching_population_never_removes_polaris_toggle_from_layout,
-    test_population_helper_text_height_is_reserved_for_both_sentences,
-    test_polaris_hint_and_disease_continuum_note_also_reserve_height,
+    test_no_dead_two_column_layout_css_remains,
+    test_cognitive_and_biomarker_sections_are_side_by_side_and_aligned,
+    test_panel_key_row_no_longer_has_a_negative_margin_overlap_bug,
+    test_preset_grid_fits_all_presets_in_one_row,
+    test_first_preset_is_not_named_polaris_like,
 ]
 
 
