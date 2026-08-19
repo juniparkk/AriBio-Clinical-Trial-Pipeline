@@ -91,7 +91,7 @@
 import pandas as pd
 
 import aribio_watchlist
-from drug_classification import normalize_text, _company_matches
+from drug_classification import normalize_text, _company_matches, STALE_PHASE3_DISCONTINUED_LABEL
 
 # --- change-type point constants ---
 POINTS_RESULTS_POSTED = 30
@@ -155,7 +155,7 @@ _CHANGE_TYPE_DESCRIPTIONS = {
     "highest_drug_phase_change": "{canonical_drug_name}'s highest reported phase changed from {old_value} to {new_value}.",
     "enrollment_change": "Enrollment changed from {old_value} to {new_value}.",
     "primary_completion_date_change": "Primary completion date changed from {old_value} to {new_value}.",
-    "completion_date_change": "Study completion date changed from {old_value} to {new_value}.",
+    "completion_date_change": "Study/Overall completion date changed from {old_value} to {new_value}.",
     "sponsor_change": "Sponsor changed from {old_value} to {new_value}.",
     "results_posted": "Results were newly posted on ClinicalTrials.gov.",
     "new_drug": "A new candidate, {canonical_drug_name}, was identified in the pipeline.",
@@ -712,7 +712,7 @@ def build_milestones(annotated_df, trials_df, changes_df, watchlist, today=None,
         # it's excluded from the "upcoming" buckets — it can still
         # appear in recently_completed, where a past date is a real,
         # already-happened fact regardless of why the trial ended.
-        if pd.notna(pcd) and info.get("status_clean") != "Discontinued":
+        if pd.notna(pcd) and info.get("status_clean") not in ("Discontinued", STALE_PHASE3_DISCONTINUED_LABEL):
             days_out = (pcd - today).days
             if 0 <= days_out <= thresholds["primary_completion_imminent_days"]:
                 next_30.append(item)

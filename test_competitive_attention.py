@@ -1103,7 +1103,7 @@ def test_recent_changes_cards_render_in_two_column_grid():
     assert '<div class="attention-cards-grid">' in html
     # Both cards must live inside the same grid wrapper, not two separate ones.
     assert html.count('<div class="attention-cards-grid">') == 1
-    assert html.count('<div class="attention-card">') == 2
+    assert html.count('<div class="attention-card js-drug-row">') == 2
 
 
 def test_needs_attention_cards_are_not_wrapped_in_two_column_grid():

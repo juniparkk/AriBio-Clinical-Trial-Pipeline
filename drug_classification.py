@@ -759,6 +759,20 @@ APPROVED_BACKGROUND_DRUGS = {
 # 3-7 digits, optional trailing letter — e.g. "AR1001", "SAR110894",
 # "BMS-708163", "E2814". Deliberately requires digits, so ordinary
 # words (Donepezil, Memantine, Wujia Yizhi granules) never match.
+#
+# Tried (and reverted) widening this to also match a trailing "-NN"
+# dose/arm suffix, e.g. "AVP-923-20"/"AVP-923-30" (Nuedexta's two dose
+# arms in NCT01584440, the one AD trial keeping its dataset trial_count
+# at 2 instead of 3) -- it doesn't help: a trial listing BOTH
+# "AVP-923-20" AND "AVP-923-30" as separate interventions then matches
+# TWO distinct-looking codes in the same trial, which resolve_developed_
+# drug() correctly can't tell apart from two genuinely different drugs,
+# so it flags multiple_candidates_unresolved (Needs Review) instead of
+# no_therapeutic_candidate (also Needs Review) -- same outcome, not an
+# improvement, and it additionally pulled two OTHER, previously-clean
+# trials (AVP-786-18/-28 and BR4002/BR4002-1) into the same
+# false-ambiguity bucket. Actually fixing this needs dose-suffix-aware
+# grouping in resolve_developed_drug() itself, not a wider regex here.
 _DEV_CODE_PATTERN = re.compile(r"^[A-Za-z]{1,5}-?\d{3,7}[A-Za-z]?$")
 
 
@@ -1384,7 +1398,57 @@ def resolve_developed_drug(classified_interventions):
 # ============================================================
 
 _CONFIDENCE_RANK = {"high": 3, "medium": 2, "low": 1}
-_DRUG_ROLLUP_STATUS_PRIORITY = ["FDA Approved", "Recruiting", "Active", "Completed", "Discontinued", "Unknown", "Other"]
+
+# Distinct from ct.gov's own TERMINATED/WITHDRAWN/SUSPENDED-derived
+# "Discontinued" (see pipeline_viz.py's STATUS_MAP) -- this label covers
+# a Phase 3 trial whose primary completion date is more than
+# STALE_PHASE3_YEARS years in the past with no FDA approval anywhere in
+# the drug's own trial history: a program ct.gov itself never marked as
+# ended, but that's realistically abandoned. Every module that treats
+# "Discontinued" as a terminal/non-competitive status (relevance-score
+# capping, milestone bucketing, NIH reference bucketing, row styling)
+# must treat this label the same way -- see its usages in
+# pipeline_viz.py, competitive_attention.py, competitive_intelligence.py,
+# and nih_reference.py.
+STALE_PHASE3_DISCONTINUED_LABEL = "Discontinued (Presumed)"
+STALE_PHASE3_YEARS = 3
+
+
+# "Discontinued" ranks ABOVE "Trial Completed" (but still below
+# FDA Approved/Active, which both mean the program is live regardless of
+# what happened on any other trial) -- ONLY when the drug's top phase is
+# still investigational (Phase 1/2/3, including the combined ct.gov
+# designations). When a drug's top-phase trials disagree, e.g. one
+# Phase 3 trial completed on schedule while a different Phase 3 trial
+# for the SAME drug was terminated/withdrawn, "Trial Completed" is the
+# unremarkable default outcome while "Discontinued" is the rarer,
+# stronger signal that shouldn't be masked just because some other trial
+# of the same drug happened to finish. Gantenerumab is the motivating
+# case: GRADUATE 1/2 completed on schedule (their primary endpoints just
+# weren't met), but 3 of its other Phase-3-ranked trials are ct.gov
+# TERMINATED/WITHDRAWN -- the old "Trial Completed"-first ordering hid
+# that entirely.
+#
+# At Phase 4 (and NA), the opposite ordering is kept -- "Trial Completed"
+# still beats "Discontinued" there. Phase 4 is POST-marketing activity on
+# an already-approved drug: a terminated real-world/surveillance study
+# (funding lapse, a PI leaving, slow enrollment) says nothing about
+# whether the underlying drug is still viable, and for a widely-studied
+# generic with dozens of Phase 4 trials (Donepezil: 40, Galantamine: 26,
+# Memantine: 22 in this dataset) even one terminated study would
+# otherwise flip a live, commonly-prescribed drug to "Discontinued" on
+# pure noise -- exactly the false-positive this carve-out exists to avoid.
+_DRUG_ROLLUP_STATUS_PRIORITY_INVESTIGATIONAL = [
+    "FDA Approved", "Active", "Discontinued", "Trial Completed",
+    STALE_PHASE3_DISCONTINUED_LABEL, "Unknown", "Other",
+]
+_DRUG_ROLLUP_STATUS_PRIORITY_POST_MARKETING = [
+    "FDA Approved", "Active", "Trial Completed", "Discontinued",
+    STALE_PHASE3_DISCONTINUED_LABEL, "Unknown", "Other",
+]
+_DRUG_ROLLUP_INVESTIGATIONAL_PHASES = {
+    "Early Phase 1", "Phase 1", "Phase 1/Phase 2", "Phase 2", "Phase 2/Phase 3", "Phase 3",
+}
 
 # ct.gov's own lead-sponsor classification (its "Agency Class", captured
 # here as trials.csv's "Funder Type"/df["funder_type"]) -- INDUSTRY is
@@ -1515,7 +1579,12 @@ def build_resolved_drugs_dataframe(trials_df):
         g["phase_rank"] = g["phase_clean"].map(_DRUG_ROLLUP_PHASE_RANK)
         top_rows = g[g["phase_rank"] == g["phase_rank"].max()]
         statuses_at_top = top_rows["status_clean"].tolist()
-        status = next((s for s in _DRUG_ROLLUP_STATUS_PRIORITY if s in statuses_at_top), statuses_at_top[0])
+        top_phase = top_rows["phase_clean"].iloc[0]
+        status_priority = (
+            _DRUG_ROLLUP_STATUS_PRIORITY_INVESTIGATIONAL if top_phase in _DRUG_ROLLUP_INVESTIGATIONAL_PHASES
+            else _DRUG_ROLLUP_STATUS_PRIORITY_POST_MARKETING
+        )
+        status = next((s for s in status_priority if s in statuses_at_top), statuses_at_top[0])
 
         confirmed_rows = g[g["drug_classification"] == "sponsor_developed_therapeutic"]
         unverified_rows = g[g["drug_classification"] == "investigational_therapeutic_unverified"]

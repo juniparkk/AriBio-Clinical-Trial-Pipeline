@@ -116,7 +116,6 @@ AV-1959R (Abeta vaccine),Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evi
 Avagacestat,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AVE1625,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AVP-786,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
-AVP-923,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AXS-05,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AZD0328,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AZD0530,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
@@ -584,7 +583,7 @@ NS 2330 (Tesofensine),Small Molecule,Small Molecule,Other,,structured_ct_gov_evi
 NSA-789,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NSC001,Small Molecule,Small Molecule,Other,Symptomatic,nih_reference,medium,target corrected: 'Other' -> 'Symptomatic',True
 NTRX-07,Small Molecule,Small Molecule,Inflammation,Symptomatic,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: target_pathways: NIH=['Symptomatic'] vs existing=['Inflammation'] | target corrected: 'Inflammation' -> 'Symptomatic',True
-Nuedexta (20/10),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Nuedexta,Small Molecule,Unknown,Other,,needs_review,low,modality corrected: 'Small Molecule' -> 'Unknown',True
 Nutritional Supplement,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NX210c,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Obicetrapib,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False

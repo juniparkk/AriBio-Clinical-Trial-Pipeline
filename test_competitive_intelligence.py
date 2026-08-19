@@ -8,119 +8,115 @@
 from competitive_intelligence import compute_relevance_score, PHASE_RANK_FOR_SCORING
 
 
-def test_identical_profile_scores_100():
+def test_max_profile_scores_100():
     score, reasons = compute_relevance_score(
-        ["Amyloid", "Tau", "Neuroprotection"], "Small Molecule", "DTT", "Phase 3",
-        ["Amyloid", "Tau", "Neuroprotection"], "Small Molecule", "DTT", "Phase 3",
+        ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
+        "Small Molecule", "DTT",
         sponsor_type="Company", reference_sponsor_type="Company",
+        max_enrollment=600,
     )
     assert score == 100
-    assert len(reasons) == 5
+    assert len(reasons) == 6
 
 
 def test_completely_unrelated_profile_scores_0():
     score, reasons = compute_relevance_score(
-        ["Metabolism"], "Biologic", "STT", "NA",
-        ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
+        ["Symptomatic"], "Biologic", "STT", "NA",
+        "Small Molecule", "DTT",
     )
     assert score == 0
     assert reasons == []
 
 
-def test_partial_overlap_any_shared_pathway_gives_full_pathway_credit():
-    # sharing just ONE of three reference pathways still earns the full
-    # 54 points — any real mechanistic overlap is the meaningful signal,
-    # not exact pathway-set equality (see module docstring)
+def test_target_pathway_multiple_disease_modifying_matches_earn_the_points_only_once():
+    # target pathway is scored absolutely now (is ANY of this drug's own
+    # pathways disease-modifying), not compared to the reference's
+    # pathway(s) -- two matching pathways still earn the flat 20 points
+    # once, not per-pathway credit.
     score, reasons = compute_relevance_score(
-        ["Amyloid"], "Biologic", "STT", "NA",
-        ["Amyloid", "Tau", "Neuroprotection"], "Small Molecule", "DTT", "Phase 3",
+        ["Amyloid", "Tau"], "", "", "NA",
+        "", "",
     )
-    assert score == 54
-    assert "Amyloid" in reasons[0]
+    assert score == 20
+    assert "Amyloid" in reasons[0] and "Tau" in reasons[0]
+
+
+def test_target_pathway_symptomatic_and_neuropsychiatric_earn_no_points():
+    # Real target_pathways categories elsewhere in this pipeline, but
+    # they manage symptoms rather than the disease process itself, so
+    # neither counts as "disease-modifying" here.
+    score, reasons = compute_relevance_score(
+        ["Symptomatic", "Neuropsychiatric"], "", "", "NA",
+        "", "",
+    )
+    assert score == 0
+    assert reasons == []
+
+
+def test_target_pathway_all_five_disease_modifying_categories_earn_points():
+    for pathway in ["Amyloid", "Tau", "Inflammation", "Neuroprotection", "Metabolism"]:
+        score, _ = compute_relevance_score([pathway], "", "", "NA", "", "")
+        assert score == 20, pathway
 
 
 def test_modality_match_contributes_5_points():
-    # Phase 1 vs. Phase 4 is 5 ranks apart (see PHASE_RANK_FOR_SCORING)
-    # -> deliberately contributes 0 phase points, isolating modality's
-    # own contribution. Weighted well below target pathway -- see
-    # module-level comment on _MODALITY_POINTS.
     score, _ = compute_relevance_score(
         [], "Small Molecule", "", "Phase 1",
-        [], "Small Molecule", "", "Phase 4",
+        "Small Molecule", "",
     )
     assert score == 5
 
 
-def test_purpose_class_match_contributes_22_points():
+def test_purpose_class_match_contributes_20_points():
     score, _ = compute_relevance_score(
         [], "", "DTT", "Phase 1",
-        [], "", "DTT", "Phase 4",
+        "", "DTT",
     )
-    assert score == 22
+    assert score == 20
 
 
 def test_blank_purpose_class_never_matches_and_never_scores():
     # a drug with no NIH-sourced purpose classification must not
     # silently "match" another blank one — blank means "unknown," not
-    # "confirmed same as reference". Phases deliberately far apart too,
-    # so this isolates the purpose_class/modality blank-vs-blank cases.
+    # "confirmed same as reference."
     score, reasons = compute_relevance_score(
         [], "", "", "Phase 1",
-        [], "", "", "Phase 4",
+        "", "",
     )
     assert score == 0
     assert reasons == []
 
 
-def test_same_phase_contributes_9_points():
-    score, reasons = compute_relevance_score(
-        [], "", "", "Phase 2",
-        [], "", "", "Phase 2",
-    )
-    assert score == 9
-    assert "Same phase" in reasons[0]
+def test_phase_3_contributes_15_points():
+    score, reasons = compute_relevance_score([], "", "", "Phase 3", "", "")
+    assert score == 15
+    assert "Phase 3" in reasons[0]
 
 
-def test_adjacent_phase_contributes_9_points():
-    # "Phase 1/Phase 2" sits between "Phase 1" and "Phase 2" in
-    # PHASE_RANK_FOR_SCORING (it's a real, distinct ct.gov designation,
-    # not just a midpoint label) — one rank step from "Phase 1".
-    # Adjacent and same-phase now share one "phase proximity" tier/point
-    # value (see _PHASE_PROXIMITY_POINTS) — only the reason text
-    # distinguishes them, not the score.
-    score, reasons = compute_relevance_score(
-        [], "", "", "Phase 1",
-        [], "", "", "Phase 1/Phase 2",
-    )
-    assert score == 9
-    assert "Adjacent phase" in reasons[0]
+def test_phase_2_contributes_5_points():
+    score, reasons = compute_relevance_score([], "", "", "Phase 2", "", "")
+    assert score == 5
+    assert "Phase 2" in reasons[0]
 
 
-def test_two_phases_apart_contributes_no_points():
-    # "Phase 1" -> "Phase 2" is TWO rank steps apart ("Phase 1/Phase 2"
-    # sits between them), not adjacent
-    score, reasons = compute_relevance_score(
-        [], "", "", "Phase 1",
-        [], "", "", "Phase 2",
-    )
-    assert score == 0
-    assert reasons == []
-
-
-def test_unrecognized_phase_value_does_not_crash_and_scores_no_phase_points():
-    score, reasons = compute_relevance_score(
-        [], "", "", "SomeUnrecognizedPhase",
-        [], "", "", "Phase 3",
-    )
-    assert score == 0
-    assert reasons == []
+def test_other_phases_contribute_no_phase_points():
+    # Absolute scale now, not proximity-to-reference -- no partial
+    # credit for phases "adjacent" to Phase 3, and an unrecognized
+    # phase string must not crash.
+    for phase in ["NA", "Early Phase 1", "Phase 1", "Phase 1/Phase 2",
+                  "Phase 2/Phase 3", "Phase 4", "SomeUnrecognizedPhase"]:
+        score, reasons = compute_relevance_score([], "", "", phase, "", "")
+        assert score == 0, phase
+        assert reasons == [], phase
 
 
 def test_phase_rank_covers_every_pipeline_viz_phase_order_value():
-    # regression guard: every phase_clean value pipeline_viz.py's
-    # clean_phase() can produce must be rankable here, or a same-phase/
-    # adjacent-phase comparison would silently score 0 for a drug at
-    # that phase, even against an identical reference
+    # PHASE_RANK_FOR_SCORING is still used elsewhere (ctgov_changes.py's
+    # phase-change detection, competitive_attention.py's
+    # _is_advancement) even though compute_relevance_score() itself no
+    # longer scores phase by proximity/rank -- regression guard that
+    # every phase_clean value pipeline_viz.py's clean_phase() can
+    # produce stays rankable there.
     expected = {"NA", "Early Phase 1", "Phase 1", "Phase 1/Phase 2", "Phase 2",
                 "Phase 2/Phase 3", "Phase 3", "Phase 4"}
     assert set(PHASE_RANK_FOR_SCORING.keys()) == expected
@@ -129,7 +125,9 @@ def test_phase_rank_covers_every_pipeline_viz_phase_order_value():
 def test_score_never_exceeds_100_or_goes_negative():
     score, _ = compute_relevance_score(
         ["Amyloid", "Tau"], "Small Molecule", "DTT", "Phase 3",
-        ["Amyloid", "Tau", "Neuroprotection"], "Small Molecule", "DTT", "Phase 3",
+        "Small Molecule", "DTT",
+        sponsor_type="Company", reference_sponsor_type="Company",
+        max_enrollment=10000,
     )
     assert 0 <= score <= 100
 
@@ -137,35 +135,33 @@ def test_score_never_exceeds_100_or_goes_negative():
 def test_reasons_are_human_readable_and_ordered():
     score, reasons = compute_relevance_score(
         ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
-        ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
+        "Small Molecule", "DTT",
         sponsor_type="Company", reference_sponsor_type="Company",
+        max_enrollment=600,
     )
-    assert reasons[0].startswith("Shares target pathway")
+    assert reasons[0].startswith("Disease-modifying target pathway")
     assert reasons[1].startswith("Same modality")
     assert reasons[2].startswith("Same treatment approach")
-    assert reasons[3].startswith("Same phase")
+    assert reasons[3].startswith("Reached Phase 3")
     assert reasons[4].startswith("Same sponsor type")
+    assert reasons[5].startswith("Large trial")
     assert all(isinstance(r, str) and r for r in reasons)
 
 
-def test_sponsor_type_match_contributes_10_points():
-    # "NA" vs. "Phase 4" (7 ranks apart, see PHASE_RANK_FOR_SCORING) so
-    # phase proximity contributes 0, isolating sponsor type's own
-    # contribution -- unlike an unrecognized string, "NA" IS a real,
-    # rankable phase value, so it would otherwise match itself.
+def test_sponsor_type_match_contributes_15_points():
     score, reasons = compute_relevance_score(
         [], "", "", "NA",
-        [], "", "", "Phase 4",
+        "", "",
         sponsor_type="Company", reference_sponsor_type="Company",
     )
-    assert score == 10
+    assert score == 15
     assert "Same sponsor type: Company" in reasons[0]
 
 
 def test_sponsor_type_mismatch_contributes_no_points():
     score, reasons = compute_relevance_score(
         [], "", "", "NA",
-        [], "", "", "Phase 4",
+        "", "",
         sponsor_type="University/Institution", reference_sponsor_type="Company",
     )
     assert score == 0
@@ -175,33 +171,52 @@ def test_sponsor_type_mismatch_contributes_no_points():
 def test_blank_sponsor_type_never_matches_and_never_scores():
     score, reasons = compute_relevance_score(
         [], "", "", "NA",
-        [], "", "", "Phase 4",
+        "", "",
         sponsor_type=None, reference_sponsor_type=None,
     )
     assert score == 0
     assert reasons == []
 
 
-def test_donanemab_real_profile_scores_95():
-    # Regression guard for AriBio's real-world calibration target:
-    # Donanemab (Biologic, shares Amyloid pathway with AR1001, same DTT
-    # approach, one phase step from AR1001's Phase 3, same sponsor type
-    # as AR1001 -- both Company-sponsored (Eli Lilly / AriBio) -- and
-    # actively recruiting with recent trial activity and a large
-    # enrollment) must land at 95/100.
+def test_large_trial_over_550_contributes_25_points():
+    score, reasons = compute_relevance_score([], "", "", "NA", "", "", max_enrollment=551)
+    assert score == 25
+    assert "Large trial" in reasons[0]
+
+
+def test_trial_of_exactly_550_does_not_earn_large_trial_points():
+    score, reasons = compute_relevance_score([], "", "", "NA", "", "", max_enrollment=550)
+    assert score == 0
+    assert reasons == []
+
+
+def test_small_trial_does_not_earn_large_trial_points():
+    score, reasons = compute_relevance_score([], "", "", "NA", "", "", max_enrollment=300)
+    assert score == 0
+    assert reasons == []
+
+
+def test_donanemab_real_profile_scores_80():
+    # Regression guard for a real-world profile: Donanemab is a
+    # Biologic (different modality from AR1001's Small Molecule) that
+    # shares the Amyloid disease-modifying pathway, has the same DTT
+    # treatment approach, sits at Phase 4 (no phase points under the
+    # new absolute Phase 3/Phase 2 scale), shares AR1001's Company
+    # sponsor type, and runs a large (>550-participant) trial:
+    # 20 (pathway) + 0 (modality) + 20 (purpose) + 0 (phase) + 15 (sponsor) + 25 (trial size) = 80.
     score, _ = compute_relevance_score(
         ["Amyloid"], "Biologic", "DTT", "Phase 4",
-        ["Amyloid", "Tau", "Neuroprotection"], "Small Molecule", "DTT", "Phase 3",
+        "Small Molecule", "DTT",
         sponsor_type="Company", reference_sponsor_type="Company",
         status="Recruiting", latest_activity_year=2030, max_enrollment=2996,
     )
-    assert score == 95
+    assert score == 80
 
 
 def test_discontinued_status_caps_score_at_20():
     score, reasons = compute_relevance_score(
         ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
-        ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
+        "Small Molecule", "DTT",
         status="Discontinued",
     )
     assert score == 20
@@ -212,7 +227,7 @@ def test_discontinued_status_caps_score_at_20():
 def test_no_recent_trial_activity_caps_score_at_20():
     score, reasons = compute_relevance_score(
         ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
-        ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
+        "Small Molecule", "DTT",
         latest_activity_year=2015,
     )
     assert score == 20
@@ -222,27 +237,31 @@ def test_no_recent_trial_activity_caps_score_at_20():
 def test_small_trial_caps_score_at_20():
     score, reasons = compute_relevance_score(
         ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
-        ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
+        "Small Molecule", "DTT",
         max_enrollment=209,
     )
     assert score == 20
     assert "largest trial under 210 participants" in reasons[-1]
 
 
-def test_enrollment_of_exactly_210_does_not_trigger_cap():
+def test_enrollment_of_exactly_210_does_not_trigger_the_low_relevance_cap():
+    # 210 participants is under the >550 large-trial bonus threshold
+    # (so no trial-size points either), but it doesn't trip the <210
+    # low-relevance cap: 20 (pathway) + 5 (modality) + 20 (purpose)
+    # + 15 (phase 3) + 15 (sponsor) = 75, uncapped.
     score, _ = compute_relevance_score(
         ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
-        ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
+        "Small Molecule", "DTT",
         sponsor_type="Company", reference_sponsor_type="Company",
         max_enrollment=210,
     )
-    assert score == 100
+    assert score == 75
 
 
 def test_low_relevance_cap_never_raises_a_score_that_is_already_lower():
     score, reasons = compute_relevance_score(
         [], "", "", "Phase 1",
-        ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
+        "Small Molecule", "DTT",
         status="Discontinued", latest_activity_year=2010, max_enrollment=10,
     )
     assert score == 0
@@ -254,35 +273,40 @@ def test_low_relevance_flags_are_ignored_when_not_provided():
     # never be treated as disqualifying just because they're absent
     score, reasons = compute_relevance_score(
         ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
-        ["Amyloid"], "Small Molecule", "DTT", "Phase 3",
+        "Small Molecule", "DTT",
         sponsor_type="Company", reference_sponsor_type="Company",
+        max_enrollment=600,
     )
     assert score == 100
     assert not any("Capped" in r for r in reasons)
 
 
 ALL_TESTS = [
-    test_identical_profile_scores_100,
+    test_max_profile_scores_100,
     test_completely_unrelated_profile_scores_0,
-    test_partial_overlap_any_shared_pathway_gives_full_pathway_credit,
+    test_target_pathway_multiple_disease_modifying_matches_earn_the_points_only_once,
+    test_target_pathway_symptomatic_and_neuropsychiatric_earn_no_points,
+    test_target_pathway_all_five_disease_modifying_categories_earn_points,
     test_modality_match_contributes_5_points,
-    test_purpose_class_match_contributes_22_points,
+    test_purpose_class_match_contributes_20_points,
     test_blank_purpose_class_never_matches_and_never_scores,
-    test_same_phase_contributes_9_points,
-    test_adjacent_phase_contributes_9_points,
-    test_two_phases_apart_contributes_no_points,
-    test_unrecognized_phase_value_does_not_crash_and_scores_no_phase_points,
+    test_phase_3_contributes_15_points,
+    test_phase_2_contributes_5_points,
+    test_other_phases_contribute_no_phase_points,
     test_phase_rank_covers_every_pipeline_viz_phase_order_value,
     test_score_never_exceeds_100_or_goes_negative,
     test_reasons_are_human_readable_and_ordered,
-    test_sponsor_type_match_contributes_10_points,
+    test_sponsor_type_match_contributes_15_points,
     test_sponsor_type_mismatch_contributes_no_points,
     test_blank_sponsor_type_never_matches_and_never_scores,
-    test_donanemab_real_profile_scores_95,
+    test_large_trial_over_550_contributes_25_points,
+    test_trial_of_exactly_550_does_not_earn_large_trial_points,
+    test_small_trial_does_not_earn_large_trial_points,
+    test_donanemab_real_profile_scores_80,
     test_discontinued_status_caps_score_at_20,
     test_no_recent_trial_activity_caps_score_at_20,
     test_small_trial_caps_score_at_20,
-    test_enrollment_of_exactly_210_does_not_trigger_cap,
+    test_enrollment_of_exactly_210_does_not_trigger_the_low_relevance_cap,
     test_low_relevance_cap_never_raises_a_score_that_is_already_lower,
     test_low_relevance_flags_are_ignored_when_not_provided,
 ]

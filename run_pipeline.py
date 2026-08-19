@@ -258,7 +258,7 @@ def run_refresh():
         recent_changes_df = competitive_attention.prepare_recent_changes(changes_history_df, drug_nct_lookup=drug_nct_lookup)
 
         section_html = competitive_attention_viz.render_competitive_sections(
-            recent_changes_df, attention_df,
+            recent_changes_df, attention_df, drugs_df=new_drugs_df,
         )
         milestones_html = competitive_attention_viz.render_milestones_section(milestones)
         with open(OVERVIEW_HTML) as f:

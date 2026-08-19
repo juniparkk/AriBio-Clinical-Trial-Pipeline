@@ -86,6 +86,18 @@ _PRIORITY_COLORS = {
     "Low": "#9e9e9e",
 }
 
+# Recent Changes badge text: the default is change_type with underscores
+# swapped for spaces (e.g. "phase_change" -> "phase change"), which
+# reads fine except for "completion_date_change" -- sitting next to a
+# "primary completion date change" badge on the same trial (ct.gov
+# tracks Primary Completion Date and Study/Overall Completion Date as
+# two separate fields that can change independently or together), the
+# generic "completion date change" reads as a duplicate of the primary
+# one rather than the distinct field it actually is.
+_CHANGE_TYPE_BADGE_LABELS = {
+    "completion_date_change": "Study/Overall Completion Date",
+}
+
 def _study_url(nct_id):
     nct_id = _clean(nct_id)
     return f"https://clinicaltrials.gov/study/{nct_id}" if nct_id else ""
@@ -112,7 +124,24 @@ def shown_recent_change_nct_ids(changes_df, top_n=15):
     return set(top["nct_id"].dropna()) - {""}
 
 
-def render_recent_changes_section(changes_df, top_n=15):
+def _drug_profile_lookup(drugs_df):
+    """lowercased canonical_drug_name -> pipeline_drugs.csv row dict,
+    the same display_name-keyed pattern competitive_attention.
+    build_drug_lookup() uses -- kept as a separate, narrower copy here
+    (rather than an import from competitive_attention.py) since this
+    module only ever needs a handful of display fields, not that
+    module's full lookup contract. Keyed lowercase (queried the same
+    way below) because a change row's canonical_drug_name isn't always
+    cased identically to drugs_df's display_name -- e.g. a "new_drug"
+    change can carry "buntanetap/posiphen" against a rollup row titled
+    "Buntanetap/Posiphen"; an exact-case match would silently drop the
+    profile (and therefore the expand toggle) for rows like that."""
+    if drugs_df is None or drugs_df.empty:
+        return {}
+    return {str(r["display_name"]).lower(): r for _, r in drugs_df.iterrows()}
+
+
+def render_recent_changes_section(changes_df, top_n=15, drugs_df=None):
     """Raw, UNSCORED feed of every change detected in the trailing
     30-day window (competitive_attention.prepare_recent_changes) —
     distinct from Needs Attention below it, which is the same changes
@@ -122,8 +151,15 @@ def render_recent_changes_section(changes_df, top_n=15):
     a change whose drug couldn't be resolved to a name is dropped here
     rather than shown as a bare NCT ID -- keeps this feed, like Needs
     Attention, "only about drugs."
+
+    `drugs_df` (pipeline_drugs.csv's per-drug rollup, optional): powers
+    the expand-for-detail panel's drug-profile fields (Sponsor, Start
+    date, Primary completion, Modality, Drug type category, AR1001
+    Relevance) -- without it, drug names render as plain text with no
+    expand toggle, same as a drug that isn't found in the lookup.
     """
     changes_df = _drug_only(changes_df)
+    drug_profiles = _drug_profile_lookup(drugs_df)
 
     if changes_df is None or changes_df.empty:
         body = '<div class="attention-empty">No drug-related pipeline changes were detected in the last 30 days.</div>'
@@ -131,28 +167,114 @@ def render_recent_changes_section(changes_df, top_n=15):
     else:
         top = changes_df.head(top_n)
         count_note = f"showing {len(top)} of {len(changes_df)} changes detected in the last 30 days"
-        rows_html = []
+
+        # Group by drug (lowercased, same key as drug_profiles below) so
+        # a drug with multiple changes in the window -- e.g. a new-trial
+        # registration AND a completion-date change on the same day --
+        # renders as one card with multiple change lines instead of one
+        # near-duplicate card per change. Plain dict, not a groupby: it
+        # preserves first-seen order (top is already sorted by
+        # detected_date desc), which a groupby would need an extra sort
+        # step to guarantee.
+        groups = {}
+        group_order = []
         for _, row in top.iterrows():
-            nct_id = _clean(row.get("nct_id")) or ""
-            drug = _esc(_clean(row.get("canonical_drug_name")))
-            company = _esc(_clean(row.get("sponsor_or_company")) or "")
-            url = _study_url(nct_id)
-            link_html = (
-                f'<a href="{_esc(url)}" target="_blank" rel="noopener" class="attention-link">{_esc(nct_id)}</a>'
-                if url else '<span class="attention-link attention-link--none">no linked trial</span>'
-            )
-            change_type = _esc((_clean(row.get("change_type")) or "").replace("_", " "))
-            detected_date = _esc(_clean(row.get("detected_date")) or "")
+            drug_name_key = _clean(row.get("canonical_drug_name"))
+            group_key = (drug_name_key or "").lower()
+            if group_key not in groups:
+                groups[group_key] = {
+                    "drug_name_key": drug_name_key,
+                    "drug": _esc(drug_name_key),
+                    "company": _esc(_clean(row.get("sponsor_or_company")) or ""),
+                    "rows": [],
+                }
+                group_order.append(group_key)
+            groups[group_key]["rows"].append(row)
+
+        rows_html = []
+        for group_key in group_order:
+            group = groups[group_key]
+            drug = group["drug"]
+            company = group["company"]
+
+            change_items_html = []
+            for row in group["rows"]:
+                nct_id = _clean(row.get("nct_id")) or ""
+                url = _study_url(nct_id)
+                link_html = (
+                    f'<a href="{_esc(url)}" target="_blank" rel="noopener" class="attention-link">{_esc(nct_id)}</a>'
+                    if url else '<span class="attention-link attention-link--none">no linked trial</span>'
+                )
+                change_type_key = _clean(row.get("change_type")) or ""
+                change_type = _esc(_CHANGE_TYPE_BADGE_LABELS.get(change_type_key, change_type_key.replace("_", " ")))
+                detected_date = _esc(_clean(row.get("detected_date")) or "")
+
+                change_items_html.append(f"""
+                  <div class="attention-change-item">
+                    <div class="attention-change-item-main">
+                      <div class="attention-change">{_esc(_clean(row.get('description')) or '')}</div>
+                      <div class="attention-change-date">{detected_date}</div>
+                    </div>
+                    <div class="attention-change-item-side">
+                      <div class="attention-badge" style="background:#9e9e9e">{change_type}</div>
+                      {link_html}
+                    </div>
+                  </div>""")
+
+            # Expand-for-detail: clicking the drug NAME reveals that
+            # drug's pipeline_drugs.csv profile -- same name-is-the-toggle
+            # pattern the main table uses for its detail row (see
+            # .drug-name-toggle in pipeline_viz.py), deliberately without
+            # that table's separate caret icon. Only rendered when the
+            # drug actually resolves to a pipeline_drugs.csv row, so an
+            # unresolved/legacy name stays plain text with nothing to expand.
+            drug_name_key = group["drug_name_key"]
+            profile = drug_profiles.get(drug_name_key.lower()) if drug_name_key else None
+
+            detail_fields = []
+            if profile is not None:
+                sponsor = _esc(_clean(profile.get("sponsor")) or "")
+                start_date = _esc(_clean(profile.get("start_date_display")) or "")
+                primary_completion = _esc(_clean(profile.get("primary_completion_date_display")) or "")
+                modality = _esc(_clean(profile.get("modality")) or "")
+                drug_type = _esc(_clean(profile.get("drug_type")) or "")
+                relevance_score = profile.get("aribio_relevance_score")
+
+                if sponsor:
+                    detail_fields.append(f'<div><strong>Sponsor</strong>{sponsor}</div>')
+                if start_date:
+                    detail_fields.append(f'<div><strong>Start date</strong>{start_date}</div>')
+                if primary_completion:
+                    detail_fields.append(f'<div><strong>Primary completion</strong>{primary_completion}</div>')
+                if modality:
+                    detail_fields.append(f'<div><strong>Modality</strong>{modality}</div>')
+                if drug_type:
+                    detail_fields.append(f'<div><strong>Drug type category</strong>{drug_type}</div>')
+                if relevance_score is not None and relevance_score == relevance_score:  # excludes NaN
+                    detail_fields.append(f'<div><strong>AR1001 Relevance</strong>{int(relevance_score)}/100</div>')
+
+            if detail_fields:
+                drug_html = f'<button type="button" class="drug-toggle" onclick="toggleDrugDetail(this)">{drug}</button>'
+                # Two nested divs, not one: the outer's grid-template-rows
+                # is what actually animates (0fr -> 1fr, see CSS below) --
+                # a single div can't smoothly transition to/from
+                # display:none, so this expands/collapses via a real
+                # height transition instead of an instant hidden-attribute
+                # snap. The inner div is what clips mid-transition.
+                detail_html = (
+                    f'<div class="attention-detail"><div class="attention-detail-inner">'
+                    f'{"".join(detail_fields)}</div></div>'
+                )
+            else:
+                drug_html = drug
+                detail_html = ""
+
             rows_html.append(f"""
-            <div class="attention-card">
+            <div class="attention-card js-drug-row">
               <div class="attention-main">
-                <div class="attention-title">{drug}<span class="attention-company">{company}</span></div>
-                <div class="attention-change">{_esc(_clean(row.get('description')) or '')}</div>
-                <div class="attention-change-date">{detected_date}</div>
-              </div>
-              <div class="attention-side">
-                <div class="attention-badge" style="background:#9e9e9e">{change_type}</div>
-                {link_html}
+                <div class="attention-title">{drug_html}<span class="attention-company">{company}</span></div>
+                <div class="attention-change-list">{"".join(change_items_html)}</div>
+                {detail_html}
               </div>
             </div>""")
         body = f'<div class="attention-cards-grid">{"".join(rows_html)}</div>'
@@ -367,6 +489,21 @@ ATTENTION_NOTES_SCRIPT = """
     renderAttentionNotesList();
   };
 
+  // Drug-name expand toggle for Recent Changes cards (see
+  // render_recent_changes_section()) -- the row is marked ".js-drug-row"
+  // so this function can find its ".attention-detail" panel and toggle
+  // its "expanded" class (see the CSS grid-row transition on that
+  // class -- a plain [hidden]/display:none toggle can't animate).
+  // Reads DOM state off the class itself rather than tracking its own
+  // open/closed flag, so it stays correct no matter how many rows are
+  // on the page.
+  window.toggleDrugDetail = function (btn) {
+    var row = btn.closest(".js-drug-row");
+    var detail = row && row.querySelector(".attention-detail");
+    if (!detail) return;
+    detail.classList.toggle("expanded");
+  };
+
   document.addEventListener("DOMContentLoaded", renderAttentionNotesList);
 })();
 </script>
@@ -501,8 +638,45 @@ COMPETITIVE_ATTENTION_CSS = """
   .attention-company { font-size: 12.5px; font-weight: 400; color: #666; margin-left: 8px; }
   .attention-change { font-size: 13px; color: #333; margin-top: 3px; }
   .attention-change-date { font-size: 10.5px; color: #999; margin-top: 4px; }
+  /* Expand-toggle button for a Recent Changes card's drug name --
+     plain text by default, no icon, matching the main table's own
+     .drug-name-toggle. */
+  .drug-toggle { background: none; border: none; cursor: pointer; font: inherit; color: inherit; padding: 0; text-decoration: none; text-align: left; }
+  .drug-toggle:hover { color: #2e5fa3; }
+  /* Smooth expand/collapse: grid-template-rows 0fr -> 1fr is what
+     actually animates. A plain height/max-height transition can't do
+     this cleanly since the target height (the content's natural size)
+     isn't known up front -- the 0fr/1fr grid track trick sidesteps
+     that, and toggling a class here (not the [hidden] attribute) is
+     what makes it transition at all, since display:none can't animate.
+     The inner div is what actually gets clipped by overflow:hidden
+     mid-transition -- grid-template-rows alone only sizes the track,
+     it doesn't clip overflowing content on its own. Padding/border/gap
+     live on the inner div unconditionally (not gated on .expanded) so
+     they never have to snap on their own outside the transition. */
+  .attention-detail {
+    display: grid; grid-template-rows: 0fr; opacity: 0;
+    transition: grid-template-rows 0.22s ease, opacity 0.18s ease;
+  }
+  .attention-detail.expanded { grid-template-rows: 1fr; opacity: 1; }
+  .attention-detail-inner {
+    overflow: hidden; min-height: 0; display: flex; flex-direction: column; gap: 4px;
+    padding-top: 8px; margin-top: 8px; border-top: 1px dashed #e2e2e2;
+  }
+  .attention-detail div { font-size: 12px; color: #444; }
+  .attention-detail strong { display: inline-block; min-width: 82px; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #9aa0ab; }
   .attention-factors { font-size: 11.5px; color: #999; margin-top: 3px; }
   .attention-side { font-size: 12.5px; white-space: nowrap; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
+  /* Recent Changes cards group every change for the same drug under one
+     card (see render_recent_changes_section()) -- each change gets its
+     own row with its own badge/date/link, rather than one .attention-side
+     per card, since a single card can hold multiple changes with
+     different types/dates/linked trials. */
+  .attention-change-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .attention-change-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-top: 8px; border-top: 1px solid #f2f2f2; }
+  .attention-change-item:first-child { padding-top: 0; border-top: none; }
+  .attention-change-item-main { flex: 1; min-width: 0; }
+  .attention-change-item-side { font-size: 12.5px; white-space: nowrap; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
   .attention-row { display: grid; grid-template-columns: 1fr; align-items: stretch; gap: 16px; margin-bottom: 20px; }
   .attention-row .attention-panel { margin-bottom: 0; }
   .attention-cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 20px; }
@@ -550,7 +724,7 @@ COMPETITIVE_ATTENTION_CSS = """
 
 
 def render_competitive_sections(recent_changes_df, attention_df,
-                                 changes_top_n=15, attention_top_n=8):
+                                 changes_top_n=15, attention_top_n=8, drugs_df=None):
     # Milestones is intentionally NOT part of this bundle — it renders
     # separately via render_milestones_section() into MILESTONES_PLACEHOLDER,
     # further down the page beneath "AR1001 Competitive Landscape".
@@ -563,7 +737,7 @@ def render_competitive_sections(recent_changes_df, attention_df,
     already_shown = shown_recent_change_nct_ids(recent_changes_df, changes_top_n)
     return f"""
     <div class="attention-row">
-      {render_recent_changes_section(recent_changes_df, changes_top_n)}
+      {render_recent_changes_section(recent_changes_df, changes_top_n, drugs_df=drugs_df)}
       {render_needs_attention_section(attention_df, attention_top_n, exclude_nct_ids=already_shown)}
     </div>
     {ATTENTION_NOTES_SCRIPT}"""

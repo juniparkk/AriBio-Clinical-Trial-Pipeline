@@ -40,6 +40,8 @@ from drug_classification import (
     THERAPEUTIC_SCOPE,
     normalize_text,
     _company_matches,
+    STALE_PHASE3_DISCONTINUED_LABEL,
+    STALE_PHASE3_YEARS,
 )
 from nih_reference import parse_nih_dataset
 from scientific_classification import (
@@ -53,8 +55,9 @@ from scientific_classification import (
 )
 from competitive_intelligence import (
     compute_relevance_score,
-    _TARGET_PATHWAY_POINTS, _MODALITY_POINTS, _PURPOSE_CLASS_POINTS, _PHASE_PROXIMITY_POINTS,
-    _SPONSOR_TYPE_POINTS,
+    _TARGET_PATHWAY_POINTS, _MODALITY_POINTS, _PURPOSE_CLASS_POINTS,
+    _PHASE_3_POINTS, _PHASE_2_POINTS, _SPONSOR_TYPE_POINTS,
+    _LARGE_TRIAL_POINTS, _LARGE_TRIAL_ENROLLMENT_THRESHOLD, _DISEASE_MODIFYING_TARGET_PATHWAYS,
     LOW_RELEVANCE_CAP, LOW_RELEVANCE_DISCONTINUED_STATUS, LOW_RELEVANCE_YEAR_CUTOFF,
     LOW_RELEVANCE_ENROLLMENT_CUTOFF,
 )
@@ -247,16 +250,19 @@ print(f"=== ALL PHASES INCLUDED: {len(df)} trials ===")
 print(df["phase_clean"].value_counts())
 print()
 
-# Clean up status — match against clinicaltrials.gov's actual status enum first
-# (substring matching alone is a trap: "ACTIVE_NOT_RECRUITING" contains the
-# substring "RECRUIT", so a naive "RECRUIT in s" check before "ACTIVE" mis-files
-# every active-but-closed trial — including AR1001's own Phase 3 — as Recruiting)
+# Clean up status — match against clinicaltrials.gov's actual status enum
+# via an explicit lookup (not substring matching, which is a trap:
+# "ACTIVE_NOT_RECRUITING" contains the substring "RECRUIT"). Recruiting/
+# Not Yet Recruiting/Enrolling By Invitation/Active Not Recruiting all
+# roll up to a single "Active" display value -- every one of them means
+# the trial is still ongoing, and the dashboard no longer distinguishes
+# "still enrolling" from "enrolled, now running" as separate statuses.
 STATUS_MAP = {
-    "RECRUITING": "Recruiting",
-    "NOT_YET_RECRUITING": "Recruiting",
-    "ENROLLING_BY_INVITATION": "Recruiting",
+    "RECRUITING": "Active",
+    "NOT_YET_RECRUITING": "Active",
+    "ENROLLING_BY_INVITATION": "Active",
     "ACTIVE_NOT_RECRUITING": "Active",
-    "COMPLETED": "Completed",
+    "COMPLETED": "Trial Completed",
     "TERMINATED": "Discontinued",
     "WITHDRAWN": "Discontinued",
     "SUSPENDED": "Discontinued",
@@ -716,6 +722,32 @@ resolved_drugs_df["fda_notes"] = [r["notes"] for r in _fda_results]
 print(f"FDA status resolved for {sum(1 for s in resolved_drugs_df['fda_status'] if s != 'Unknown')} of "
       f"{len(resolved_drugs_df)} drugs ({sum(1 for s in resolved_drugs_df['fda_status'] if s == 'FDA Approved')} FDA Approved)")
 
+# status_summary's own "Discontinued" comes purely from ct.gov's raw
+# TERMINATED/WITHDRAWN/SUSPENDED status on this drug's top-phase
+# trial(s) (see _DRUG_ROLLUP_STATUS_PRIORITY in drug_classification.py)
+# -- it has no idea whether the drug is, in real life, an approved,
+# still-marketed product. That produces real false positives: Nuedexta
+# (dextromethorphan/quinidine) is FDA-approved and on the market, but
+# its only Phase-4 ct.gov record is an unrelated 2015 investigator-
+# initiated study that was separately Terminated, so with nothing else
+# at that phase to outrank it, the drug rolled up to "Discontinued".
+# fda_status is the curated, authoritative signal for real-world
+# approval (see STEP 3.72 above) -- when it says "FDA Approved", that
+# overrides a ct.gov-status-derived "Discontinued" here. Deliberately
+# NOT applied to STALE_PHASE3_DISCONTINUED_LABEL, which already checks
+# fda_status itself before ever being assigned (see STEP 3.725 below),
+# and NOT applied when fda_status is "Approval Withdrawn" -- a drug
+# pulled from market after approval is legitimately non-viable, not a
+# false positive.
+_discontinued_but_fda_approved_mask = (
+    (resolved_drugs_df["status_summary"] == "Discontinued")
+    & (resolved_drugs_df["fda_status"] == "FDA Approved")
+)
+resolved_drugs_df.loc[_discontinued_but_fda_approved_mask, "status_summary"] = "FDA Approved"
+print(f"{int(_discontinued_but_fda_approved_mask.sum())} drug(s) corrected from \"Discontinued\" to "
+      f"\"FDA Approved\" (ct.gov-status-derived Discontinued overridden by curated FDA approval)")
+print()
+
 # drug_type is now the 4-category "pipeline quadrant" scheme (Disease-
 # Targeted Biologic / Disease-Targeted Small Molecule / Cognition
 # Enhancer / Neuropsychiatric Symptom Tx), matching the published AD
@@ -819,6 +851,44 @@ resolved_drugs_df["primary_completion_date_display"] = (
 )
 
 # ============================================================
+# STEP 3.725: STALE PHASE 3 -> PRESUMED DISCONTINUED
+#
+# A drug whose highest phase reached is Phase 3, with its latest primary
+# completion date more than STALE_PHASE3_YEARS years in the past, and
+# that was never FDA approved, reads as effectively abandoned even when
+# ct.gov's own status field was never updated to TERMINATED/WITHDRAWN/
+# SUSPENDED (sponsors often just stop filing updates rather than
+# formally closing a study). Tagged with a distinct status_summary label
+# (not the literal "Discontinued", which is reserved for ct.gov's own
+# reported status) so it's clear this is inferred, not ct.gov-reported —
+# but every OTHER "Discontinued" treatment still applies to it: the same
+# muted row/pill styling below, the same low-relevance score cap (status
+# is fed into compute_relevance_score() right below this block), and the
+# same NIH-reference/milestone-exclusion treatment (see
+# STALE_PHASE3_DISCONTINUED_LABEL's usages in competitive_attention.py,
+# competitive_intelligence.py, and nih_reference.py).
+#
+# Deliberately checked here, AFTER fda_status (STEP 3.72) and the date
+# rollup just above, rather than against trial-level status_clean/
+# APPROVED_FOR_MARKETING — see STEP 3.72's own comment on why ct.gov's
+# trial-status "FDA Approved" is not a trustworthy approval signal
+# (0 drugs in this dataset ever carry it); resolved_drugs_df["fda_status"]
+# is the one curated, authoritative source for whether a drug was ever
+# actually approved.
+_stale_phase3_cutoff = pd.Timestamp.now(tz=None).normalize() - pd.DateOffset(years=STALE_PHASE3_YEARS)
+_stale_phase3_mask = (
+    (resolved_drugs_df["phase_reached"] == "Phase 3")
+    & resolved_drugs_df["latest_primary_completion_date"].notna()
+    & (resolved_drugs_df["latest_primary_completion_date"] < _stale_phase3_cutoff)
+    & (resolved_drugs_df["fda_status"] != "FDA Approved")
+    & (resolved_drugs_df["status_summary"] != "Discontinued")
+)
+resolved_drugs_df.loc[_stale_phase3_mask, "status_summary"] = STALE_PHASE3_DISCONTINUED_LABEL
+print(f"{int(_stale_phase3_mask.sum())} drug(s) tagged \"{STALE_PHASE3_DISCONTINUED_LABEL}\" "
+      f"(Phase 3, completion >{STALE_PHASE3_YEARS}y ago, never FDA approved)")
+print()
+
+# ============================================================
 # STEP 3.73: ARIBIO RELEVANCE SCORE (competitive intelligence)
 # A deterministic, rule-based similarity score (0-100) between every
 # resolved drug's already-computed profile and AR1001's — NOT an AI/LLM
@@ -832,27 +902,44 @@ if _ar1001_rows.empty:
 
 if not _ar1001_rows.empty:
     _ar1001_row = _ar1001_rows.iloc[0]
-    _ar1001_target_pathways = _ar1001_row["target_pathways_list"]
     _ar1001_modality = _ar1001_row["modality"]
     _ar1001_purpose_class = _ar1001_row["therapeutic_purpose_class"]
-    _ar1001_phase = _ar1001_row["phase_reached"]
     _ar1001_sponsor_type = _ar1001_row["sponsor_type"]
 
     _relevance_results = [
         compute_relevance_score(
             r["target_pathways_list"], r["modality"], r["therapeutic_purpose_class"], r["phase_reached"],
-            _ar1001_target_pathways, _ar1001_modality, _ar1001_purpose_class, _ar1001_phase,
+            _ar1001_modality, _ar1001_purpose_class,
             sponsor_type=r["sponsor_type"], reference_sponsor_type=_ar1001_sponsor_type,
             status=r["status_summary"],
+            # "Unknown" status (ct.gov's own raw UNKNOWN, not something
+            # this dashboard infers) already means ct.gov itself lost
+            # track of the trial -- but a handful of these are ancient
+            # (2004-2007-era) trials that never carry a primary
+            # completion date at all (e.g. Tramiprosate/3APS's 3 trials,
+            # all status UNKNOWN, all missing Primary Completion Date),
+            # which let them dodge the low-relevance year cutoff below
+            # entirely and score as if freshly active. earliest_start_date
+            # is the fallback ONLY for this Unknown-status/no-completion-
+            # date combination -- everywhere else (Active, Discontinued,
+            # Trial Completed, etc.) a missing completion date still
+            # means "no activity signal," not "assume old," since those
+            # statuses aren't already independently signaling staleness
+            # the way ct.gov's own UNKNOWN status does.
             latest_activity_year=(
-                r["latest_primary_completion_date"].year if pd.notna(r["latest_primary_completion_date"]) else None
+                r["latest_primary_completion_date"].year if pd.notna(r["latest_primary_completion_date"])
+                else (
+                    r["earliest_start_date"].year
+                    if r["status_summary"] == "Unknown" and pd.notna(r["earliest_start_date"])
+                    else None
+                )
             ),
             max_enrollment=r["max_enrollment"] if pd.notna(r["max_enrollment"]) else None,
         )
         for _, r in resolved_drugs_df.iterrows()
     ]
     resolved_drugs_df["aribio_relevance_score"] = [s for s, _ in _relevance_results]
-    resolved_drugs_df["aribio_relevance_reasons"] = ["; ".join(rs) if rs else "No shared profile with AR1001" for _, rs in _relevance_results]
+    resolved_drugs_df["aribio_relevance_reasons"] = ["; ".join(rs) if rs else "No relevance signals earned" for _, rs in _relevance_results]
 else:
     # AR1001 itself absent from this trials.csv pull (shouldn't happen
     # for the AD pipeline dataset this dashboard is built for, but stay
@@ -1031,13 +1118,13 @@ DRUG_TYPE_COLORS = {
 }
 
 STATUS_COLORS = {
-    "FDA Approved":  darken(ARIBIO_BLUE, 0.35),
-    "Active":        darken(ARIBIO_BLUE, 0.12),
-    "Recruiting":    ARIBIO_BLUE,
-    "Completed":     lighten(ARIBIO_BLUE, 0.35),
-    "Unknown":       "#bdbdbd",
-    "Other":         "#9e9e9e",
-    "Discontinued":  ARIBIO_ACCENT,
+    "FDA Approved":     darken(ARIBIO_BLUE, 0.35),
+    "Active":           darken(ARIBIO_BLUE, 0.12),
+    "Trial Completed":  lighten(ARIBIO_BLUE, 0.35),
+    "Unknown":          "#bdbdbd",
+    "Other":            "#9e9e9e",
+    "Discontinued":     ARIBIO_ACCENT,
+    STALE_PHASE3_DISCONTINUED_LABEL: ARIBIO_ACCENT,
 }
 
 # ============================================================
@@ -1375,13 +1462,15 @@ TABLE_COLUMNS = [
     # the short-header/short-value columns (Highest Phase, Status,
     # Trial Count, Enrollment) were narrow enough to truncate their own
     # header text into an ellipsis and hard-wrap single words like
-    # "Completed" mid-word. Drug/Sponsor still get the two largest
+    # "Trial Completed" mid-word. Drug/Sponsor still get the two largest
     # shares (they hold the longest real content) but give up some
-    # surplus room to the columns that actually needed it.
+    # surplus room to the columns that actually needed it -- Sponsor
+    # gives up a further 3% to Status once its header grew to
+    # "Development Status".
     ("display_name", "Drug", 19),
-    ("sponsor", "Sponsor", 16),
+    ("sponsor", "Sponsor", 13),
     ("phase_reached", "Highest Phase", 12),
-    ("status_summary", "Status", 11),
+    ("status_summary", "Development Status", 14),
     ("target_display", "Target / Pathway", 13),
     ("drug_type", "Drug Type", 12),
     ("trial_count", "Trial Count", 9),
@@ -1505,9 +1594,19 @@ table_records = json.loads(table_df.to_json(orient="records"))
 # drugs" must mean actual therapeutic drugs, not every resolved record.
 total_drugs = len(therapeutic_drugs_df)
 total_resolved_records = len(resolved_drugs_df)
-phase3_agents = int((therapeutic_drugs_df["phase_reached"] == "Phase 3").sum())
-phase2_agents = int((therapeutic_drugs_df["phase_reached"] == "Phase 2").sum())
-phase1_agents = int((therapeutic_drugs_df["phase_reached"] == "Phase 1").sum())
+# "Active Phase N agents": trial-level status_summary of "Active" means
+# the program is still ongoing (vs Trial Completed/Discontinued/Unknown)
+# -- a plain phase_reached count would include drugs that reached that
+# phase years ago and have since finished or been dropped, which
+# overstates what's actually in motion today.
+_is_active_status = therapeutic_drugs_df["status_summary"] == "Active"
+phase3_agents = int(((therapeutic_drugs_df["phase_reached"] == "Phase 3") & _is_active_status).sum())
+phase2_agents = int(((therapeutic_drugs_df["phase_reached"] == "Phase 2") & _is_active_status).sum())
+phase1_agents = int(((therapeutic_drugs_df["phase_reached"] == "Phase 1") & _is_active_status).sum())
+# FDA status is a genuinely separate, hand-curated signal (see
+# fda_status.py) -- never derived from status_summary, same rule the
+# "FDA Approved" filter pill and Intelligence pill already follow.
+fda_approved_agents = int((therapeutic_drugs_df["fda_status"] == "FDA Approved").sum())
 # Reuses the same RELEVANCE_Y_DIVIDER (70) the AR1001 Competitive
 # Landscape chart's quadrant split is built on -- one consistent "high
 # relevance" threshold across the dashboard. AR1001 itself is excluded
@@ -1537,10 +1636,12 @@ RELEVANCE_MATRIX_EXPLANATION = (
 # outside the full "AR1001 Competitive Landscape" Methodology tab (e.g.
 # under the Phase 3 leaderboard) — built from the same scoring constants
 # as RELEVANCE_METHODOLOGY_HTML below, so it can't drift out of sync.
+_DISEASE_MODIFYING_TARGETS_LIST = ", ".join(sorted(_DISEASE_MODIFYING_TARGET_PATHWAYS))
 RELEVANCE_FORMULA_HINT = (
-    f"AR1001 relevance = target pathway match (+{_TARGET_PATHWAY_POINTS}) + modality match (+{_MODALITY_POINTS}) "
-    f"+ treatment-approach match (+{_PURPOSE_CLASS_POINTS}) + phase proximity (+{_PHASE_PROXIMITY_POINTS}) "
-    f"+ sponsor type match (+{_SPONSOR_TYPE_POINTS}), out of "
+    f"AR1001 relevance = modality match (+{_MODALITY_POINTS}) + treatment-approach match (+{_PURPOSE_CLASS_POINTS}) "
+    f"+ phase (Phase 3: +{_PHASE_3_POINTS}, Phase 2: +{_PHASE_2_POINTS}) + sponsor type match (+{_SPONSOR_TYPE_POINTS}) "
+    f"+ large trial, &gt;{_LARGE_TRIAL_ENROLLMENT_THRESHOLD} participants (+{_LARGE_TRIAL_POINTS}) "
+    f"+ disease-modifying target pathway (+{_TARGET_PATHWAY_POINTS}), out of "
     f"100 &mdash; capped at {LOW_RELEVANCE_CAP}/100 for discontinued/withdrawn, stale (no trial activity since "
     f"before {LOW_RELEVANCE_YEAR_CUTOFF}), or small (&lt;{LOW_RELEVANCE_ENROLLMENT_CUTOFF}-participant) trials. "
     "Full formula: Methodology tab below."
@@ -1554,21 +1655,24 @@ RELEVANCE_METHODOLOGY_HTML = f"""
 <p style="margin:0 0 10px;">
   AR1001 relevance is a deterministic, rule-based score (0&ndash;100) &mdash; not an AI/LLM output and not a
   measure of clinical efficacy. Every point is tied to a plain-language reason shown in each drug's detail
-  panel. Points are awarded across five dimensions, which sum to 100 when a competitor matches AR1001 on
-  every one of them:
+  panel. Points are awarded across six dimensions, which sum to 100 when a competitor earns every one of
+  them. Three dimensions score SIMILARITY to AR1001 (modality, treatment approach, sponsor type); three
+  score the competitor's OWN profile on an absolute scale (target pathway, phase, trial size), regardless
+  of what phase or pathway AR1001 itself is at:
 </p>
 <table class="methodology-table">
   <thead><tr><th>Dimension</th><th>Points</th><th>Awarded when&hellip;</th></tr></thead>
   <tbody>
-    <tr><td>Target pathway</td><td>{_TARGET_PATHWAY_POINTS}</td><td>the competitor shares at least one target pathway with AR1001 (Amyloid, Tau, or Neuroprotection) &mdash; any overlap earns full credit, not partial credit for a 1-of-3 match</td></tr>
+    <tr><td>Target pathway</td><td>{_TARGET_PATHWAY_POINTS}</td><td>the competitor's own target pathway is one of the field's five disease-modifying mechanisms ({_DISEASE_MODIFYING_TARGETS_LIST}) &mdash; not compared to AR1001's own pathway. Symptomatic/Neuropsychiatric pathways manage symptoms rather than the disease process, so they earn no points here</td></tr>
     <tr><td>Modality</td><td>{_MODALITY_POINTS}</td><td>same modality as AR1001 (Small Molecule vs. Biologic)</td></tr>
     <tr><td>Treatment approach</td><td>{_PURPOSE_CLASS_POINTS}</td><td>same NIH-sourced therapeutic-purpose class as AR1001 (Disease-targeted vs. Symptomatic)</td></tr>
-    <tr><td>Phase proximity</td><td>{_PHASE_PROXIMITY_POINTS}</td><td>competitor is at the same phase as AR1001, or one phase step away</td></tr>
+    <tr><td>Phase</td><td>{_PHASE_3_POINTS} / {_PHASE_2_POINTS}</td><td>the competitor's own phase &mdash; {_PHASE_3_POINTS} points for Phase 3, {_PHASE_2_POINTS} for Phase 2, 0 for every other phase. Absolute, not proximity to AR1001's phase &mdash; no partial credit for "adjacent" phases</td></tr>
     <tr><td>Sponsor type</td><td>{_SPONSOR_TYPE_POINTS}</td><td>same sponsor type as AR1001 (Company vs. University/Institution) &mdash; a company-sponsored competitor is a better-funded, more serious competitive threat than a purely academic one; see ct.gov's own lead-sponsor classification (drug_classification.py's classify_sponsor_type())</td></tr>
+    <tr><td>Trial size</td><td>{_LARGE_TRIAL_POINTS}</td><td>the competitor's largest trial enrolled more than {_LARGE_TRIAL_ENROLLMENT_THRESHOLD} participants &mdash; real recruitment capacity/investment, independent of AR1001's own enrollment</td></tr>
   </tbody>
 </table>
 <p style="margin:14px 0 4px;"><b>Low-relevance cap.</b> A competitor is capped at
-  <b>{LOW_RELEVANCE_CAP}/100</b>, regardless of how well it otherwise matches AR1001, if any of the following
+  <b>{LOW_RELEVANCE_CAP}/100</b>, regardless of how well it otherwise scores, if any of the following
   are true of that competitor's own trial history:</p>
 <ul style="margin:4px 0 10px; padding-left: 20px;">
   <li>Status is &ldquo;{LOW_RELEVANCE_DISCONTINUED_STATUS}&rdquo; (covers Terminated, Withdrawn, and Suspended trials)</li>
@@ -1584,8 +1688,8 @@ RELEVANCE_METHODOLOGY_HTML = f"""
 def status_text(status):
     if status == "FDA Approved":
         return f'<span style="color:{STATUS_COLORS["FDA Approved"]};font-weight:700;">FDA &#10003;</span>'
-    if status == "Discontinued":
-        return '<span style="color:#999;font-style:italic;">Discontinued</span>'
+    if status in ("Discontinued", STALE_PHASE3_DISCONTINUED_LABEL):
+        return f'<span style="color:#999;font-style:italic;">{status}</span>'
     return f'<span style="color:{STATUS_COLORS.get(status, "#666")};font-weight:600;">{status}</span>'
 
 def phase3_row_html(row):
@@ -1674,7 +1778,7 @@ PILL_GROUPS = [
     ("phase", "Phase", PHASE_ORDER, PHASE_COLORS),
     ("drugType", "Drug Type", list(DRUG_TYPE_COLORS.keys()), DRUG_TYPE_COLORS),
     ("target", "Target", [t for t in TARGET_COLORS if t not in ("Other", "Unknown")], TARGET_COLORS),
-    ("status", "Status", [s for s in STATUS_COLORS if s != "Other"], STATUS_COLORS),
+    ("status", "Development Status", [s for s in STATUS_COLORS if s != "Other"], STATUS_COLORS),
     ("siteDesign", "Trial Sites", ["Multicenter", "Single-site", "Unknown"], SITE_DESIGN_COLORS),
     ("sponsorType", "Sponsor Type", ["Company", "University/Institution"], SPONSOR_TYPE_COLORS),
     # "Watchlist" and "High Relevance" are deliberately NOT here -- they
@@ -1822,8 +1926,8 @@ html_template = f"""
   .spotlight-body li:last-child {{ margin-bottom: 0; }}
   .spotlight-disclaimer {{ margin-top: 8px; font-size: 11.5px; color: #7a5568; font-style: italic; }}
 
-  .kpi-row {{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px; }}
-  @media (max-width: 1000px) {{ .kpi-row {{ grid-template-columns: repeat(3, 1fr); }} }}
+  .kpi-row {{ display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 20px; }}
+  @media (max-width: 1100px) {{ .kpi-row {{ grid-template-columns: repeat(3, 1fr); }} }}
   @media (max-width: 640px) {{ .kpi-row {{ grid-template-columns: repeat(2, 1fr); }} }}
   .kpi-tile {{
     background: white; border-radius: {CARD_RADIUS}; border-top: 3px solid {ARIBIO_BLUE};
@@ -1831,11 +1935,10 @@ html_template = f"""
   }}
   .kpi-value {{ font-size: 27px; font-weight: 700; color: {ARIBIO_BLUE}; letter-spacing: -0.01em; }}
   .kpi-label {{ font-size: 12.5px; color: #666; margin-top: 3px; }}
-  /* Only the "High relevance" tile is clickable (jumps to the table
-     with that filter applied, see showHighRelevance()) -- the other
-     KPI tiles are plain counts with no matching single-pill filter to
-     jump to, so they stay static rather than implying an interaction
-     that isn't there. */
+  /* Every KPI tile is clickable -- jumps to the table with the matching
+     sidebar filter pill(s) applied (see showAllDrugs()/showFdaApproved()/
+     showActivePhaseN()/showHighRelevance()), so each count is always one
+     click away from the actual filtered row list it's counting. */
   .kpi-tile--clickable {{ cursor: pointer; transition: box-shadow 0.15s ease, transform 0.1s ease; }}
   .kpi-tile--clickable:hover {{ box-shadow: {ELEVATED_SHADOW}; }}
   .kpi-tile--clickable:active {{ transform: scale(0.98); }}
@@ -2283,10 +2386,21 @@ html_template = f"""
     </div>
 
     <div class="kpi-row">
-      <div class="kpi-tile"><div class="kpi-value">{total_drugs}</div><div class="kpi-label">Total therapeutic drugs</div></div>
-      <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 3']}">{phase3_agents}</div><div class="kpi-label">Phase 3 agents</div></div>
-      <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 2']}">{phase2_agents}</div><div class="kpi-label">Phase 2 agents</div></div>
-      <div class="kpi-tile"><div class="kpi-value" style="color:{PHASE_COLORS['Phase 1']}">{phase1_agents}</div><div class="kpi-label">Phase 1 agents</div></div>
+      <div class="kpi-tile kpi-tile--clickable" onclick="showAllDrugs()" title="Show all drugs in the table below">
+        <div class="kpi-value">{total_drugs}</div><div class="kpi-label">Total therapeutic drugs</div>
+      </div>
+      <div class="kpi-tile kpi-tile--clickable" onclick="showFdaApproved()" title="Show these drugs in the table below">
+        <div class="kpi-value" style="color:{FDA_STATUS_COLORS['FDA Approved']}">{fda_approved_agents}</div><div class="kpi-label">FDA approved</div>
+      </div>
+      <div class="kpi-tile kpi-tile--clickable" onclick="showActivePhase3()" title="Show these drugs in the table below">
+        <div class="kpi-value" style="color:{PHASE_COLORS['Phase 3']}">{phase3_agents}</div><div class="kpi-label">Active Phase 3 agents</div>
+      </div>
+      <div class="kpi-tile kpi-tile--clickable" onclick="showActivePhase2()" title="Show these drugs in the table below">
+        <div class="kpi-value" style="color:{PHASE_COLORS['Phase 2']}">{phase2_agents}</div><div class="kpi-label">Active Phase 2 agents</div>
+      </div>
+      <div class="kpi-tile kpi-tile--clickable" onclick="showActivePhase1()" title="Show these drugs in the table below">
+        <div class="kpi-value" style="color:{PHASE_COLORS['Phase 1']}">{phase1_agents}</div><div class="kpi-label">Active Phase 1 agents</div>
+      </div>
       <div class="kpi-tile kpi-tile--clickable" onclick="showHighRelevance()" title="Show these drugs in the table below">
         <div class="kpi-value" style="color:{ARIBIO_ACCENT}">{high_relevance_agents}</div><div class="kpi-label">High relevance to AR1001 (&ge;{RELEVANCE_Y_DIVIDER})</div>
       </div>
@@ -2308,7 +2422,7 @@ html_template = f"""
           <span style="font-weight:400;font-size:12px;color:#999;">(showing top {phase3_shown} of {len(phase3_top_relevant_df)} competitors)</span>
         </div>
         <table class="phase3-table">
-          <thead><tr><th>Drug</th><th>Target</th><th>Status</th><th>Relevance</th></tr></thead>
+          <thead><tr><th>Drug</th><th>Target</th><th>Development Status</th><th>Relevance</th></tr></thead>
           <tbody>{phase3_rows_html}</tbody>
         </table>
         <span id="show-all-phase3" onclick="showAllPhase3()">Show all {len(phase3_df)} Phase 3 agents in the table below &darr;</span>
@@ -2622,7 +2736,7 @@ html_template = f"""
       const classes = [];
       if (r.phase_reached === 'Phase 3') classes.push('phase-3-row');
       if (r.phase_reached === 'Phase 1') classes.push('phase-1-row');
-      const isDiscontinued = r.status_summary === 'Discontinued';
+      const isDiscontinued = r.status_summary === 'Discontinued' || r.status_summary === '{STALE_PHASE3_DISCONTINUED_LABEL}';
       if (isDiscontinued) classes.push('discontinued');
       if (r.is_aribio) classes.push('aribio-row');
       const star = r.is_aribio ? '\\u2605 ' : '';
@@ -2747,12 +2861,14 @@ html_template = f"""
     if (pillEl) togglePill(pillEl);
   }}
 
-  // clicking a heatmap cell toggles Phase + Target (drug-type stays whatever tab is active, not auto-filtered)
+  // clicking a heatmap cell toggles Phase + Target (drug-type stays whatever tab is active, not auto-filtered),
+  // then jumps to the table so the newly-filtered rows are immediately visible (same jumpToTable() the KPI tiles use).
   ['heatmapAll', 'heatmapSmallMolecule', 'heatmapBiologic'].forEach((divId) => {{
     document.getElementById(divId).on('plotly_click', function(data) {{
       const pt = data.points[0];
       togglePillByValue('phase', pt.x);
       togglePillByValue('target', pt.y);
+      jumpToTable();
     }});
   }});
 
@@ -2777,19 +2893,59 @@ html_template = f"""
     Plotly.Plots.resize(document.getElementById(btn.dataset.tab));
   }}
 
-  function showAllPhase3() {{
-    const phase3Pill = document.querySelector('.filter-pill[data-field="phase"][data-value="Phase 3"]');
-    if (phase3Pill && !phase3Pill.classList.contains('active')) togglePill(phase3Pill);
+  // Shared by every KPI tile / "show all" link below: activates a
+  // sidebar filter pill (if not already active) WITHOUT deselecting it
+  // when called again -- unlike togglePill/togglePillByValue, which are
+  // true toggles and would silently unfilter on a second click.
+  function activatePill(field, value) {{
+    const pill = document.querySelector(`.filter-pill[data-field="${{field}}"][data-value="${{value}}"]`);
+    if (pill && !pill.classList.contains('active')) togglePill(pill);
+  }}
+
+  function jumpToTable() {{
     document.getElementById('table-wrap').scrollIntoView({{ behavior: 'smooth', block: 'start' }});
   }}
 
-  // "High relevance to AR1001" KPI tile -> same pattern as showAllPhase3():
-  // select the matching filter pill (if not already active), then jump
-  // to the table so the filtered result is immediately visible.
+  function showAllPhase3() {{
+    activatePill('phase', 'Phase 3');
+    jumpToTable();
+  }}
+
+  // "High relevance to AR1001" KPI tile.
   function showHighRelevance() {{
-    const pill = document.querySelector('.filter-pill[data-field="highRelevance"][data-value="High Relevance"]');
-    if (pill && !pill.classList.contains('active')) togglePill(pill);
-    document.getElementById('table-wrap').scrollIntoView({{ behavior: 'smooth', block: 'start' }});
+    activatePill('highRelevance', 'High Relevance');
+    jumpToTable();
+  }}
+
+  // Remaining KPI tiles -> same activate-pill(s)-then-jump pattern.
+  // "Active Phase N" mirrors the KPI's own Python-side count
+  // (phase_reached == "Phase N" AND status_summary == "Active").
+  function showFdaApproved() {{
+    activatePill('status', 'FDA Approved');
+    jumpToTable();
+  }}
+
+  function showActivePhase3() {{
+    activatePill('phase', 'Phase 3');
+    activatePill('status', 'Active');
+    jumpToTable();
+  }}
+
+  function showActivePhase2() {{
+    activatePill('phase', 'Phase 2');
+    activatePill('status', 'Active');
+    jumpToTable();
+  }}
+
+  function showActivePhase1() {{
+    activatePill('phase', 'Phase 1');
+    activatePill('status', 'Active');
+    jumpToTable();
+  }}
+
+  function showAllDrugs() {{
+    clearFilters();
+    jumpToTable();
   }}
 
   // --- Drug Comparator: AR1001 vs. a selected drug, side by side.
@@ -2804,7 +2960,7 @@ html_template = f"""
     ['Target pathway(s)', r => r.target_pathways || 'Other'],
     ['Phase', r => r.phase_reached],
     ['Sponsor', r => r.sponsor_display || r.sponsor || 'Unknown'],
-    ['Status', r => r.status_summary],
+    ['Development Status', r => r.status_summary],
   ];
 
   function openComparator(displayName) {{
@@ -2824,7 +2980,7 @@ html_template = f"""
       <div>Relevance to AR1001: <span class="score" style="color:${{relevanceColor(score)}}">${{score}}/100</span></div>
       ${{reasonsList.length
         ? `<ul>${{reasonsList.map(x => `<li>${{escapeHtml(x)}}</li>`).join('')}}</ul>`
-        : '<div style="color:#999;margin-top:4px;">No shared profile with AR1001 on the dimensions this pipeline tracks.</div>'}}
+        : '<div style="color:#999;margin-top:4px;">No relevance signals earned on the dimensions this pipeline tracks.</div>'}}
       <div style="color:#999;font-size:11px;margin-top:6px;">Rule-based score, not AI-generated — see competitive_intelligence.py.</div>
     `;
 
@@ -2862,7 +3018,7 @@ html_template = f"""
 """
 
 with open("pipeline_overview.html", "w") as f:
-    f.write("<!DOCTYPE html><html><head><meta charset='utf-8'><title>AD Pipeline Dashboard</title></head><body>")
+    f.write("<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>AD Pipeline Dashboard</title></head><body>")
     f.write(html_template)
     f.write("</body></html>")
 

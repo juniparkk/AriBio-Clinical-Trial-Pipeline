@@ -26,7 +26,7 @@ import re
 
 import pandas as pd
 
-from drug_classification import normalize_text, _company_matches
+from drug_classification import normalize_text, _company_matches, STALE_PHASE3_DISCONTINUED_LABEL
 
 # ============================================================
 # STEP 1: PARSE THE MULTI-SECTION NIH CSV
@@ -358,7 +358,10 @@ def bucket_unmatched_dashboard_drug(dashboard_row, has_fuzzy_suggestion):
          NIH agent's name is CLOSE but not confidently equal) — a human
          should confirm whether it's the same drug under a different
          spelling/alias before deciding anything else.
-      3. historical_or_discontinued — status_summary == "Discontinued".
+      3. historical_or_discontinued — status_summary == "Discontinued"
+         (ct.gov-reported) or STALE_PHASE3_DISCONTINUED_LABEL (a Phase 3
+         trial years past completion with no FDA approval, never
+         formally closed by ct.gov -- see drug_classification.py).
          Per the explicit instruction, this is NOT treated as an error —
          NIH's report is a current-pipeline snapshot and is not expected
          to carry historical/discontinued programs.
@@ -370,7 +373,7 @@ def bucket_unmatched_dashboard_drug(dashboard_row, has_fuzzy_suggestion):
         return "non_therapeutic_or_ambiguous"
     if has_fuzzy_suggestion:
         return "unresolved_naming_alias_issue"
-    if dashboard_row.get("status_summary") == "Discontinued":
+    if dashboard_row.get("status_summary") in ("Discontinued", STALE_PHASE3_DISCONTINUED_LABEL):
         return "historical_or_discontinued"
     return "current_missing_from_nih"
 

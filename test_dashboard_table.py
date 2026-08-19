@@ -217,15 +217,20 @@ def test_kpi_total_drugs_equals_resolved_drugs_df_length():
 
 def test_kpi_phase_counts_computed_from_resolved_drugs_df():
     therapeutic_rows = get_therapeutic_rows()
-    # 4 colored numeric KPI tiles: Phase 3/2/1 agents + High relevance.
+    # 5 colored numeric KPI tiles, in dashboard order: FDA approved,
+    # Phase 3/2/1 agents, High relevance. (Total therapeutic drugs is
+    # the one KPI tile left uncolored.)
     phase_kpi_matches = re.findall(r'<div class="kpi-value" style="color:[^"]*">(\d+)</div>', HTML_SOURCE)
-    assert len(phase_kpi_matches) == 4, "expected 4 colored numeric KPI tiles (Phase 3/2/1 agents + High relevance)"
-    phase3_kpi, phase2_kpi, phase1_kpi, high_relevance_kpi = (int(v) for v in phase_kpi_matches)
+    assert len(phase_kpi_matches) == 5, "expected 5 colored numeric KPI tiles (FDA approved, Phase 3/2/1 agents, High relevance)"
+    _fda_kpi, phase3_kpi, phase2_kpi, phase1_kpi, high_relevance_kpi = (int(v) for v in phase_kpi_matches)
 
+    # "Active Phase N agents": only rows with status_summary == "Active"
+    # count -- a plain phase_reached tally would include drugs that
+    # reached that phase but have since finished/been dropped.
     phase_counts = {"Phase 1": 0, "Phase 2": 0, "Phase 3": 0}
     high_relevance_count = 0
     for row in therapeutic_rows:
-        if row["phase_reached"] in phase_counts:
+        if row["phase_reached"] in phase_counts and row["status_summary"] == "Active":
             phase_counts[row["phase_reached"]] += 1
         if row["aribio_relevance_score"] >= 70 and not row["is_aribio"]:
             high_relevance_count += 1
