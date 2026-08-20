@@ -34,6 +34,7 @@ from drug_classification import (
     build_resolved_drug_trial_links_df,
     build_drug_date_rollup,
     load_scope_overrides,
+    load_status_overrides,
     build_scope_audit_dataframe,
     build_diagnostic_agent_audit_dataframe,
     build_resolved_drugs_exclusion_audit_dataframe,
@@ -585,7 +586,10 @@ print()
 # drug-level rollup anymore.
 # ============================================================
 
-resolved_drugs_df = build_resolved_drugs_dataframe(df)
+status_overrides = load_status_overrides("data/reference/status_overrides.csv")
+print(f"{len(status_overrides)} curated status override(s) loaded from data/reference/status_overrides.csv")
+
+resolved_drugs_df = build_resolved_drugs_dataframe(df, status_overrides)
 
 resolved_drugs_df["study_url"] = "https://clinicaltrials.gov/study/" + resolved_drugs_df["nct_id"]
 
@@ -1887,6 +1891,20 @@ records_js = json.dumps(table_records)
 table_column_count = len(TABLE_COLUMNS)
 
 today_str = date.today().isoformat()
+
+# trials.csv's own mtime — NOT today_str — is what actually answers
+# "how current is this data": today_str is just this script's run
+# time, which stays "today" even if run_pipeline.py's scheduled
+# refresh (.github/workflows/clinicaltrials-refresh.yml) silently
+# failed to update trials.csv for days/weeks, making a stale dashboard
+# look perfectly fresh. Reading the file's own mtime keeps this
+# correct whether trials.csv came from that automation or a manual
+# ct.gov CSV export, and needs no coupling to run_pipeline.py itself
+# (pipeline_viz.py must keep working standalone -- see its module
+# docstring and run_pipeline.py's "re-running the existing
+# pipeline_viz.py unchanged").
+data_date_str = date.fromtimestamp(os.path.getmtime("trials.csv")).isoformat()
+
 dashboard_nav_bar = render_nav_bar("pipeline")
 
 html_template = f"""
@@ -2363,7 +2381,7 @@ html_template = f"""
   <main>
     <div class="page-title-block">
       <div class="page-title">Alzheimer's Disease Clinical Trial Pipeline</div>
-      <div class="page-title-sub">Source: clinicaltrials.gov &middot; Updated {today_str} &middot; {len(df)} trials analyzed &middot; {total_drugs} therapeutic drugs ({total_resolved_records} total resolved records)</div>
+      <div class="page-title-sub">AriBio competitive intelligence: track every drug in the global AD trial pipeline and benchmark it against AR1001 &middot; Source: clinicaltrials.gov &middot; Data as of {data_date_str} &middot; Dashboard generated {today_str} &middot; {len(df)} trials analyzed &middot; {total_drugs} therapeutic drugs ({total_resolved_records} total resolved records)</div>
     </div>
 
     <div class="spotlight">
@@ -2376,8 +2394,8 @@ html_template = f"""
           neuroprotection, neuroinflammation and tau phosphorylation.</li>
         <li><b>Trial status:</b> being evaluated in the global Phase 3 POLARIS-AD trial for early Alzheimer&rsquo;s
           disease &mdash; 1,535 patients enrolled.</li>
-        <li><b>Clinical data:</b> Phase 2 showed improvements in pTau181, A&beta;42/40 ratio, and ADAS-Cog13 vs. ADNI
-          external controls (AAIC 2026).</li>
+        <li><b>Clinical data:</b> in Phase 2, levels of plasma biomarkers pTau-181, pTau-217, and GFAP were improved
+          in the 30&nbsp;mg AR1001 group compared to placebo.</li>
       </ul>
       <div class="spotlight-disclaimer">
         AR1001 has not been approved by the U.S. Food and Drug Administration or any other regulatory authority, and

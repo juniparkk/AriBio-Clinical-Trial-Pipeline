@@ -1500,7 +1500,7 @@ def _mode_or_first(series):
     return m.iloc[0] if not m.empty else series.iloc[0]
 
 
-def build_resolved_drugs_dataframe(trials_df):
+def build_resolved_drugs_dataframe(trials_df, status_overrides=None):
     """
     Roll trials up into one row per drug, using resolve_developed_drug()'s
     trial-level fields as the source of truth — NOT
@@ -1553,7 +1553,20 @@ def build_resolved_drugs_dataframe(trials_df):
     verification_status, classification_confidence, needs_manual_review.
     "Brief Summary" is read too if present, but is optional — its
     absence degrades to an empty brief_summary field rather than an error.
+
+    status_overrides (from load_status_overrides(), keyed by normalized
+    drug name) force the rolled-up status_summary for a specific drug,
+    bypassing _DRUG_ROLLUP_STATUS_PRIORITY_INVESTIGATIONAL/
+    _POST_MARKETING entirely. This exists for the case ct.gov's own
+    per-trial status can't capture: a drug whose trials all completed
+    normally on ct.gov (nothing TERMINATED/WITHDRAWN, so the priority
+    rollup has no signal to pick up) but whose sponsor has since
+    discontinued the program because those completed trials missed
+    their primary endpoint — semaglutide's EVOKE/EVOKE Plus (Novo
+    Nordisk, 2025) is the motivating case. See
+    data/reference/status_overrides.csv.
     """
+    status_overrides = status_overrides or {}
     eligible = trials_df[
         trials_df["drug_classification"].isin(["sponsor_developed_therapeutic", "investigational_therapeutic_unverified"])
         & trials_df["developed_drug"].fillna("").astype(str).str.strip().ne("")
@@ -1585,6 +1598,10 @@ def build_resolved_drugs_dataframe(trials_df):
             else _DRUG_ROLLUP_STATUS_PRIORITY_POST_MARKETING
         )
         status = next((s for s in status_priority if s in statuses_at_top), statuses_at_top[0])
+
+        status_override = status_overrides.get(g["developed_drug_normalized"].iloc[0])
+        if status_override:
+            status = status_override["status_summary"]
 
         confirmed_rows = g[g["drug_classification"] == "sponsor_developed_therapeutic"]
         unverified_rows = g[g["drug_classification"] == "investigational_therapeutic_unverified"]
@@ -2081,6 +2098,55 @@ def load_scope_overrides(path):
         overrides[key] = {
             "pipeline_scope": str(row["pipeline_scope"]).strip(),
             "canonical_name_override": str(row["canonical_name_override"]).strip(),
+            "reason": str(row["reason"]).strip(),
+            "source": str(row["source"]).strip(),
+            "reviewer": str(row["reviewer"]).strip(),
+            "verified_date": str(row["verified_date"]).strip(),
+        }
+    return overrides
+
+
+# --- curated status override file (data/reference/status_overrides.csv) ---
+
+REQUIRED_STATUS_OVERRIDE_COLUMNS = [
+    "normalized_drug_name", "status_summary", "reason", "source", "reviewer", "verified_date",
+]
+
+
+def load_status_overrides(path):
+    """
+    Read data/reference/status_overrides.csv into a dict keyed by
+    normalized drug name, mirroring load_scope_overrides()'s read-only/
+    missing-file-tolerant behavior: a missing file degrades to "no
+    curated overrides available" (returns {}) rather than crashing the
+    pipeline. Raises ValueError if the file exists but is missing a
+    required column.
+
+    This exists for real-world drug-program discontinuations that
+    ct.gov's own per-trial status can't surface — see
+    build_resolved_drugs_dataframe()'s status_overrides parameter for
+    why (a program can be abandoned by its sponsor even though every
+    individual trial completed normally on ct.gov, with nothing
+    TERMINATED/WITHDRAWN for the priority-based rollup to detect).
+    """
+    try:
+        raw_df = pd.read_csv(path, dtype=str)
+    except FileNotFoundError:
+        return {}
+
+    missing = [c for c in REQUIRED_STATUS_OVERRIDE_COLUMNS if c not in raw_df.columns]
+    if missing:
+        raise ValueError(f"status_overrides.csv at {path!r} is missing required column(s): {missing}")
+
+    raw_df = raw_df.fillna("")
+
+    overrides = {}
+    for _, row in raw_df.iterrows():
+        key = normalize_text(row["normalized_drug_name"])
+        if not key:
+            continue
+        overrides[key] = {
+            "status_summary": str(row["status_summary"]).strip(),
             "reason": str(row["reason"]).strip(),
             "source": str(row["source"]).strip(),
             "reviewer": str(row["reviewer"]).strip(),

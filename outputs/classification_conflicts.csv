@@ -92,7 +92,7 @@ APNmAb005,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change f
 Application ARTH-e,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Approximately 100 million cells allogeneic hMSC,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AQW051,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
-AR1001,Small Molecule,Small Molecule,Neuroprotection,Amyloid; Tau; Neuroprotection,curated_override,high,no change from legacy classification,False
+AR1001,Small Molecule,Small Molecule,Neuroprotection,Tau; Neuroprotection; Inflammation; Brain Perfusion/BBB Protection,curated_override,high,no change from legacy classification,False
 Aripiprazole,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Arm 1 Education Session,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 "Arm A , Arm B, Arm C, & Arm D",Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True

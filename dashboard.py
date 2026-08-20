@@ -41,8 +41,7 @@ HOME_CSS = f"""
   }}
   {NAV_CSS}
   .home-hero {{ max-width: 900px; margin: 0 auto; padding: 64px 24px 80px; text-align: center; }}
-  .home-hero h1 {{ font-size: 28px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 10px; }}
-  .home-hero > p {{ color: #666; font-size: 15px; margin: 0 0 40px; }}
+  .home-hero h1 {{ font-size: 28px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 40px; }}
   .home-cards {{ display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left; }}
   @media (max-width: 680px) {{ .home-cards {{ grid-template-columns: 1fr; }} }}
   .home-card {{
@@ -118,7 +117,6 @@ def build_dashboard_shell():
 {render_nav_bar("home")}
 <div class="home-hero">
   <h1>AriBio Alzheimer's Intelligence</h1>
-  <p>Two views into the same disease area: the competitive clinical-trial landscape, and cohort-level biomarker data.</p>
   <div class="home-cards">{cards}</div>
 </div>
 </body>

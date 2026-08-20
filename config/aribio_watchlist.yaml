@@ -28,7 +28,7 @@ aribio_assets:
     # column (see pipeline_viz.py STEP 3.73 / competitive_intelligence.py)
     # rather than recomputing similarity from these fields directly.
     modality: "Small Molecule"
-    target_pathways: ["Amyloid", "Tau", "Neuroprotection"]
+    target_pathways: ["Tau", "Neuroprotection", "Inflammation", "Brain Perfusion/BBB Protection"]
     therapeutic_purpose_class: "DTT"
     phase_reached: "Phase 3"
     # Route of administration is not currently produced by any

@@ -89,7 +89,9 @@ def test_the_real_drug_classification_overrides_csv_has_ar1001():
     overrides = load_drug_classification_overrides(path)
     assert "ar1001" in overrides
     assert overrides["ar1001"]["modality"] == "Small Molecule"
-    assert set(overrides["ar1001"]["target_pathways"]) == {"Amyloid", "Tau", "Neuroprotection"}
+    assert set(overrides["ar1001"]["target_pathways"]) == {
+        "Tau", "Neuroprotection", "Inflammation", "Brain Perfusion/BBB Protection",
+    }
 
 
 # ------------------------------------------------------------

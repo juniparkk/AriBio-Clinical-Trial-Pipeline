@@ -20,9 +20,8 @@ on:
     #   - PDT (UTC-7, roughly mid-Mar to early-Nov): 13:30 UTC
     #   - PST (UTC-8, roughly early-Nov to mid-Mar):  14:30 UTC
     # Both crons fire every weekday; the "Check target local time"
-    # step below inspects the actual America/Los_Angeles wall-clock
-    # hour at runtime and skips the rest of the job unless it's
-    # really the 6 AM hour locally, so only the DST-correct trigger
+    # step below figures out which one is DST-correct today and
+    # skips the rest of the job on the other, so only one of them
     # ever does real work on any given day.
     - cron: "30 13 * * 1-5" # ~6:30 AM PDT
     - cron: "30 14 * * 1-5" # ~6:30 AM PST
@@ -50,17 +49,36 @@ jobs:
       - name: Check target local time (America/Los_Angeles)
         id: tzcheck
         run: |
-          LOCAL_HOUR=$(TZ='America/Los_Angeles' date +%H)
-          echo "Current America/Los_Angeles hour: $LOCAL_HOUR"
+          # NOTE: this used to compare the wall-clock hour AT RUN TIME
+          # against "06" — but GitHub Actions scheduled triggers are
+          # frequently delayed (routinely by 30-90+ minutes under
+          # queue load), so by the time this step actually ran, the
+          # local hour was reliably past 06 and this gate skipped
+          # EVERY scheduled run, silently, for as long as this
+          # workflow existed (verified via the Actions run history:
+          # 18/18 scheduled runs skipped past this step). Comparing
+          # against github.event.schedule instead is immune to that
+          # delay, since GitHub fixes that value to the cron
+          # expression that triggered the run at DISPATCH time, not
+          # whenever the runner happens to pick the job up.
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "Manually triggered — running regardless of local time."
-            echo "proceed=true" >> "$GITHUB_OUTPUT"
-          elif [ "$LOCAL_HOUR" = "06" ]; then
-            echo "This is the DST-correct 6:30 AM local trigger — proceeding."
+            echo "Manually triggered — running regardless of schedule."
             echo "proceed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Not the DST-correct trigger for 6:30 AM local — skipping the rest of this run."
-            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            TZ_ABBR=$(TZ='America/Los_Angeles' date +%Z)
+            if [ "$TZ_ABBR" = "PDT" ]; then
+              EXPECTED_CRON="30 13 * * 1-5"
+            else
+              EXPECTED_CRON="30 14 * * 1-5"
+            fi
+            echo "Currently $TZ_ABBR; DST-correct cron: '$EXPECTED_CRON'; this run's cron: '${{ github.event.schedule }}'"
+            if [ "${{ github.event.schedule }}" = "$EXPECTED_CRON" ]; then
+              echo "This is the DST-correct scheduled trigger — proceeding."
+              echo "proceed=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "Not the DST-correct scheduled trigger — skipping the rest of this run."
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
       - name: Checkout repository
