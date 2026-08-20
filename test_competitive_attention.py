@@ -1089,31 +1089,60 @@ def test_render_competitive_sections_stacks_needs_attention_below_recent_changes
 
 
 def test_attention_row_css_is_single_column():
-    assert "grid-template-columns: 1fr" in cav.COMPETITIVE_ATTENTION_CSS
-    assert "grid-template-columns: repeat(2, 1fr)" not in cav.COMPETITIVE_ATTENTION_CSS.split(".attention-cards-grid")[0]
+    # .attention-row (Recent Changes panel vs Needs Attention panel)
+    # stays single-column/stacked -- the 3-column split below is a
+    # layout INSIDE the Recent Changes panel, not a second attempt at
+    # putting the two panels side by side.
+    row_css = cav.COMPETITIVE_ATTENTION_CSS.split(".attention-row {")[1].split("}")[0]
+    assert "grid-template-columns: 1fr" in row_css
+    assert "repeat(2, 1fr)" not in row_css
+    assert "repeat(3, 1fr)" not in row_css
 
 
-def test_recent_changes_cards_render_in_two_column_grid():
+def test_recent_changes_cards_render_in_three_scrollable_columns():
     changes = _changes_df([
         _change_row(nct_id="NCT00000001", canonical_drug_name="Drug1"),
         _change_row(nct_id="NCT00000002", canonical_drug_name="Drug2"),
+        _change_row(nct_id="NCT00000003", canonical_drug_name="Drug3"),
     ])
     prepared = ca.prepare_recent_changes(changes, today=TODAY)
     html = cav.render_recent_changes_section(prepared)
-    assert '<div class="attention-cards-grid">' in html
-    # Both cards must live inside the same grid wrapper, not two separate ones.
-    assert html.count('<div class="attention-cards-grid">') == 1
-    assert html.count('<div class="attention-card js-drug-row">') == 2
+    assert '<div class="recent-changes-grid">' in html
+    # 3 columns present (one per RECENT_CHANGES_COLUMNS), each its own
+    # independently-scrollable box -- not one flat list.
+    assert html.count('<div class="recent-changes-col-list">') == cav.RECENT_CHANGES_COLUMNS == 3
+    # All 3 cards still render somewhere across those columns -- the
+    # column split must never drop a card.
+    assert html.count('<div class="attention-card js-drug-row">') == 3
+    assert "max-height: 520px; overflow-y: auto;" in cav.COMPETITIVE_ATTENTION_CSS
 
 
-def test_needs_attention_cards_are_not_wrapped_in_two_column_grid():
-    # The two-column layout was requested for Recent Changes only --
+def test_recent_changes_columns_are_dealt_round_robin():
+    # 4 cards across 3 columns -> column 1 gets cards 1 & 4, columns 2
+    # and 3 get one each -- verifies the split is round-robin (even
+    # height across columns) rather than one contiguous chunk per
+    # column (which would put all early cards in column 1).
+    changes = _changes_df([
+        _change_row(nct_id=f"NCT0000000{i}", canonical_drug_name=f"Drug{i}")
+        for i in range(1, 5)
+    ])
+    prepared = ca.prepare_recent_changes(changes, today=TODAY)
+    html = cav.render_recent_changes_section(prepared)
+    columns = html.split('<div class="recent-changes-col-list">')[1:]
+    assert "Drug1" in columns[0] and "Drug4" in columns[0]
+    assert "Drug2" in columns[1]
+    assert "Drug3" in columns[2]
+
+
+def test_needs_attention_cards_are_not_wrapped_in_a_column_grid():
+    # The multi-column layout was requested for Recent Changes only --
     # Needs Attention keeps its existing single-column list.
     row = {**{c: "" for c in ca.ATTENTION_COLUMNS}, "relevance_score": 63, "priority_level": "High",
            "canonical_drug_name": "bapineuzumab", "nct_id": "NCT00663026"}
     df = pd.DataFrame([row], columns=ca.ATTENTION_COLUMNS)
     html = cav.render_needs_attention_section(df)
-    assert "attention-cards-grid" not in html
+    assert "recent-changes-grid" not in html
+    assert "recent-changes-col-list" not in html
 
 
 ALL_TESTS = [
@@ -1201,8 +1230,9 @@ ALL_TESTS = [
     test_deleting_a_note_requires_confirmation,
     test_render_competitive_sections_stacks_needs_attention_below_recent_changes,
     test_attention_row_css_is_single_column,
-    test_recent_changes_cards_render_in_two_column_grid,
-    test_needs_attention_cards_are_not_wrapped_in_two_column_grid,
+    test_recent_changes_cards_render_in_three_scrollable_columns,
+    test_recent_changes_columns_are_dealt_round_robin,
+    test_needs_attention_cards_are_not_wrapped_in_a_column_grid,
 ]
 
 

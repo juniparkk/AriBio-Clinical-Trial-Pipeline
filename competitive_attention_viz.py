@@ -50,6 +50,8 @@ ARIBIO_ACCENT = "#c2255c"
 CARD_RADIUS = "12px"
 CARD_SHADOW = "0 1px 3px rgba(20, 40, 70, 0.09)"
 
+RECENT_CHANGES_COLUMNS = 3
+
 
 def _darken(hex_color, amount=0.15):
     hex_color = hex_color.lstrip("#")
@@ -297,7 +299,24 @@ def render_recent_changes_section(changes_df, top_n=15, drugs_df=None):
                 {detail_html}
               </div>
             </div>""")
-        body = f'<div class="attention-cards-grid">{"".join(rows_html)}</div>'
+
+        # 3 equal columns, each independently scrollable -- same visual
+        # language as Upcoming Competitive Milestones' .milestone-grid /
+        # .milestone-col-list (scroll-shadow affordance included), but
+        # this is a pure LAYOUT split of one flat list for density, not
+        # a semantic bucketing like Milestones' 4 time-based columns:
+        # cards are dealt round-robin (card i -> column i % 3) so
+        # columns stay close to even height regardless of how the
+        # cards themselves vary in size, and drug-grouping/ordering
+        # (by detected_date desc) is otherwise untouched.
+        columns = [[] for _ in range(RECENT_CHANGES_COLUMNS)]
+        for i, row_html in enumerate(rows_html):
+            columns[i % RECENT_CHANGES_COLUMNS].append(row_html)
+        cols_html = "".join(
+            f'<div class="recent-changes-col-list">{"".join(col)}</div>'
+            for col in columns
+        )
+        body = f'<div class="recent-changes-grid">{cols_html}</div>'
 
     return f"""
     <div class="attention-panel" style="border-radius:{CARD_RADIUS}; box-shadow:{CARD_SHADOW}">
@@ -699,9 +718,33 @@ COMPETITIVE_ATTENTION_CSS = """
   .attention-change-item-side { font-size: 12.5px; white-space: nowrap; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
   .attention-row { display: grid; grid-template-columns: 1fr; align-items: stretch; gap: 16px; margin-bottom: 20px; }
   .attention-row .attention-panel { margin-bottom: 0; }
-  .attention-cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 20px; }
-  .attention-cards-grid .attention-card { border: 1px solid #eee; border-radius: 8px; padding: 12px 14px; }
-  @media (max-width: 900px) { .attention-cards-grid { grid-template-columns: 1fr; } }
+  /* Recent Changes: 3 equal columns, each independently scrollable --
+     same scroll-shadow trick as .milestone-col-list below (this is a
+     narrower, deliberate duplication of that one visual effect, not a
+     shared class, since Recent Changes cards run taller than a
+     milestone row and need their own max-height). Cards keep
+     .attention-card's plain top-border-divider style (same as Needs
+     Attention's cards) now that they stack vertically within a column
+     instead of sitting in a 2-column card grid -- consistent with
+     .milestone-row's own plain-divider look. */
+  .recent-changes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 1100px) { .recent-changes-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 700px) { .recent-changes-grid { grid-template-columns: 1fr; } }
+  .recent-changes-col-list {
+    max-height: 520px; overflow-y: auto; padding-right: 6px;
+    background:
+      linear-gradient(white 30%, rgba(255,255,255,0)) center top,
+      linear-gradient(rgba(255,255,255,0), white 70%) center bottom,
+      radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.18), rgba(0,0,0,0)) center top,
+      radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.18), rgba(0,0,0,0)) center bottom;
+    background-repeat: no-repeat;
+    background-size: 100% 24px, 100% 24px, 100% 10px, 100% 10px;
+    background-attachment: local, local, scroll, scroll;
+    scrollbar-width: thin; scrollbar-color: #ccc transparent;
+  }
+  .recent-changes-col-list::-webkit-scrollbar { width: 7px; }
+  .recent-changes-col-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+  .recent-changes-col-list::-webkit-scrollbar-thumb:hover { background: #aaa; }
   .attention-link { color: #2e5fa3; text-decoration: none; font-weight: 600; }
   .attention-link:hover { text-decoration: underline; }
   .attention-link--none { color: #aaa; font-weight: 400; }
