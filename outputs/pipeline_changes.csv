@@ -1,1 +1,40 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
+2026-08-20,trial,NCT07764146,,Voyager Therapeutics,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07764185,,"Photozig, Inc.",new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),True
+2026-08-20,trial,NCT07764679,[18F]Fluorbetazine,"HTA Co., Ltd.",new_trial,,Phase 3,High,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),True
+2026-08-20,trial,NCT07766174,,University of Utah,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07768592,E2511,Eisai Inc.,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07773493,,University of Minnesota,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07775196,,University of Texas Southwestern Medical Center,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07775625,,Northwestern University,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT04150198,,"Institut National de la Santé Et de la Recherche Médicale, France",primary_completion_date_change,2025-12,2028-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT04150198,,"Institut National de la Santé Et de la Recherche Médicale, France",completion_date_change,2026-12,2029-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT04804241,Senicapoc,"University of California, Davis",primary_completion_date_change,2026-06,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT04804241,Senicapoc,"University of California, Davis",completion_date_change,2026-06,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT05081596,,Weill Medical College of Cornell University,primary_completion_date_change,2026-07-31,2027-07-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT05417555,,"University of California, Los Angeles",status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT05417555,,"University of California, Los Angeles",enrollment_change,144,120,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT05417555,,"University of California, Los Angeles",primary_completion_date_change,2026-07-31,2026-09-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT05417555,,"University of California, Los Angeles",completion_date_change,2026-07-31,2026-09-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT05557409,AXS-05,"Axsome Therapeutics, Inc.",results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),True
+2026-08-20,trial,NCT06099197,,Indiana University,status_change,Discontinued,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT06099197,,Indiana University,primary_completion_date_change,2025-10-20,2026-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT06099197,,Indiana University,completion_date_change,2025-10-20,2026-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT06112860,,Northwestern University,completion_date_change,2026-12-31,2027-03-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT06365645,,Women and Infants Hospital of Rhode Island,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT06365645,,Women and Infants Hospital of Rhode Island,primary_completion_date_change,2025-09,2025-06-14,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT06365645,,Women and Infants Hospital of Rhode Island,completion_date_change,2025-09,2025-06-14,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT06523296,Healhty controls,Centre Hospitalier Universitaire de Nice,primary_completion_date_change,2026-05-01,2028-08-18,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT06523296,Healhty controls,Centre Hospitalier Universitaire de Nice,completion_date_change,2026-06-01,2028-09-18,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT06708182,,Northwestern University,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT06708182,,Northwestern University,primary_completion_date_change,2026-07,2026-07-01,Low,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT06708182,,Northwestern University,completion_date_change,2026-09,2026-07-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07054385,,Richard Holden,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07054385,,Richard Holden,enrollment_change,60,41,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07054385,,Richard Holden,primary_completion_date_change,2026-07-01,2026-07-05,Low,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07054385,,Richard Holden,completion_date_change,2026-07-01,2026-07-05,Low,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07087951,,Chang Gung Memorial Hospital,completion_date_change,2028-09-01,2028-11-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07279714,Fisetin,Sunnybrook Health Sciences Centre,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07279714,Fisetin,Sunnybrook Health Sciences Centre,primary_completion_date_change,2026-11,2026-07-21,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07279714,Fisetin,Sunnybrook Health Sciences Centre,completion_date_change,2026-11,2026-07-21,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,drug,,E2511,Eisai Inc.,new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False

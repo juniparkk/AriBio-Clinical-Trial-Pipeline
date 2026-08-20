@@ -271,6 +271,7 @@ Donepezil hydrochloride or carpalatine bitartrate,Device,Small Molecule,Symptoma
 Dronabinol,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 E2020,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 E2212,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+E2511,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 E2609,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 E2814,Small Molecule,Biologic,Tau,Tau,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic',True
 Ebixa,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True

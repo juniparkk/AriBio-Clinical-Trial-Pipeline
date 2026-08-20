@@ -197,15 +197,35 @@ def render_recent_changes_section(changes_df, top_n=15, drugs_df=None):
             drug = group["drug"]
             company = group["company"]
 
+            # Primary Completion Date and Study/Overall Completion Date
+            # are two distinct ct.gov fields that very often move
+            # together (a sponsor pushing a trial's timeline typically
+            # updates both at once) -- when that happens for the SAME
+            # trial, showing both as separate change lines reads as a
+            # near-duplicate rather than two distinct pieces of news.
+            # Primary Completion Date is the one that actually matters
+            # for competitive tracking (it's what drives the Upcoming
+            # Milestones section), so it wins; the Study/Overall Completion
+            # Date row for that trial is dropped from THIS rendering only
+            # -- it's still recorded in outputs/pipeline_changes.csv, so
+            # nothing is lost from the audit trail, just from this display.
+            nct_ids_with_primary_completion_change = {
+                _clean(r.get("nct_id"))
+                for r in group["rows"]
+                if _clean(r.get("change_type")) == "primary_completion_date_change"
+            }
+
             change_items_html = []
             for row in group["rows"]:
+                change_type_key = _clean(row.get("change_type")) or ""
                 nct_id = _clean(row.get("nct_id")) or ""
+                if change_type_key == "completion_date_change" and nct_id in nct_ids_with_primary_completion_change:
+                    continue
                 url = _study_url(nct_id)
                 link_html = (
                     f'<a href="{_esc(url)}" target="_blank" rel="noopener" class="attention-link">{_esc(nct_id)}</a>'
                     if url else '<span class="attention-link attention-link--none">no linked trial</span>'
                 )
-                change_type_key = _clean(row.get("change_type")) or ""
                 change_type = _esc(_CHANGE_TYPE_BADGE_LABELS.get(change_type_key, change_type_key.replace("_", " ")))
                 detected_date = _esc(_clean(row.get("detected_date")) or "")
 
