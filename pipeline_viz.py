@@ -56,7 +56,7 @@ from scientific_classification import (
 )
 from competitive_intelligence import (
     compute_relevance_score,
-    _TARGET_PATHWAY_POINTS, _MODALITY_POINTS, _PURPOSE_CLASS_POINTS,
+    _TARGET_PATHWAY_POINTS, _MODALITY_POINTS,
     _PHASE_3_POINTS, _PHASE_2_POINTS, _SPONSOR_TYPE_POINTS,
     _LARGE_TRIAL_POINTS, _LARGE_TRIAL_ENROLLMENT_THRESHOLD, _DISEASE_MODIFYING_TARGET_PATHWAYS,
     LOW_RELEVANCE_CAP, LOW_RELEVANCE_DISCONTINUED_STATUS, LOW_RELEVANCE_YEAR_CUTOFF,
@@ -853,6 +853,22 @@ resolved_drugs_df["start_date_display"] = resolved_drugs_df["earliest_start_date
 resolved_drugs_df["primary_completion_date_display"] = (
     resolved_drugs_df["latest_primary_completion_date"].dt.strftime("%b %Y").fillna("TBD")
 )
+# "Trial Initiating Date" table column: when this drug's own MOST
+# RECENTLY-STARTED trial began (latest_start_date, not
+# earliest_start_date) — a distinct signal from "Start date" above,
+# which answers "how long has this drug been in development"; this one
+# answers "is there recent activity on it."
+resolved_drugs_df["latest_start_date_display"] = (
+    resolved_drugs_df["latest_start_date"].dt.strftime("%b %Y").fillna("TBD")
+)
+# "%b %Y" (e.g. "Dec 2019") sorts alphabetically wrong across different
+# years -- month-name order isn't calendar order, so "Aug 2020" would
+# sort before "Dec 2019" under a plain string sort. A separate "%Y-%m"
+# field (never displayed, only used by sortTable() below) sorts
+# correctly as a string without needing real date parsing in JS.
+resolved_drugs_df["latest_start_date_sort"] = (
+    resolved_drugs_df["latest_start_date"].dt.strftime("%Y-%m").fillna("")
+)
 
 # ============================================================
 # STEP 3.725: STALE PHASE 3 -> PRESUMED DISCONTINUED
@@ -907,13 +923,12 @@ if _ar1001_rows.empty:
 if not _ar1001_rows.empty:
     _ar1001_row = _ar1001_rows.iloc[0]
     _ar1001_modality = _ar1001_row["modality"]
-    _ar1001_purpose_class = _ar1001_row["therapeutic_purpose_class"]
     _ar1001_sponsor_type = _ar1001_row["sponsor_type"]
 
     _relevance_results = [
         compute_relevance_score(
-            r["target_pathways_list"], r["modality"], r["therapeutic_purpose_class"], r["phase_reached"],
-            _ar1001_modality, _ar1001_purpose_class,
+            r["target_pathways_list"], r["modality"], r["phase_reached"],
+            _ar1001_modality,
             sponsor_type=r["sponsor_type"], reference_sponsor_type=_ar1001_sponsor_type,
             status=r["status_summary"],
             # "Unknown" status (ct.gov's own raw UNKNOWN, not something
@@ -951,6 +966,41 @@ else:
     # rather than silently comparing against a made-up reference.
     resolved_drugs_df["aribio_relevance_score"] = 0
     resolved_drugs_df["aribio_relevance_reasons"] = "AR1001 not found in this dataset"
+
+# ============================================================
+# STEP 3.76: NA-PHASE / UNCLASSIFIABLE-MODALITY EXCLUSION
+#
+# A drug with NO ct.gov phase on file (phase_reached == "NA") AND
+# whose modality never resolved past the catch-all "Other" bucket is,
+# in this dataset, overwhelmingly an arm label, assessment, procedure,
+# or behavioral/educational intervention that slipped through as an
+# "investigational_therapeutic_unverified" candidate rather than an
+# actual drug -- a real-data audit of all 210 current NA-phase rows
+# found things like "Arm A, Arm B, Arm C, & Arm D", "Blood sampling",
+# "Control arm", "Biodanza program", "Continuous positive airway
+# pressure (CPAP)", "Advance Care Planning". A handful of real,
+# well-known drugs also carry NA phase on ct.gov (Celecoxib, AndroGel,
+# Acetylcholinesterase Inhibitors) -- but those all resolved a real
+# modality (Small Molecule/Biologic), which is exactly the signal that
+# keeps them OUT of this exclusion. Reclassified to "Non-Drug
+# Intervention" (not deleted) — the "reveal non-therapeutic records"
+# toggle still shows them, and manual_review_required stays True since
+# this is a bulk structural heuristic, not an individually-reviewed
+# curated exclusion like the named ones above (Healthy controls, All
+# Subjects, tango/hypoxia, ...).
+# ============================================================
+_na_unclassifiable_mask = (resolved_drugs_df["phase_reached"] == "NA") & (resolved_drugs_df["modality"] == "Other")
+resolved_drugs_df.loc[_na_unclassifiable_mask, "scope_reason"] = (
+    "NA ct.gov phase with an unclassifiable (\"Other\") modality — this combination is, in this dataset, "
+    "overwhelmingly an arm label/assessment/procedure/behavioral intervention rather than a real investigational "
+    "drug (see pipeline_viz.py STEP 3.76); a real NA-phase drug with a resolved Small Molecule/Biologic modality "
+    "is NOT affected by this rule."
+)
+resolved_drugs_df.loc[_na_unclassifiable_mask, "manual_review_required"] = True
+resolved_drugs_df.loc[_na_unclassifiable_mask, "pipeline_scope"] = "Non-Drug Intervention"
+print(f"{int(_na_unclassifiable_mask.sum())} NA-phase/unclassifiable-modality row(s) reclassified to "
+      f"Non-Drug Intervention scope (STEP 3.76)")
+print()
 
 # ============================================================
 # PHASE 1A: therapeutic_drugs_df — the DEFAULT dashboard population.
@@ -1471,14 +1521,15 @@ TABLE_COLUMNS = [
     # surplus room to the columns that actually needed it -- Sponsor
     # gives up a further 3% to Status once its header grew to
     # "Development Status".
-    ("display_name", "Drug", 19),
-    ("sponsor", "Sponsor", 13),
-    ("phase_reached", "Highest Phase", 12),
-    ("status_summary", "Development Status", 14),
-    ("target_display", "Target / Pathway", 13),
-    ("drug_type", "Drug Type", 12),
+    ("display_name", "Drug", 16),
+    ("sponsor", "Sponsor", 11),
+    ("phase_reached", "Highest Phase", 11),
+    ("status_summary", "Development Status", 13),
+    ("target_display", "Target / Pathway", 12),
+    ("drug_type", "Drug Type", 10),
     ("trial_count", "Trial Count", 9),
     ("dev_phase_enrollment", "Enrollment", 8),
+    ("latest_start_date_display", "Trial Initiating Date", 10),
     # Verification/Confidence/Review Status columns removed from the main
     # table per request — still available per-row via the details toggle
     # (the underlying data columns are kept in table_df below for that).
@@ -1582,6 +1633,7 @@ table_df = resolved_drugs_df[[
     "therapeutic_purpose_class", "therapeutic_purpose_category", "cadro",
     "modality", "drug_type_source", "drug_type_inferred",
     "start_date_display", "primary_completion_date_display",
+    "latest_start_date_display", "latest_start_date_sort",
     "aribio_relevance_score", "aribio_relevance_reasons",
     # FDA status (STEP 3.72) — a genuinely separate regulatory signal,
     # never derived from trial-level status_summary; see fda_status.py.
@@ -1642,37 +1694,36 @@ RELEVANCE_MATRIX_EXPLANATION = (
 # as RELEVANCE_METHODOLOGY_HTML below, so it can't drift out of sync.
 _DISEASE_MODIFYING_TARGETS_LIST = ", ".join(sorted(_DISEASE_MODIFYING_TARGET_PATHWAYS))
 RELEVANCE_FORMULA_HINT = (
-    f"AR1001 relevance = modality match (+{_MODALITY_POINTS}) + treatment-approach match (+{_PURPOSE_CLASS_POINTS}) "
-    f"+ phase (Phase 3: +{_PHASE_3_POINTS}, Phase 2: +{_PHASE_2_POINTS}) + sponsor type match (+{_SPONSOR_TYPE_POINTS}) "
-    f"+ large trial, &gt;{_LARGE_TRIAL_ENROLLMENT_THRESHOLD} participants (+{_LARGE_TRIAL_POINTS}) "
-    f"+ disease-modifying target pathway (+{_TARGET_PATHWAY_POINTS}), out of "
-    f"100 &mdash; capped at {LOW_RELEVANCE_CAP}/100 for discontinued/withdrawn, stale (no trial activity since "
-    f"before {LOW_RELEVANCE_YEAR_CUTOFF}), or small (&lt;{LOW_RELEVANCE_ENROLLMENT_CUTOFF}-participant) trials. "
-    "Full formula: Methodology tab below."
+    f"AR1001 relevance = large trial, &gt;{_LARGE_TRIAL_ENROLLMENT_THRESHOLD} participants (+{_LARGE_TRIAL_POINTS}) "
+    f"+ disease-modifying target pathway (+{_TARGET_PATHWAY_POINTS}) + sponsor type match (+{_SPONSOR_TYPE_POINTS}) "
+    f"+ phase (Phase 3: +{_PHASE_3_POINTS}, Phase 2: +{_PHASE_2_POINTS}) + modality match (+{_MODALITY_POINTS}), "
+    f"out of 100 &mdash; capped at {LOW_RELEVANCE_CAP}/100 for discontinued/withdrawn, stale (no trial activity "
+    f"since before {LOW_RELEVANCE_YEAR_CUTOFF}), or small (&lt;{LOW_RELEVANCE_ENROLLMENT_CUTOFF}-participant) "
+    "trials. Full formula: Methodology tab below."
 )
 
 # Methodology disclosure for the "AR1001 Competitive Landscape" section —
 # built from competitive_intelligence.py's actual scoring constants (never
 # a separately hand-typed copy) so this panel can't silently drift out of
-# sync with what compute_relevance_score() really does.
+# sync with what compute_relevance_score() really does. Rows ordered
+# highest-to-lowest point value.
 RELEVANCE_METHODOLOGY_HTML = f"""
 <p style="margin:0 0 10px;">
   AR1001 relevance is a deterministic, rule-based score (0&ndash;100) &mdash; not an AI/LLM output and not a
   measure of clinical efficacy. Every point is tied to a plain-language reason shown in each drug's detail
-  panel. Points are awarded across six dimensions, which sum to 100 when a competitor earns every one of
-  them. Three dimensions score SIMILARITY to AR1001 (modality, treatment approach, sponsor type); three
-  score the competitor's OWN profile on an absolute scale (target pathway, phase, trial size), regardless
-  of what phase or pathway AR1001 itself is at:
+  panel. Points are awarded across five dimensions, which sum to 100 when a competitor earns every one of
+  them. Two dimensions score SIMILARITY to AR1001 (modality, sponsor type); three score the competitor's
+  OWN profile on an absolute scale (target pathway, phase, trial size), regardless of what phase or pathway
+  AR1001 itself is at:
 </p>
 <table class="methodology-table">
   <thead><tr><th>Dimension</th><th>Points</th><th>Awarded when&hellip;</th></tr></thead>
   <tbody>
-    <tr><td>Target pathway</td><td>{_TARGET_PATHWAY_POINTS}</td><td>the competitor's own target pathway is one of the field's five disease-modifying mechanisms ({_DISEASE_MODIFYING_TARGETS_LIST}) &mdash; not compared to AR1001's own pathway. Symptomatic/Neuropsychiatric pathways manage symptoms rather than the disease process, so they earn no points here</td></tr>
-    <tr><td>Modality</td><td>{_MODALITY_POINTS}</td><td>same modality as AR1001 (Small Molecule vs. Biologic)</td></tr>
-    <tr><td>Treatment approach</td><td>{_PURPOSE_CLASS_POINTS}</td><td>same NIH-sourced therapeutic-purpose class as AR1001 (Disease-targeted vs. Symptomatic)</td></tr>
-    <tr><td>Phase</td><td>{_PHASE_3_POINTS} / {_PHASE_2_POINTS}</td><td>the competitor's own phase &mdash; {_PHASE_3_POINTS} points for Phase 3, {_PHASE_2_POINTS} for Phase 2, 0 for every other phase. Absolute, not proximity to AR1001's phase &mdash; no partial credit for "adjacent" phases</td></tr>
-    <tr><td>Sponsor type</td><td>{_SPONSOR_TYPE_POINTS}</td><td>same sponsor type as AR1001 (Company vs. University/Institution) &mdash; a company-sponsored competitor is a better-funded, more serious competitive threat than a purely academic one; see ct.gov's own lead-sponsor classification (drug_classification.py's classify_sponsor_type())</td></tr>
     <tr><td>Trial size</td><td>{_LARGE_TRIAL_POINTS}</td><td>the competitor's largest trial enrolled more than {_LARGE_TRIAL_ENROLLMENT_THRESHOLD} participants &mdash; real recruitment capacity/investment, independent of AR1001's own enrollment</td></tr>
+    <tr><td>Target pathway</td><td>{_TARGET_PATHWAY_POINTS}</td><td>the competitor's own target pathway is one of the field's five disease-modifying mechanisms ({_DISEASE_MODIFYING_TARGETS_LIST}) &mdash; not compared to AR1001's own pathway. Symptomatic/Neuropsychiatric pathways manage symptoms rather than the disease process, so they earn no points here</td></tr>
+    <tr><td>Sponsor type</td><td>{_SPONSOR_TYPE_POINTS}</td><td>same sponsor type as AR1001 (Company vs. University/Institution) &mdash; a company-sponsored competitor is a better-funded, more serious competitive threat than a purely academic one; see ct.gov's own lead-sponsor classification (drug_classification.py's classify_sponsor_type())</td></tr>
+    <tr><td>Phase</td><td>{_PHASE_3_POINTS} / {_PHASE_2_POINTS}</td><td>the competitor's own phase &mdash; {_PHASE_3_POINTS} points for Phase 3, {_PHASE_2_POINTS} for Phase 2, 0 for every other phase. Absolute, not proximity to AR1001's phase &mdash; no partial credit for "adjacent" phases</td></tr>
+    <tr><td>Modality</td><td>{_MODALITY_POINTS}</td><td>same modality as AR1001 (Small Molecule vs. Biologic)</td></tr>
   </tbody>
 </table>
 <p style="margin:14px 0 4px;"><b>Low-relevance cap.</b> A competitor is capped at
@@ -1779,7 +1830,14 @@ SPONSOR_TYPE_COLORS = {
 # resolved_drugs_df and still power search (see matchesSearch()) --
 # only the visible display was removed, not the underlying data.
 PILL_GROUPS = [
-    ("phase", "Phase", PHASE_ORDER, PHASE_COLORS),
+    # "NA" excluded from the Phase filter pill: after STEP 3.76's
+    # NA-phase/unclassifiable-modality exclusion, the only NA-phase
+    # rows left in the default Therapeutic Drug view are a handful of
+    # real drugs (Celecoxib, AndroGel, ...) whose ct.gov record simply
+    # never carried a phase — not a distinct, filter-worthy bucket a
+    # user would deliberately narrow down to. PHASE_ORDER itself (used
+    # by the heatmap/sort order elsewhere) is untouched.
+    ("phase", "Phase", [p for p in PHASE_ORDER if p != "NA"], PHASE_COLORS),
     ("drugType", "Drug Type", list(DRUG_TYPE_COLORS.keys()), DRUG_TYPE_COLORS),
     ("target", "Target", [t for t in TARGET_COLORS if t not in ("Other", "Unknown")], TARGET_COLORS),
     ("status", "Development Status", [s for s in STATUS_COLORS if s != "Other"], STATUS_COLORS),
@@ -2733,6 +2791,14 @@ html_template = f"""
         av = a[sortKey] || 0; bv = b[sortKey] || 0;
       }} else if (sortKey === 'dev_phase_enrollment') {{
         av = enrollmentValueFor(a) || 0; bv = enrollmentValueFor(b) || 0;
+      }} else if (sortKey === 'latest_start_date_display') {{
+        // "%b %Y" (e.g. "Dec 2019") sorts alphabetically wrong across
+        // different years -- sort by the hidden "%Y-%m" field instead
+        // (see latest_start_date_sort in pipeline_viz.py), which sorts
+        // correctly as a plain string. TBD (blank) rows sort last
+        // ascending, first descending -- same "unknowns don't hide the
+        // real ordering" behavior a numeric 0 already gives trial_count.
+        av = a.latest_start_date_sort || ''; bv = b.latest_start_date_sort || '';
       }} else {{
         av = String(a[sortKey] || '').toLowerCase(); bv = String(b[sortKey] || '').toLowerCase();
       }}
@@ -2811,6 +2877,7 @@ html_template = f"""
         <td>${{plainPill(r.drug_type)}}</td>
         <td>${{r.trial_count}}</td>
         <td>${{enrollment}}</td>
+        <td>${{escapeHtml(r.latest_start_date_display || 'TBD')}}</td>
       </tr>`;
       return isExpanded ? mainRow + renderDetailRow(r) : mainRow;
     }}).join('');
@@ -3102,7 +3169,7 @@ drug_review_cols = [
     "evidence_used", "scientific_manual_review_required",
     "therapeutic_purpose_class", "therapeutic_purpose_category", "cadro",
     "modality", "drug_type_source", "drug_type_inferred",
-    "start_date_display", "primary_completion_date_display",
+    "start_date_display", "primary_completion_date_display", "latest_start_date_display",
     "aribio_relevance_score", "aribio_relevance_reasons",
 ]
 resolved_drugs_df[drug_review_cols].sort_values(["phase_reached", "display_name"], ascending=[False, True]).to_csv(

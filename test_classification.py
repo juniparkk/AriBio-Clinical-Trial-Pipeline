@@ -601,6 +601,51 @@ def test_classify_bare_usual_care_and_standard_of_care_are_other():
         assert result["classification"] == "other", name
 
 
+def test_classify_all_subjects_is_other_not_investigational():
+    # Real trials.csv row: NCT03919669, "DRUG: All Subjects" (the
+    # trial's only intervention) -- a purely observational tau-PET
+    # imaging study (brief summary: "longitudinal, observational study
+    # evaluating the imaging characteristics of the tau PET radioligand
+    # [18F]MK-6240..."), no drug involved. ct.gov's DRUG type here is
+    # the sponsor's own mislabeling, not a real signal -- must never
+    # become investigational_therapeutic_unverified regardless.
+    result = classify_intervention("DRUG", "All Subjects", "Some Sponsor", [], [])
+    assert result["classification"] == "other"
+    assert result["classification"] != "investigational_therapeutic_unverified"
+
+
+def test_classify_healthy_control_and_control_group_variants_are_other():
+    # Real trials.csv rows this fixes: NCT06523296 ("OTHER: Healhty
+    # controls" -- the sponsor's actual typo -- was the trial's only
+    # intervention, and resolved into pipeline_drugs.csv as a fake
+    # investigational drug before this fix), NCT07066137 and
+    # NCT01553929 ("OTHER: Control group" / "OTHER: control group").
+    # A cohort-identity label ("who's in this arm"), never a treatment.
+    for name in [
+        "Healthy controls", "Healthy control",
+        "Healhty controls", "Healhty control",
+        "Control group", "Control groups",
+    ]:
+        result = classify_intervention("OTHER", name, "Some Sponsor", [], [])
+        assert result["classification"] == "other", name
+        assert result["classification"] != "investigational_therapeutic_unverified", name
+
+
+def test_classify_drug_plus_healthy_controls_healthy_controls_not_a_sibling_candidate():
+    # Same "must not count as a plausible therapeutic sibling" rule
+    # test_classify_drug_plus_no_intervention_no_intervention_not_a_sibling_candidate
+    # already covers for "No Intervention" -- a real drug listed
+    # alongside a "Healthy controls" comparison-cohort arm must still
+    # resolve via the sole-candidate rule.
+    healthy_controls = {"type": "OTHER", "name": "Healthy controls"}
+    drug_result = classify_intervention("DRUG", "Wujia Yizhi granules", "Some Sponsor", [healthy_controls], [])
+    assert drug_result["classification"] == "investigational_therapeutic_unverified"
+
+    wujia = {"type": "DRUG", "name": "Wujia Yizhi granules"}
+    hc_result = classify_intervention("OTHER", "Healthy controls", "Some Sponsor", [wujia], [])
+    assert hc_result["classification"] == "other"
+
+
 def test_classify_drug_plus_no_intervention_no_intervention_not_a_sibling_candidate():
     # "No Intervention" must not count as a plausible therapeutic
     # sibling — a real drug alongside it should still resolve via the
@@ -1321,6 +1366,41 @@ def test_rollup_one_confirmed_plus_one_unverified_produces_one_mixed_row():
     assert "Some Academic Sponsor" in row["sponsor"]
 
 
+def test_rollup_sponsor_field_lists_company_before_university_regardless_of_alphabetical_order():
+    # "Academic University" alphabetically precedes "Zeta Pharma", but
+    # the company sponsor must still be listed FIRST -- pipeline_viz.py's
+    # _sponsor_display() shows only the first name here ("+N more" for
+    # the rest), so alphabetical-only ordering could surface a
+    # university instead of the actual drug developer (the real
+    # motivating case: semaglutide's "Imperial College London; Novo
+    # Nordisk A/S; Rutgers...", which used to display "Imperial College
+    # London +2 more").
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT20", "Academic University", "TestDrug", "sponsor_developed_therapeutic",
+                        "confirmed_official_match", "high", False, funder_type="OTHER"),
+        make_trial_row("NCT21", "Zeta Pharma", "TestDrug", "sponsor_developed_therapeutic",
+                        "confirmed_official_match", "high", False, funder_type="INDUSTRY"),
+    ])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert len(result) == 1
+    sponsor_field = result.iloc[0]["sponsor"]
+    assert sponsor_field == "Zeta Pharma; Academic University"
+
+
+def test_rollup_sponsor_field_falls_back_to_alphabetical_without_funder_type_column():
+    # Same fixture as above but with funder_type dropped entirely --
+    # must degrade to plain alphabetical (same fallback sponsor_type
+    # already uses) rather than erroring.
+    trials_df = pd.DataFrame([
+        make_trial_row("NCT20", "Academic University", "TestDrug", "sponsor_developed_therapeutic",
+                        "confirmed_official_match", "high", False),
+        make_trial_row("NCT21", "Zeta Pharma", "TestDrug", "sponsor_developed_therapeutic",
+                        "confirmed_official_match", "high", False),
+    ]).drop(columns=["funder_type"])
+    result = build_resolved_drugs_dataframe(trials_df)
+    assert result.iloc[0]["sponsor"] == "Academic University; Zeta Pharma"
+
+
 def test_rollup_multiple_unresolved_candidates_excluded():
     trials_df = pd.DataFrame([
         make_trial_row("NCT12", "Some Sponsor", "DrugA; DrugB", "sponsor_developed_therapeutic",
@@ -1583,9 +1663,11 @@ def test_build_drug_date_rollup_basic():
         {"nct_id": "NCT003", "start_date_parsed": pd.Timestamp("2022-05-01"), "primary_completion_date_parsed": pd.Timestamp("2024-01-01")},
     ])
     result = build_drug_date_rollup(links, trials).set_index("display_name")
-    # AR1001: earliest of the two starts, latest of the two completions —
-    # never just whichever trial happens to be listed first
+    # AR1001: earliest of the two starts, latest of the two starts (its
+    # own most-recently-initiated trial), latest of the two completions
+    # — never just whichever trial happens to be listed first
     assert result.loc["AR1001", "earliest_start_date"] == pd.Timestamp("2019-03-01")
+    assert result.loc["AR1001", "latest_start_date"] == pd.Timestamp("2020-01-01")
     assert result.loc["AR1001", "latest_primary_completion_date"] == pd.Timestamp("2026-12-01")
     assert result.loc["SAR110894", "earliest_start_date"] == pd.Timestamp("2022-05-01")
 
@@ -1597,13 +1679,16 @@ def test_build_drug_date_rollup_missing_dates_become_nat_not_fabricated():
     ])
     result = build_drug_date_rollup(links, trials).set_index("display_name")
     assert pd.isna(result.loc["DrugX", "earliest_start_date"])
+    assert pd.isna(result.loc["DrugX", "latest_start_date"])
     assert pd.isna(result.loc["DrugX", "latest_primary_completion_date"])
 
 
 def test_build_drug_date_rollup_empty_links_returns_empty_with_columns():
     result = build_drug_date_rollup(pd.DataFrame(columns=["display_name", "nct_id"]), pd.DataFrame())
     assert len(result) == 0
-    assert list(result.columns) == ["display_name", "earliest_start_date", "latest_primary_completion_date"]
+    assert list(result.columns) == [
+        "display_name", "earliest_start_date", "latest_start_date", "latest_primary_completion_date",
+    ]
 
 
 # ------------------------------------------------------------
@@ -2287,6 +2372,30 @@ def test_classify_intervention_flyer_is_behavioral_non_drug():
     assert r["classification"] == "behavioral"
 
 
+def test_hypoxia_excluded_via_extended_net():
+    # Real trials.csv row: NCT02891343, "OTHER: 2-hour period of
+    # hypoxia" (the trial's only intervention).
+    assert _is_extended_non_drug_activity(normalize_text("2-hour period of hypoxia"))
+
+
+def test_classify_intervention_hypoxia_is_behavioral_non_drug():
+    r = classify_intervention("OTHER", "2-hour period of hypoxia", "Some Sponsor", [], [])
+    assert r["classification"] == "behavioral"
+
+
+def test_tango_excluded_via_extended_net():
+    # Real trials.csv rows: NCT03269149 ("OTHER: Adapted Tango Dance")
+    # and NCT05744011 ("OTHER: Tango intervention").
+    for name in ["Adapted Tango Dance", "Tango intervention"]:
+        assert _is_extended_non_drug_activity(normalize_text(name)), name
+
+
+def test_classify_intervention_tango_is_behavioral_non_drug():
+    for name in ["Adapted Tango Dance", "Tango intervention"]:
+        r = classify_intervention("OTHER", name, "Some Sponsor", [], [])
+        assert r["classification"] == "behavioral", name
+
+
 def test_blood_withdrawal_is_a_procedure():
     from drug_classification import _is_procedure
     assert _is_procedure("OTHER", normalize_text("blood withdrawal"))
@@ -2670,6 +2779,9 @@ ALL_TESTS = [
     test_classify_no_intervention_alone_is_other_not_investigational,
     test_classify_untreated_is_other,
     test_classify_bare_usual_care_and_standard_of_care_are_other,
+    test_classify_all_subjects_is_other_not_investigational,
+    test_classify_healthy_control_and_control_group_variants_are_other,
+    test_classify_drug_plus_healthy_controls_healthy_controls_not_a_sibling_candidate,
     test_classify_drug_plus_no_intervention_no_intervention_not_a_sibling_candidate,
     test_classify_drug_plus_placebo_plus_no_intervention,
     test_classify_bare_vehicle_alone_is_not_automatically_placebo,
@@ -2719,6 +2831,8 @@ ALL_TESTS = [
     test_rollup_sponsor_type_is_institution_when_all_trials_non_industry,
     test_rollup_sponsor_type_is_company_when_any_trial_is_industry,
     test_rollup_one_confirmed_plus_one_unverified_produces_one_mixed_row,
+    test_rollup_sponsor_field_lists_company_before_university_regardless_of_alphabetical_order,
+    test_rollup_sponsor_field_falls_back_to_alphabetical_without_funder_type_column,
     test_rollup_multiple_unresolved_candidates_excluded,
     test_unresolved_trials_csv_includes_ambiguous_and_uncertain_trials,
     test_build_target_phase_counts_basic_crosstab,
@@ -2845,6 +2959,10 @@ ALL_TESTS = [
     test_scope_sponsor_developed_therapeutic_never_overridden_by_diagnostic_purpose_check,
     test_flyer_excluded_via_extended_net,
     test_classify_intervention_flyer_is_behavioral_non_drug,
+    test_hypoxia_excluded_via_extended_net,
+    test_classify_intervention_hypoxia_is_behavioral_non_drug,
+    test_tango_excluded_via_extended_net,
+    test_classify_intervention_tango_is_behavioral_non_drug,
     test_blood_withdrawal_is_a_procedure,
 ]
 

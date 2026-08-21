@@ -1145,6 +1145,38 @@ def test_needs_attention_cards_are_not_wrapped_in_a_column_grid():
     assert "recent-changes-col-list" not in html
 
 
+def test_recent_changes_excludes_non_therapeutic_scope_drugs():
+    # A change whose drug resolved to a real name can still be a PET
+    # tracer/diagnostic agent (correctly scoped elsewhere in the
+    # pipeline) rather than an actual investigational drug -- Recent
+    # Changes must drop it the same way compute_attention()'s
+    # is_therapeutic() already does for Needs Attention.
+    changes = _changes_df([
+        _change_row(nct_id="NCT00000001", canonical_drug_name="RealDrug"),
+        _change_row(nct_id="NCT00000002", canonical_drug_name="PETTracer"),
+    ])
+    prepared = ca.prepare_recent_changes(changes, today=TODAY)
+    drugs_df = _drugs_df([
+        _drug_row("RealDrug", pipeline_scope="Therapeutic Drug"),
+        _drug_row("PETTracer", pipeline_scope="Diagnostic Agent"),
+    ])
+    html = cav.render_recent_changes_section(prepared, drugs_df=drugs_df)
+    assert "RealDrug" in html
+    assert "PETTracer" not in html
+    assert html.count('<div class="attention-card js-drug-row">') == 1
+
+
+def test_recent_changes_without_drugs_df_keeps_name_only_filter():
+    # No drugs_df available (e.g. a caller that never had it) must NOT
+    # silently drop every row -- falls back to the old name-resolved-only
+    # behavior rather than treating "no profile lookup" as "nothing is
+    # therapeutic."
+    changes = _changes_df([_change_row(nct_id="NCT00000001", canonical_drug_name="RealDrug")])
+    prepared = ca.prepare_recent_changes(changes, today=TODAY)
+    html = cav.render_recent_changes_section(prepared)
+    assert "RealDrug" in html
+
+
 ALL_TESTS = [
     test_phase_3_scores_higher_than_phase_1_for_otherwise_identical_changes,
     test_new_phase_3_trial_ranks_critical_or_high,
@@ -1233,6 +1265,8 @@ ALL_TESTS = [
     test_recent_changes_cards_render_in_three_scrollable_columns,
     test_recent_changes_columns_are_dealt_round_robin,
     test_needs_attention_cards_are_not_wrapped_in_a_column_grid,
+    test_recent_changes_excludes_non_therapeutic_scope_drugs,
+    test_recent_changes_without_drugs_df_keeps_name_only_filter,
 ]
 
 

@@ -179,7 +179,6 @@ Positron-Emission Tomography (TEP) /(FDG),NCT02843906,1,matches a curated diagno
 Pramlintide challenge test,NCT03560960,1,"drug/biologic used as a pharmacological challenge/probe agent or for diagnostic-tool/contrast-imaging development in this trial, not as an investigational AD treatment",Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 PrecivityAD2 - Delayed Testing,NCT06856681,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 PrecivityAD2 - Early Testing,NCT06856681,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
-Procedure for healthy controls,NCT06385951,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Procedure for patients,NCT06385951,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Radioligand 18F-AV-1451,NCT03641768,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,PET tracer,high,False
 Retinal fundus photography,NCT04567745,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False

@@ -53,9 +53,9 @@ def test_load_drug_classification_overrides_parses_semicolon_lists():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
         f.write(
             "normalized_drug_name,modality,target_pathways,molecular_targets,mechanism_of_action,"
-            "reason,source,reviewer,verified_date\n"
+            "reason,source,reviewer,verified_date,override_therapeutic_purpose\n"
             'testdrug,Small Molecule,"Amyloid; Tau",PDE5,Some mechanism,test reason,test source,'
-            "Test Reviewer,2026-01-01\n"
+            "Test Reviewer,2026-01-01,\n"
         )
         path = f.name
     try:
@@ -67,6 +67,23 @@ def test_load_drug_classification_overrides_parses_semicolon_lists():
     assert entry["modality"] == "Small Molecule"
     assert entry["target_pathways"] == ["Amyloid", "Tau"]
     assert entry["molecular_targets"] == ["PDE5"]
+    assert entry["override_therapeutic_purpose"] is False
+
+
+def test_load_drug_classification_overrides_parses_override_therapeutic_purpose_true():
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+        f.write(
+            "normalized_drug_name,modality,target_pathways,molecular_targets,mechanism_of_action,"
+            "reason,source,reviewer,verified_date,override_therapeutic_purpose\n"
+            'testdrug,Small Molecule,"Amyloid; Tau",PDE5,Some mechanism,test reason,test source,'
+            "Test Reviewer,2026-01-01,true\n"
+        )
+        path = f.name
+    try:
+        overrides = load_drug_classification_overrides(path)
+    finally:
+        os.remove(path)
+    assert overrides["testdrug"]["override_therapeutic_purpose"] is True
 
 
 def test_load_drug_classification_overrides_missing_column_raises():
@@ -395,6 +412,28 @@ def test_resolve_attaches_nih_purpose_and_cadro_even_when_curated_override_wins(
     assert result["cadro"] != ""
 
 
+def test_resolve_override_therapeutic_purpose_suppresses_conflicting_nih_purpose():
+    # tadalafil's real motivating case: NIH's own row classifies it
+    # generically as STT/Cognition Enhancer, but a curated override
+    # judges that classification wrong for THIS drug's actual AD-trial
+    # rationale (see data/reference/drug_classification_overrides.csv's
+    # tadalafil row) -- override_therapeutic_purpose=True must blank
+    # NIH's purpose_class/_category entirely rather than passing them
+    # through (the default behavior every other override still gets).
+    overrides = {"baricitinib": {
+        "modality": "Small Molecule", "target_pathways": ["Inflammation"],
+        "molecular_targets": [], "mechanism_of_action": "JAK inhibitor",
+        "reason": "test", "source": "test", "override_therapeutic_purpose": True,
+    }}
+    result = resolve_drug_classification("Baricitinib", [], [], overrides=overrides, nih_name_lookup=_nih_lookup())
+    assert result["classification_source"] == "curated_override"
+    assert result["therapeutic_purpose_class"] == ""
+    assert result["therapeutic_purpose_category"] == ""
+    # cadro is a separate, unrelated field -- must NOT be suppressed by
+    # this flag, which only concerns therapeutic purpose/quadrant.
+    assert result["cadro"] != ""
+
+
 def test_resolve_no_nih_match_leaves_purpose_and_cadro_blank_not_fabricated():
     result = resolve_drug_classification(
         "CompletelyUnmatchedDrugXYZ", [], [{"type": "DRUG", "name": "CompletelyUnmatchedDrugXYZ", "title": ""}],
@@ -559,6 +598,7 @@ def test_conflicts_dataframe_output_columns():
 ALL_TESTS = [
     test_load_drug_classification_overrides_missing_file_returns_empty_dict,
     test_load_drug_classification_overrides_parses_semicolon_lists,
+    test_load_drug_classification_overrides_parses_override_therapeutic_purpose_true,
     test_load_drug_classification_overrides_missing_column_raises,
     test_the_real_drug_classification_overrides_csv_has_ar1001,
     test_gather_structured_evidence_isolates_verified_rows_only,
@@ -594,6 +634,7 @@ ALL_TESTS = [
     test_derive_therapeutic_purpose_category_blank_input,
     test_resolve_attaches_nih_purpose_and_cadro_for_normal_nih_match,
     test_resolve_attaches_nih_purpose_and_cadro_even_when_curated_override_wins,
+    test_resolve_override_therapeutic_purpose_suppresses_conflicting_nih_purpose,
     test_resolve_no_nih_match_leaves_purpose_and_cadro_blank_not_fabricated,
     test_quadrant_uses_nih_purpose_directly_when_it_maps_cleanly,
     test_quadrant_infers_neuropsychiatric_from_target_when_no_nih_match,

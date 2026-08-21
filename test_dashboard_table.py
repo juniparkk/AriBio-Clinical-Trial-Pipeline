@@ -340,16 +340,28 @@ def test_pipeline_scope_field_present_on_every_table_row():
         }
 
 
-def test_no_non_therapeutic_scopes_present_in_table_data():
-    # resolved_drugs_df (and therefore the table's JSON payload) now
-    # only ever contains "Therapeutic Drug" scope rows — a record only
-    # enters it if its primary investigational intervention resolved to
-    # a real drug/biologic. The "reveal non-therapeutic records" toggle
-    # still exists in the UI (unchanged) but has nothing left to
-    # reveal; that's an intentional consequence of this narrowing.
+def test_non_therapeutic_scopes_are_only_the_step_3_76_na_phase_reclassification():
+    # resolved_drugs_df's build-time eligibility filter still only ever
+    # ADMITS "Therapeutic Drug" scope rows (a record only enters it if
+    # its primary investigational intervention resolved to a real drug/
+    # biologic) -- but pipeline_viz.py's STEP 3.76 deliberately moves
+    # SOME of those back OUT of Therapeutic Drug scope post-hoc, into
+    # "Non-Drug Intervention": a drug with no ct.gov phase on file (NA)
+    # AND whose modality never resolved past the catch-all "Other"
+    # bucket is, in this dataset, overwhelmingly an arm label/
+    # assessment/procedure/behavioral intervention that slipped through
+    # as a "candidate" rather than a real drug (real NA-phase drugs like
+    # Celecoxib/AndroGel resolve a real modality and are unaffected).
+    # This reactivates the "reveal non-therapeutic records" toggle,
+    # which had nothing to reveal before STEP 3.76 existed -- that's
+    # this rule's intended effect, not a regression of the invariant
+    # above it (which is about what gets ADMITTED at build time, not
+    # what pipeline_viz.py may reclassify afterward).
     non_therapeutic = [r for r in TABLE_ROWS if r["pipeline_scope"] != "Therapeutic Drug"]
-    assert len(non_therapeutic) == 0, f"expected zero non-therapeutic rows, found {len(non_therapeutic)}"
-    assert len(TABLE_ROWS) == len(get_therapeutic_rows())
+    assert len(non_therapeutic) > 0, "expected STEP 3.76 to have reclassified at least one NA-phase row"
+    assert all(r["pipeline_scope"] == "Non-Drug Intervention" for r in non_therapeutic)
+    assert all(r["phase_reached"] == "NA" for r in non_therapeutic)
+    assert len(TABLE_ROWS) == len(get_therapeutic_rows()) + len(non_therapeutic)
 
 
 def test_placebo_or_comparator_never_in_table_rows():
@@ -441,7 +453,7 @@ ALL_TESTS = [
     test_pipeline_table_names_are_subset_of_pipeline_drugs_csv,
     test_no_dashboard_calculation_references_legacy_drugs_df,
     test_pipeline_scope_field_present_on_every_table_row,
-    test_no_non_therapeutic_scopes_present_in_table_data,
+    test_non_therapeutic_scopes_are_only_the_step_3_76_na_phase_reclassification,
     test_placebo_or_comparator_never_in_table_rows,
     test_dietary_supplement_confirmed_leakage_examples_excluded_entirely,
     test_scope_toggle_control_removed_from_html,

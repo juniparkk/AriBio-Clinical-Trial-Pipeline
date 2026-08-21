@@ -97,11 +97,30 @@ jobs:
 
       - name: Run full test suite (pre-refresh baseline check)
         if: steps.tzcheck.outputs.proceed == 'true'
+        # Deliberately NOT `for f in test_*.py` -- this repo also carries
+        # the separate ADNI Natural History dashboard's test suite
+        # (test_adni_*.py), which checks the checked-in
+        # biomarker_dashboard.html against adni_viz.py's current source
+        # and can fail on its own staleness with zero connection to the
+        # ClinicalTrials.gov pipeline this workflow refreshes -- exactly
+        # what happened on 2026-08-21 (the DST gate finally let a real
+        # run through, only for it to be blocked here by an unrelated
+        # ADNI test failure, silently skipping the refresh). Importing
+        # run_pipeline.TEST_FILES (the same scoped list its own STEP
+        # 8/8 post-refresh validation already uses) instead of
+        # hardcoding a second copy of that list here means this gate
+        # can never drift out of sync with it again.
         run: |
-          for f in test_*.py; do
-            echo "=== $f ==="
-            python3 "$f"
-          done
+          python3 -c "
+          import subprocess, sys
+          import run_pipeline
+          failed = False
+          for f in run_pipeline.TEST_FILES:
+              print(f'=== {f} ===')
+              if subprocess.run([sys.executable, f]).returncode != 0:
+                  failed = True
+          sys.exit(1 if failed else 0)
+          "
 
       - name: Refresh ClinicalTrials.gov data and rebuild dashboard
         if: steps.tzcheck.outputs.proceed == 'true'

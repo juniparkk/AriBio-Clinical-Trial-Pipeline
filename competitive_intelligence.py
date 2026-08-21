@@ -8,13 +8,13 @@
 # auditable: nothing here is a black box, unlike an "AI-curated"
 # feed would be.
 #
-# Mixed relative/absolute design: modality, treatment approach, and
-# sponsor type score a competitor's SIMILARITY to AR1001 (same value as
-# the reference). Target pathway, phase, and trial size score the
-# competitor's OWN profile on an absolute scale instead -- a drug
-# pursuing a disease-modifying mechanism, already in a late clinical
-# phase, or running a large trial is a serious competitive signal
-# regardless of what phase/pathway AR1001 itself happens to be at.
+# Mixed relative/absolute design: modality and sponsor type score a
+# competitor's SIMILARITY to AR1001 (same value as the reference).
+# Target pathway, phase, and trial size score the competitor's OWN
+# profile on an absolute scale instead -- a drug pursuing a disease-
+# modifying mechanism, already in a late clinical phase, or running a
+# large trial is a serious competitive signal regardless of what
+# phase/pathway AR1001 itself happens to be at.
 #
 # This is deliberately scoped to fields the rest of this pipeline
 # already resolves with real evidence (target_pathways, modality,
@@ -45,8 +45,7 @@ PHASE_RANK_FOR_SCORING = {
 }
 
 # Point weights — sum to 100 when a competitor earns every dimension.
-_MODALITY_POINTS = 5
-_PURPOSE_CLASS_POINTS = 20
+_MODALITY_POINTS = 10
 
 # Phase is scored on an absolute scale, not proximity-to-reference: a
 # competitor already in Phase 3 (AR1001's own phase) is the strongest
@@ -57,13 +56,13 @@ _PURPOSE_CLASS_POINTS = 20
 _PHASE_3_POINTS = 15
 _PHASE_2_POINTS = 5
 
-_SPONSOR_TYPE_POINTS = 15
+_SPONSOR_TYPE_POINTS = 20
 
 # A large trial is itself a competitive signal (real recruitment
 # capacity, real investment) independent of anything else about the
 # drug -- absolute threshold, not a comparison to AR1001's own
 # enrollment.
-_LARGE_TRIAL_POINTS = 25
+_LARGE_TRIAL_POINTS = 30
 _LARGE_TRIAL_ENROLLMENT_THRESHOLD = 550
 
 # Target pathway is also scored on an absolute scale: does THIS drug
@@ -73,10 +72,8 @@ _LARGE_TRIAL_ENROLLMENT_THRESHOLD = 550
 # process itself; Symptomatic and Neuropsychiatric (also real
 # categories elsewhere in this pipeline) manage symptoms rather than
 # modify the underlying disease, so they earn no points here.
-_TARGET_PATHWAY_POINTS = 20
+_TARGET_PATHWAY_POINTS = 25
 _DISEASE_MODIFYING_TARGET_PATHWAYS = {"Amyloid", "Tau", "Inflammation", "Neuroprotection", "Metabolism"}
-
-_PURPOSE_CLASS_LABELS = {"DTT": "Disease-targeted", "STT": "Symptomatic"}
 
 # "Low relevance" ceiling applied when a competitor's OWN trial history
 # raises doubt about whether it's still a live competitive threat, no
@@ -95,8 +92,7 @@ LOW_RELEVANCE_YEAR_CUTOFF = 2016      # no trial activity since before this year
 LOW_RELEVANCE_ENROLLMENT_CUTOFF = 210  # largest trial under this many participants
 
 
-def compute_relevance_score(target_pathways, modality, purpose_class, phase_reached,
-                             reference_modality, reference_purpose_class,
+def compute_relevance_score(target_pathways, modality, phase_reached, reference_modality,
                              sponsor_type=None, reference_sponsor_type=None,
                              status=None, latest_activity_year=None, max_enrollment=None):
     """
@@ -108,9 +104,6 @@ def compute_relevance_score(target_pathways, modality, purpose_class, phase_reac
         _DISEASE_MODIFYING_TARGET_PATHWAYS, not compared to the
         reference drug's own pathway(s).
     modality / reference_modality: e.g. "Small Molecule", "Biologic".
-    purpose_class / reference_purpose_class: "DTT" or "STT" (blank if
-        this drug has no NIH-sourced therapeutic-purpose classification
-        — contributes 0 points either way, never guessed).
     phase_reached: one of PHASE_RANK_FOR_SCORING's keys, scored
         absolutely (see _PHASE_3_POINTS/_PHASE_2_POINTS above) — not
         compared to a reference phase.
@@ -118,8 +111,7 @@ def compute_relevance_score(target_pathways, modality, purpose_class, phase_reac
         "University/Institution" (see drug_classification.py's
         classify_sponsor_type() — ct.gov's own lead-sponsor
         classification, "any industry-funded trial counts the whole
-        drug as Company"). Blank/None never matches, same as
-        purpose_class.
+        drug as Company"). Blank/None never matches.
     status / latest_activity_year / max_enrollment: describe THIS
         drug. max_enrollment also earns _LARGE_TRIAL_POINTS on its own
         when above _LARGE_TRIAL_ENROLLMENT_THRESHOLD. All three can
@@ -139,10 +131,6 @@ def compute_relevance_score(target_pathways, modality, purpose_class, phase_reac
     if modality and modality == reference_modality:
         score += _MODALITY_POINTS
         reasons.append(f"Same modality: {modality}")
-
-    if purpose_class and purpose_class == reference_purpose_class:
-        score += _PURPOSE_CLASS_POINTS
-        reasons.append(f"Same treatment approach: {_PURPOSE_CLASS_LABELS.get(purpose_class, purpose_class)}")
 
     if phase_reached == "Phase 3":
         score += _PHASE_3_POINTS

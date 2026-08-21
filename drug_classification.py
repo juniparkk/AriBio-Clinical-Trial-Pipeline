@@ -457,9 +457,42 @@ def _is_placebo(normalized_name):
 # product (e.g. "Usual Care plus DrugX"), exact-phrase equality won't
 # match, so it falls through to the therapeutic-candidate checks
 # instead of risking a false exclusion of a real combination product.
+#
+# "healthy control(s)" / "control group(s)": a cohort-identity label
+# ("who's in this arm"), not a treatment — ct.gov's Interventions
+# field is sometimes misused this way for an observational comparison
+# group (e.g. NCT06523296's actual raw value: "OTHER: Healhty
+# controls" for an arm comparing AD/myasthenia patients against
+# healthy controls, no drug involved at all — that trial had nothing
+# else in its intervention list either, so this one mislabeled arm was
+# the sole "candidate" and got resolved into pipeline_drugs.csv as a
+# fake investigational drug). "healhty" (missing the second "e") is
+# kept alongside the correct spelling because that's the literal typo
+# the sponsor used in the ct.gov record above — same rationale as
+# "placebos" above being added for an observed real plural, not a
+# hypothetical one. Phrase-matched (via _contains_phrase, whole-token
+# sequences), not a bare token, for the same reason "no intervention"
+# is a phrase and not two separate tokens — a bare "control" token
+# would risk matching a real drug name that merely contains that word.
 _NON_THERAPEUTIC_CONTROL_TOKENS = {"untreated"}
-_NON_THERAPEUTIC_CONTROL_PHRASES = ["no intervention"]
-_ARM_LABEL_EXACT_PHRASES = {"usual care", "standard of care"}
+_NON_THERAPEUTIC_CONTROL_PHRASES = [
+    "no intervention",
+    "healthy control", "healthy controls",
+    "healhty control", "healhty controls",
+    "control group", "control groups",
+]
+#
+# "all subjects": a single-arm cohort label ("everyone in this study"),
+# not a treatment — NCT03919669's actual raw value, "DRUG: All
+# Subjects", was its only intervention, for a purely observational
+# imaging study (brief summary: "longitudinal, observational study
+# evaluating the imaging characteristics of the tau PET radioligand
+# [18F]MK-6240..."), no drug involved at all. Exact-match only (like
+# "usual care"/"standard of care"), not a phrase match — "all
+# subjects" is common enough wording that it's safer to only exclude
+# it as the WHOLE intervention name, never as a substring that could
+# appear alongside a real drug name.
+_ARM_LABEL_EXACT_PHRASES = {"usual care", "standard of care", "all subjects"}
 
 
 def _is_non_therapeutic_control(normalized_name):
@@ -631,6 +664,21 @@ _EXTENDED_NON_DRUG_TOKENS = {
     # interventions are named exercise programs, itself ct.gov-typed
     # OTHER, with no known-compound/dev-code match of its own.
     "flyer",
+    # experimental physiological exposure/condition, not a drug —
+    # confirmed via real-data audit: "2-hour period of hypoxia"
+    # (NCT02891343, "Effect of Hypoxia on Cognitive Assessment and
+    # Cerebral Activity in Healthy Volunteers"), ct.gov-typed OTHER, was
+    # the trial's sole intervention.
+    "hypoxia",
+    # dance-therapy intervention name, not a drug -- confirmed via
+    # real-data audit: "Adapted Tango Dance" (NCT03269149, "Tango for
+    # Alzheimer's Disease Patients' Caregivers" -- a caregiver
+    # intervention, no drug involved) and "Tango intervention"
+    # (NCT05744011, alongside "Adapted Physical Activity"). Bare token,
+    # not a phrase, so it catches both observed variants -- "tango" is
+    # unambiguous enough on its own (no known drug/compound name
+    # contains it) that a phrase match isn't needed here.
+    "tango",
 }
 _EXTENDED_NON_DRUG_PHRASES = [
     # neuromodulation / electrical stimulation
@@ -1632,7 +1680,30 @@ def build_resolved_drugs_dataframe(trials_df, status_overrides=None):
             # trial fetch order.
             display_name = min(g["developed_drug"], key=lambda s: (len(s), not s[:1].isupper(), s))
 
-        sponsors = sorted(set(g["sponsor"].dropna().astype(str)) - {""})
+        # Company sponsors sort first, alphabetically among themselves,
+        # then non-company sponsors alphabetically -- so pipeline_viz.py's
+        # _sponsor_display() (which shows only the FIRST name here, "+N
+        # more") surfaces a company name rather than whichever sponsor
+        # happens to come first alphabetically overall (e.g. semaglutide's
+        # "Imperial College London; Novo Nordisk A/S; Rutgers..." used to
+        # display "Imperial College London +2 more", burying the actual
+        # drug developer). Every sponsor is still preserved here, in the
+        # full semicolon-joined field -- this only changes ORDER, never
+        # drops one, same "never silently pick one" guarantee as before.
+        # Same "funder_type in g.columns" defensive fallback as
+        # sponsor_type below (a caller without that column, e.g. some
+        # test fixtures, degrades to plain alphabetical rather than
+        # erroring or treating everyone as non-company).
+        if "funder_type" in g.columns:
+            company_sponsors = set(
+                g.loc[g["funder_type"] == "INDUSTRY", "sponsor"].dropna().astype(str)
+            )
+        else:
+            company_sponsors = set()
+        sponsors = sorted(
+            set(g["sponsor"].dropna().astype(str)) - {""},
+            key=lambda s: (s not in company_sponsors, s),
+        )
         sponsor_field = "; ".join(sponsors)
         sponsor_ambiguous = len(sponsors) > 1
 
@@ -1967,10 +2038,13 @@ def build_resolved_drug_trial_links_df(resolved_drugs_df):
 def build_drug_date_rollup(resolved_drug_trial_links_df, trials_df):
     """
     One row per canonical drug: earliest_start_date (min across every
-    contributing trial) and latest_primary_completion_date (max across
-    every contributing trial) — the real date span this drug has been
-    in clinical development on ClinicalTrials.gov, derived from its
-    OWN contributing trials via resolved_drug_trial_links_df (never a
+    contributing trial), latest_start_date (max across every
+    contributing trial — when this drug's MOST RECENTLY-STARTED trial
+    began, i.e. its latest trial-initiating date), and
+    latest_primary_completion_date (max across every contributing
+    trial) — the real date span this drug has been in clinical
+    development on ClinicalTrials.gov, derived from its OWN
+    contributing trials via resolved_drug_trial_links_df (never a
     single trial's dates alone, since a drug's earliest/most-recent
     activity often isn't on whichever trial happens to be its
     highest-phase one).
@@ -1983,7 +2057,7 @@ def build_drug_date_rollup(resolved_drug_trial_links_df, trials_df):
     A drug with no contributing trial carrying a parseable date on
     either field gets NaT for that field here — never a fabricated date.
     """
-    columns = ["display_name", "earliest_start_date", "latest_primary_completion_date"]
+    columns = ["display_name", "earliest_start_date", "latest_start_date", "latest_primary_completion_date"]
     if resolved_drug_trial_links_df.empty:
         return pd.DataFrame(columns=columns)
 
@@ -1993,6 +2067,7 @@ def build_drug_date_rollup(resolved_drug_trial_links_df, trials_df):
     merged = resolved_drug_trial_links_df.join(dates_by_nct, on="nct_id")
     result = merged.groupby("display_name", as_index=False).agg(
         earliest_start_date=("start_date_parsed", "min"),
+        latest_start_date=("start_date_parsed", "max"),
         latest_primary_completion_date=("primary_completion_date_parsed", "max"),
     )
     return result[columns]

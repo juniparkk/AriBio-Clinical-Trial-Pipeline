@@ -49,6 +49,7 @@ from nih_reference import extract_canonical_and_aliases, infer_nih_target, _extr
 REQUIRED_DRUG_OVERRIDE_COLUMNS = [
     "normalized_drug_name", "modality", "target_pathways", "molecular_targets",
     "mechanism_of_action", "reason", "source", "reviewer", "verified_date",
+    "override_therapeutic_purpose",
 ]
 
 
@@ -62,6 +63,25 @@ def load_drug_classification_overrides(path):
 
     target_pathways/molecular_targets are semicolon-separated in the CSV
     (e.g. "Amyloid; Tau; Neuroprotection") and parsed into lists here.
+
+    override_therapeutic_purpose ("true"/"false", blank = false):
+    resolve_drug_classification()'s tier-1 branch always passes NIH's
+    OWN therapeutic_purpose_class/_category through unconditionally,
+    by design ("shouldn't hide a real NIH cross-reference") -- for the
+    overwhelming majority of overrides (which have no conflicting NIH
+    row at all, e.g. AR1001) that's a no-op. But when a curated
+    override's target_pathways genuinely conflicts with NIH's own
+    purpose classification for that exact drug (tadalafil's motivating
+    case: NIH's generic "STT; cognition enhancer" row vs. NCT07172815's
+    own brief summary, which frames tadalafil's studied rationale as
+    disease-modifying cerebral perfusion, not symptom relief), this
+    flag suppresses NIH's purpose_class/_category for that one drug so
+    classify_pipeline_quadrant() falls through to its own
+    modality+target_pathways INFERENCE instead of NIH's conflicting
+    direct match -- correctly labeled "(inferred)" in the dashboard,
+    never "(NIH-sourced)", since it isn't. Blank/false everywhere else
+    keeps the original "always show the real NIH cross-reference"
+    guarantee intact.
     """
     try:
         raw_df = pd.read_csv(path, dtype=str)
@@ -88,6 +108,7 @@ def load_drug_classification_overrides(path):
             "source": str(row["source"]).strip(),
             "reviewer": str(row["reviewer"]).strip(),
             "verified_date": str(row["verified_date"]).strip(),
+            "override_therapeutic_purpose": str(row["override_therapeutic_purpose"]).strip().lower() == "true",
         }
     return overrides
 
@@ -560,12 +581,14 @@ def resolve_drug_classification(display_name, synonyms, structured_evidence,
     # --- Tier 1: curated AriBio override — wins outright for modality/target ---
     override = overrides.get(normalized_name)
     if override:
+        suppress_nih_purpose = override.get("override_therapeutic_purpose", False)
         return _result(
             override["modality"], override["target_pathways"], override["molecular_targets"],
             override["mechanism_of_action"] or nih_mechanism, "curated_override", "tier1_curated_override", "high",
             override.get("reason") or "curated AriBio override", [f"curated override ({override.get('source', '')})"],
             manual_review_required=False,
-            therapeutic_purpose_class=nih_purpose_class, therapeutic_purpose_category=nih_purpose_category,
+            therapeutic_purpose_class="" if suppress_nih_purpose else nih_purpose_class,
+            therapeutic_purpose_category="" if suppress_nih_purpose else nih_purpose_category,
             cadro=nih_cadro,
         )
 

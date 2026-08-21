@@ -105,12 +105,35 @@ def _study_url(nct_id):
     return f"https://clinicaltrials.gov/study/{nct_id}" if nct_id else ""
 
 
-def _drug_only(df):
+def _drug_only(df, drug_profiles=None):
     """Shared drug-only filter for both panels: drops any row whose
-    drug couldn't be resolved to a name (see _clean())."""
+    drug couldn't be resolved to a name (see _clean()).
+
+    `drug_profiles` (optional, from _drug_profile_lookup()): when
+    given, ALSO drops any row whose resolved name isn't a Therapeutic
+    Drug -- e.g. a PET tracer like [18F]Fluorbetazine that resolved to
+    a real name but is correctly scoped "Diagnostic Agent" elsewhere
+    in the pipeline. Mirrors competitive_attention.is_therapeutic()'s
+    same "info found AND pipeline_scope == Therapeutic Drug" rule,
+    which Needs Attention already gets for free via compute_attention()
+    -- this is Recent Changes' equivalent, applied here (not in
+    prepare_recent_changes()) because drugs_df/drug_profiles is only
+    available at this render layer, not competitive_attention.py's raw
+    change-detection feed. Optional (defaults to None/skipped) so
+    shown_recent_change_nct_ids() below, which has no drugs_df to pass,
+    keeps its prior (name-only) behavior -- harmless there since
+    Needs Attention independently excludes non-therapeutic rows anyway."""
     if df is None or df.empty:
         return df
-    return df[df["canonical_drug_name"].apply(lambda v: _clean(v) is not None)]
+    named = df[df["canonical_drug_name"].apply(lambda v: _clean(v) is not None)]
+    if drug_profiles is None:
+        return named
+
+    def _is_therapeutic(name):
+        profile = drug_profiles.get(str(name).strip().lower())
+        return profile is not None and profile.get("pipeline_scope") == "Therapeutic Drug"
+
+    return named[named["canonical_drug_name"].apply(_is_therapeutic)]
 
 
 def shown_recent_change_nct_ids(changes_df, top_n=15):
@@ -160,8 +183,8 @@ def render_recent_changes_section(changes_df, top_n=15, drugs_df=None):
     Relevance) -- without it, drug names render as plain text with no
     expand toggle, same as a drug that isn't found in the lookup.
     """
-    changes_df = _drug_only(changes_df)
     drug_profiles = _drug_profile_lookup(drugs_df)
+    changes_df = _drug_only(changes_df, drug_profiles if drugs_df is not None else None)
 
     if changes_df is None or changes_df.empty:
         body = '<div class="attention-empty">No drug-related pipeline changes were detected in the last 30 days.</div>'
