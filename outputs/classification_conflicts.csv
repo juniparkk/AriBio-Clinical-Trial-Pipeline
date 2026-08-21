@@ -146,7 +146,7 @@ BMS-241027,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,mediu
 BMS-708163,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 BMS-984923,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 BMS-986368,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,nih_reference,medium,no change from legacy classification,False
-BMS-986446,Small Molecule,Biologic,Tau,Tau,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic',True
+BMS-986446,Small Molecule,Biologic,Other,Tau,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Other' -> 'Tau',True
 BMS-9894923,Small Molecule,Small Molecule,Amyloid,,structured_ct_gov_evidence,medium,target corrected: 'Amyloid' -> '',True
 BNC,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 BnH-015B,Small Molecule,Small Molecule,Other,Symptomatic,nih_reference,medium,target corrected: 'Other' -> 'Symptomatic',True
