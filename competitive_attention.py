@@ -449,7 +449,15 @@ def score_row(change_row, drug_lookup, trial_lookup, watchlist, today):
 
 def compute_attention(changes_df, drugs_df, annotated_df, trials_df, watchlist, today=None):
     """Returns a DataFrame shaped exactly like outputs/competitive_attention.csv,
-    ranked by relevance_score descending. Non-therapeutic records are excluded."""
+    ranked by relevance_score descending. Non-therapeutic records are excluded.
+
+    A drug-level change row (e.g. "new_drug") carries nct_id == "" by
+    construction (see ctgov_changes.detect_drug_level_changes) -- its
+    nct_id is backfilled here from annotated_df via build_drug_to_nct_lookup()/
+    _backfilled_nct_id(), the same mechanism prepare_recent_changes() already
+    uses, so Needs Attention links to a real trial instead of always
+    showing "no linked trial" when one demonstrably exists.
+    """
     today = pd.Timestamp(today) if today is not None else pd.Timestamp.now(tz=None).normalize()
 
     if changes_df is None or changes_df.empty:
@@ -457,6 +465,7 @@ def compute_attention(changes_df, drugs_df, annotated_df, trials_df, watchlist, 
 
     drug_lookup = build_drug_lookup(drugs_df)
     trial_lookup = build_trial_lookup(annotated_df, trials_df)
+    drug_nct_lookup = build_drug_to_nct_lookup(annotated_df)
 
     rows = []
     for _, change_row in changes_df.iterrows():
@@ -494,7 +503,7 @@ def compute_attention(changes_df, drugs_df, annotated_df, trials_df, watchlist, 
             "relevance_score": score,
             "aribio_relevance_score": aribio_relevance_score,
             "canonical_drug_name": change_row.get("canonical_drug_name", ""),
-            "nct_id": change_row.get("nct_id", ""),
+            "nct_id": _backfilled_nct_id(change_row.get("nct_id"), change_row.get("canonical_drug_name"), drug_nct_lookup),
             "company_or_sponsor": company,
             "change_type": change_row["change_type"],
             "old_value": change_row.get("old_value", ""),
@@ -560,6 +569,19 @@ def build_drug_to_nct_lookup(annotated_df):
     return lookup
 
 
+def _backfilled_nct_id(nct, drug, drug_nct_lookup):
+    """Shared by compute_attention() and prepare_recent_changes(): a
+    row's own nct_id wins whenever it's set; only a genuinely blank one
+    (drug-level changes like "new_drug" carry nct_id == "" by
+    construction) falls back to build_drug_to_nct_lookup()'s
+    drug-name -> representative-NCT mapping."""
+    if nct is not None and not (isinstance(nct, float) and pd.isna(nct)) and str(nct).strip():
+        return nct
+    if drug is not None and not (isinstance(drug, float) and pd.isna(drug)) and str(drug).strip():
+        return drug_nct_lookup.get(str(drug).strip(), nct)
+    return nct
+
+
 def prepare_recent_changes(changes_df, today=None, window_days=RECENT_CHANGES_WINDOW_DAYS, drug_nct_lookup=None):
     """Returns rows detected within the trailing `window_days` days of
     `today` (default: now; 30-day window by default), sorted purely by
@@ -602,15 +624,10 @@ def prepare_recent_changes(changes_df, today=None, window_days=RECENT_CHANGES_WI
     windowed["description"] = windowed.apply(describe_change, axis=1)
 
     if drug_nct_lookup:
-        def _backfill_nct_id(row):
-            nct = row.get("nct_id")
-            if nct is not None and not (isinstance(nct, float) and pd.isna(nct)) and str(nct).strip():
-                return nct
-            drug = row.get("canonical_drug_name")
-            if drug is not None and not (isinstance(drug, float) and pd.isna(drug)) and str(drug).strip():
-                return drug_nct_lookup.get(str(drug).strip(), nct)
-            return nct
-        windowed["nct_id"] = windowed.apply(_backfill_nct_id, axis=1)
+        windowed["nct_id"] = windowed.apply(
+            lambda row: _backfilled_nct_id(row.get("nct_id"), row.get("canonical_drug_name"), drug_nct_lookup),
+            axis=1,
+        )
 
     return windowed.reset_index(drop=True)
 

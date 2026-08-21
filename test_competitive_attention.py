@@ -167,6 +167,45 @@ def test_non_therapeutic_drug_level_row_is_excluded():
     assert len(result) == 0
 
 
+def test_compute_attention_backfills_nct_id_for_drug_level_new_drug_row():
+    # Same gap prepare_recent_changes() already covers for Recent
+    # Changes: a "new_drug" row carries nct_id == "" by construction,
+    # even though the drug is demonstrably associated with a real
+    # trial elsewhere in annotated_df -- Needs Attention should link
+    # to it instead of always showing "no linked trial".
+    changes = _changes_df([
+        _change_row(entity_type="drug", nct_id="", canonical_drug_name="DNL921",
+                    change_type="new_drug", old_value="", new_value="Phase 1"),
+    ])
+    drugs = _drugs_df([_drug_row("DNL921", phase_reached="Phase 1")])
+    annotated = _annotated_df([_annotated_row("NCT07758595", developed_drug="DNL921", phase_clean="Phase 1")])
+    result = ca.compute_attention(changes, drugs, annotated, None, WATCHLIST, today=TODAY)
+    assert result.iloc[0]["nct_id"] == "NCT07758595"
+
+
+def test_compute_attention_never_overwrites_an_existing_nct_id():
+    changes = _changes_df([
+        _change_row(nct_id="NCT00000009", canonical_drug_name="DrugA"),
+    ])
+    drugs = _drugs_df([_drug_row("DrugA")])
+    # deliberately different trial mapped to the same drug name -- the
+    # change row's own real nct_id must win, never get overridden.
+    annotated = _annotated_df([_annotated_row("NCT99999999", developed_drug="DrugA")])
+    result = ca.compute_attention(changes, drugs, annotated, None, WATCHLIST, today=TODAY)
+    assert result.iloc[0]["nct_id"] == "NCT00000009"
+
+
+def test_compute_attention_leaves_nct_id_blank_when_drug_not_in_lookup():
+    changes = _changes_df([
+        _change_row(entity_type="drug", nct_id="", canonical_drug_name="UnmappedDrug",
+                    change_type="new_drug", old_value="", new_value="Phase 1"),
+    ])
+    drugs = _drugs_df([_drug_row("UnmappedDrug", phase_reached="Phase 1")])
+    annotated = _annotated_df([_annotated_row("NCT00000001", developed_drug="OtherDrug")])
+    result = ca.compute_attention(changes, drugs, annotated, None, WATCHLIST, today=TODAY)
+    assert not result.iloc[0]["nct_id"]
+
+
 def test_non_therapeutic_trial_level_row_is_excluded():
     changes = _changes_df([
         _change_row(nct_id="NCT00000001", canonical_drug_name="", change_type="status_change"),
@@ -1183,6 +1222,9 @@ ALL_TESTS = [
     test_results_newly_posted_ranks_critical_or_high,
     test_minor_enrollment_change_on_early_phase_drug_ranks_low,
     test_non_therapeutic_drug_level_row_is_excluded,
+    test_compute_attention_backfills_nct_id_for_drug_level_new_drug_row,
+    test_compute_attention_never_overwrites_an_existing_nct_id,
+    test_compute_attention_leaves_nct_id_blank_when_drug_not_in_lookup,
     test_non_therapeutic_trial_level_row_is_excluded,
     test_therapeutic_trial_level_row_is_kept,
     test_aribio_relevance_score_contributes_points_when_present,
