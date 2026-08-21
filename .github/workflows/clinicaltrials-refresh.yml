@@ -134,7 +134,8 @@ jobs:
           git add trials.csv pipeline_annotated.csv pipeline_drugs.csv \
                   pipeline_interventions.csv pipeline_unresolved_trials.csv \
                   pipeline_overview.html outputs/classification_conflicts.csv \
-                  outputs/classification_gap_audit.csv outputs/pipeline_changes.csv
+                  outputs/classification_gap_audit.csv outputs/pipeline_changes.csv \
+                  outputs/pipeline_changes_history.csv outputs/competitive_attention.csv
           if git diff --staged --quiet; then
             echo "No changes to commit — ClinicalTrials.gov data was already up to date."
           else

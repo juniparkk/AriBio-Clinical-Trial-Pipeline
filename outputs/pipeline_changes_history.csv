@@ -31,11 +31,11 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-08-20,trial,NCT07764146,,Voyager Therapeutics,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
 2026-08-20,trial,NCT07764185,,"Photozig, Inc.",new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),True
 2026-08-20,trial,NCT07764679,[18F]Fluorbetazine,"HTA Co., Ltd.",new_trial,,Phase 3,High,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),True
-2026-08-20,trial,NCT07766174,,University of Utah,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07766174,,University of Utah,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
 2026-08-20,trial,NCT07768592,E2511,Eisai Inc.,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
-2026-08-20,trial,NCT07773493,,University of Minnesota,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
-2026-08-20,trial,NCT07775196,,University of Texas Southwestern Medical Center,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
-2026-08-20,trial,NCT07775625,,Northwestern University,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07773493,,University of Minnesota,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07775196,,University of Texas Southwestern Medical Center,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-20,trial,NCT07775625,,Northwestern University,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
 2026-08-20,trial,NCT04150198,,"Institut National de la Santé Et de la Recherche Médicale, France",primary_completion_date_change,2025-12,2028-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
 2026-08-20,trial,NCT04150198,,"Institut National de la Santé Et de la Recherche Médicale, France",completion_date_change,2026-12,2029-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
 2026-08-20,trial,NCT04804241,Senicapoc,"University of California, Davis",primary_completion_date_change,2026-06,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
@@ -67,3 +67,10 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-08-20,trial,NCT07279714,Fisetin,Sunnybrook Health Sciences Centre,primary_completion_date_change,2026-11,2026-07-21,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
 2026-08-20,trial,NCT07279714,Fisetin,Sunnybrook Health Sciences Centre,completion_date_change,2026-11,2026-07-21,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
 2026-08-20,drug,,E2511,Eisai Inc.,new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-20T192216Z),False
+2026-08-21,trial,NCT07779785,,Indiana University,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-21T163557Z),False
+2026-08-21,trial,NCT07779863,,The University of Hong Kong,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-21T163557Z),False
+2026-08-21,trial,NCT07780383,BMS-986446,Bristol-Myers Squibb,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-21T163557Z),False
+2026-08-21,trial,NCT06040905,Coenzyme Q10,Chung Shan Medical University,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-21T163557Z),False
+2026-08-21,trial,NCT06040905,Coenzyme Q10,Chung Shan Medical University,enrollment_change,100,51,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-21T163557Z),False
+2026-08-21,trial,NCT06040905,Coenzyme Q10,Chung Shan Medical University,primary_completion_date_change,2026-07-31,2026-02-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-21T163557Z),False
+2026-08-21,trial,NCT06040905,Coenzyme Q10,Chung Shan Medical University,completion_date_change,2026-07-31,2026-02-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-21T163557Z),False
