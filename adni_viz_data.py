@@ -232,7 +232,7 @@ def build_preset_catalog(presets_df):
     return [
         {
             "id": r["id"], "label": r["label"], "description": r["description"],
-            "n": int(r["n"]), "isPolarisEquivalent": bool(r["is_polaris_equivalent"]),
+            "n": int(r["n"]),
         }
         for _, r in presets_df.iterrows()
     ]

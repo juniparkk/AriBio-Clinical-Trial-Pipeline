@@ -440,13 +440,17 @@ PAGE_CSS = f"""
   .profile-bar-seg {{ height: 100%; }}
   .profile-note {{ font-size: 10.5px; color: #888; margin-top: 6px; line-height: 1.5; }}
 
-  /* A. Define Target Population -- preset picker cards. Forced to
-     exactly one row (repeat(6, 1fr), not auto-fit) so all 6 presets
-     are visible and comparable at a glance without scrolling past
-     them -- cards shrink to fit rather than wrapping to a 2nd row. */
-  .preset-card-grid {{ display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }}
-  @media (max-width: 900px) {{ .preset-card-grid {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }} }}
-  @media (max-width: 560px) {{ .preset-card-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }} }}
+  /* A. Define Target Population -- preset picker cards. PRESET_LIBRARY
+     is a 3x3 diagnosis (CN/MCI/Dementia) x amyloid-status (Overall/
+     Confirmed/Not confirmed) grid, built diagnosis-major (each
+     diagnosis's 3 amyloid-status variants adjacent) -- a fixed 3-column
+     grid therefore lays out as 3 semantically meaningful rows (one per
+     diagnosis) x 3 columns (one per amyloid status), not just an
+     arbitrary wrap. Collapses to 1 column at narrow widths (2 would
+     split a diagnosis's row awkwardly, since 9 isn't evenly divisible
+     by 2). */
+  .preset-card-grid {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }}
+  @media (max-width: 560px) {{ .preset-card-grid {{ grid-template-columns: 1fr; }} }}
   .preset-card {{
     text-align: left; border: 1.5px solid {SURFACE_BORDER}; border-radius: 9px; padding: 9px 10px;
     background: white; cursor: pointer; font-family: inherit; min-width: 0;
@@ -891,7 +895,7 @@ LIMITATIONS_ITEMS = [
     "ADNI is observational and non-randomized.",
     "Results are natural-history associations, not treatment effects.",
     "A Target Population is an eligibility-filtered subset of ADNI, not a propensity-score-matched cohort, and must not be interpreted as an external control arm for any specific trial.",
-    "Sample size differs substantially across endpoints and timepoints, and is smaller yet again within any Target Population preset -- some presets (e.g. the biomarker-availability preset) are expected to hit small-cell suppression earlier than Overall ADNI does.",
+    "Sample size differs substantially across endpoints and timepoints, and is smaller yet again within any Target Population preset -- the amyloid-confirmed and amyloid-not-confirmed presets (which require a valid amyloid-PET scan on top of the diagnosis restriction) are expected to hit small-cell suppression earlier than Overall ADNI or the Overall preset for that diagnosis group does.",
     "Many biomarker timepoints are descriptive only.",
     "GFAP/NfL do not support the planned month-specific ANCOVA under the prespecified sample-size rule.",
     "Different plasma biomarkers/platforms must not be directly equated.",
@@ -899,8 +903,7 @@ LIMITATIONS_ITEMS = [
     "Multiple comparisons are exploratory and unadjusted.",
     "Several fitted models show influential-observation sensitivity.",
     "Disease Continuum heatmap coloring is normalized independently within each endpoint row and must never be compared across rows/endpoints; it reflects Overall ADNI only, not the selected Target Population.",
-    "The MMSE bands used by some Target Population presets (mild-to-moderate/mild-dementia/prodromal-MCI) are general placeholders for commonly-used trial ranges, not any specific trial's actual protocol -- pending clinical review.",
-    "Cross-study comparison with any specific trial requires caution due to cohort, assay, endpoint, and study-design differences, even when a Target Population preset was chosen to approximate that trial's eligibility.",
+    "Cross-study comparison with any specific trial requires caution due to cohort, assay, endpoint, and study-design differences.",
 ]
 
 
@@ -1074,10 +1077,10 @@ def _absolute_key_pattern(points, label, higher_is_worse):
 
 # Generic replacement for the old POLARIS-only POLARIS_COHORT_LABEL/
 # POLARIS_KEY_PATTERN_FOOTER constants: every non-Overall-ADNI
-# population is now one of adni_eligibility.PRESET_LIBRARY's N presets
-# (POLARIS-like included, as just the first one), each with its own
-# label and n -- so this footer/label must be a function of the
-# specific preset being rendered, not a single hardcoded pair.
+# population is now one of adni_eligibility.PRESET_LIBRARY's 9 presets,
+# each with its own label and n -- so this footer/label must be a
+# function of the specific preset being rendered, not a single
+# hardcoded pair.
 def _target_population_key_pattern_footer(cohort_label, cohort_n):
     n_text = f"{cohort_n} " if cohort_n is not None else ""
     return (
@@ -1399,12 +1402,11 @@ def build_payload(data, target_population_data=None):
     output (the 7 governed adni_target_population_*.csv tables), or None
     for a standalone `python3 adni_viz.py` run with no target-population
     stage output yet -- degrades to Overall-ADNI-only, same honest-empty-
-    state convention used throughout this dashboard suite. Every preset
-    in adni_eligibility.PRESET_LIBRARY (POLARIS-like included, as simply
-    the first one) becomes one populations["target_<id>"] entry, built
-    identically via build_population_payload() -- there is no longer a
-    separate hardcoded "polaris" population key or POLARIS-specific
-    payload path."""
+    state convention used throughout this dashboard suite. Every one of
+    adni_eligibility.PRESET_LIBRARY's 9 presets becomes one
+    populations["target_<id>"] entry, built identically via
+    build_population_payload() -- there is no separate hardcoded
+    "polaris" population key or POLARIS-specific payload path."""
     disease_continuum = []
     for row in D.build_disease_continuum_data(data):
         meta = DISEASE_CONTINUUM_META[row["key"]]
@@ -1477,7 +1479,7 @@ def build_payload(data, target_population_data=None):
 
             payload["targetPopulations"][preset_id] = {
                 "id": preset_id, "label": preset["label"], "description": preset["description"],
-                "n": preset["n"], "isPolarisEquivalent": preset["isPolarisEquivalent"],
+                "n": preset["n"],
                 "populationKey": pop_key,
                 "funnel": funnel, "profile": profile, "pooled": pooled,
             }

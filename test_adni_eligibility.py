@@ -104,6 +104,27 @@ def test_evaluate_preset_centiloid_threshold_requires_data_availability_too():
     assert set(master.loc[mask, "RID"]) == {2, 3, 4, 5}
 
 
+def test_evaluate_preset_centiloid_max_threshold_requires_data_availability_too():
+    # Symmetric to centiloid_min above -- "amyloid not confirmed" presets.
+    master = _synthetic_master()
+    preset = E.PresetSpec(id="p", label="p", description="", centiloid_max=30)
+    mask = E.evaluate_preset(master, preset)
+    # RID 6 has centiloid_eligible=False despite no NaN value -- must be excluded
+    assert 6 not in set(master.loc[mask, "RID"])
+    assert set(master.loc[mask, "RID"]) == {1, 7}
+
+
+def test_evaluate_preset_centiloid_min_and_max_are_mutually_exclusive_partitions():
+    # Every centiloid-eligible RID must fall into exactly one of the two
+    # buckets (confirmed / not confirmed) -- no double-counting, no gap.
+    master = _synthetic_master()
+    confirmed = set(master.loc[E.evaluate_preset(master, E.PresetSpec(id="c", label="c", description="", centiloid_min=30)), "RID"])
+    not_confirmed = set(master.loc[E.evaluate_preset(master, E.PresetSpec(id="nc", label="nc", description="", centiloid_max=30)), "RID"])
+    assert confirmed & not_confirmed == set()
+    eligible_rids = set(master.loc[master["CENTILOID_ELIGIBLE"], "RID"])
+    assert confirmed | not_confirmed == eligible_rids
+
+
 def test_evaluate_preset_age_range():
     master = _synthetic_master()
     preset = E.PresetSpec(id="p", label="p", description="", age_min=80)
@@ -168,6 +189,14 @@ def test_attrition_distinguishes_data_availability_step_from_threshold_step():
     assert attrition.iloc[avail_idx]["excluded_n"] >= 1
 
 
+def test_attrition_centiloid_max_step_label_uses_less_than():
+    master = _synthetic_master()
+    preset = E.PresetSpec(id="p", label="Preset: Test", description="", centiloid_max=30)
+    attrition = E.build_preset_attrition(master, preset)
+    steps = attrition["step"].tolist()
+    assert any("Centiloid < 30" in s for s in steps)
+
+
 def test_attrition_no_criteria_produces_only_cohort_and_final_rows():
     master = _synthetic_master()
     preset = E.PresetSpec(id="p", label="Preset: Everyone", description="")
@@ -226,10 +255,21 @@ def test_preset_library_ids_are_unique():
     assert len(ids) == len(set(ids))
 
 
-def test_exactly_one_polaris_equivalent_preset():
-    equivalents = [p for p in E.PRESET_LIBRARY if p.is_polaris_equivalent]
-    assert len(equivalents) == 1
-    assert equivalents[0].id == "polaris_like"
+def test_preset_library_is_a_3x3_diagnosis_by_amyloid_status_grid():
+    assert len(E.PRESET_LIBRARY) == 9
+    by_diagnosis = {}
+    for preset in E.PRESET_LIBRARY:
+        assert len(preset.diagnosis) == 1, preset.id
+        by_diagnosis.setdefault(preset.diagnosis[0], []).append(preset)
+    assert set(by_diagnosis.keys()) == {"CN", "MCI", "Dementia"}
+    for dx, presets in by_diagnosis.items():
+        assert len(presets) == 3, dx
+        overall = [p for p in presets if p.centiloid_min is None and p.centiloid_max is None]
+        confirmed = [p for p in presets if p.centiloid_min is not None]
+        not_confirmed = [p for p in presets if p.centiloid_max is not None]
+        assert len(overall) == 1, dx
+        assert len(confirmed) == 1, dx
+        assert len(not_confirmed) == 1, dx
 
 
 def test_preset_library_never_uses_a_diagnosis_stage_finer_than_cn_mci_dementia():
@@ -250,6 +290,8 @@ ALL_TESTS = [
     test_evaluate_preset_mmse_range,
     test_evaluate_preset_missing_mmse_never_treated_as_meeting_threshold,
     test_evaluate_preset_centiloid_threshold_requires_data_availability_too,
+    test_evaluate_preset_centiloid_max_threshold_requires_data_availability_too,
+    test_evaluate_preset_centiloid_min_and_max_are_mutually_exclusive_partitions,
     test_evaluate_preset_age_range,
     test_evaluate_preset_require_biomarkers_all_must_be_true,
     test_evaluate_preset_combines_all_active_criteria_with_and,
@@ -257,13 +299,14 @@ ALL_TESTS = [
     test_attrition_first_and_last_step_bracket_cohort_and_final_membership,
     test_attrition_is_self_consistent_sequential_narrowing,
     test_attrition_distinguishes_data_availability_step_from_threshold_step,
+    test_attrition_centiloid_max_step_label_uses_less_than,
     test_attrition_no_criteria_produces_only_cohort_and_final_rows,
     test_profile_numeric_rows_present_for_both_populations,
     test_profile_has_no_p_value_or_test_statistic_column,
     test_profile_categorical_rows_sum_to_population_n,
     test_profile_includes_biomarker_availability_rows,
     test_preset_library_ids_are_unique,
-    test_exactly_one_polaris_equivalent_preset,
+    test_preset_library_is_a_3x3_diagnosis_by_amyloid_status_grid,
     test_preset_library_never_uses_a_diagnosis_stage_finer_than_cn_mci_dementia,
     test_preset_by_id_lookup_matches_library,
 ]

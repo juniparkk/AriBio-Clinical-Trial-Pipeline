@@ -55,14 +55,7 @@ def _load_overall_payload():
     return _load_payload()["populations"]["overall"]
 
 
-def _load_polaris_payload():
-    """The POLARIS-like preset's chart/table payload -- since the
-    Target Population generalization, POLARIS is populations["target_
-    polaris_like"] (one of N presets, not a hardcoded "polaris" key)."""
-    return _load_payload()["populations"]["target_polaris_like"]
-
-
-def _load_target_population_entry(preset_id="polaris_like"):
+def _load_target_population_entry(preset_id="cn_amyloid_confirmed"):
     """The preset's own funnel/profile/pooled entry --
     payload["targetPopulations"][preset_id], distinct from the
     populations[...] chart/table payload above."""
@@ -615,10 +608,10 @@ def test_navigation_label_renamed():
 def test_population_selector_renders():
     html_source = _load_dashboard_html()
     assert 'class="preset-card-grid"' in html_source
-    assert 'data-preset="polaris_like"' in html_source
-    assert 'data-preset="mild_moderate_amyloid"' in html_source
+    assert 'data-preset="cn_amyloid_confirmed"' in html_source
+    assert 'data-preset="mci_overall"' in html_source
     assert "Overall ADNI" in html_source
-    assert "Preset: Broad amyloid-confirmed cohort" in html_source
+    assert "Preset: Cognitively Normal (CN) – Amyloid-confirmed" in html_source
     assert "targetPopulationSummary" in html_source
 
 
@@ -635,63 +628,19 @@ def test_population_selector_default_is_overall_adni():
     assert 'id="biomarkerPopulationLabel">Target: none selected<' in html_source
 
 
-def test_polaris_cohort_final_n_is_620():
-    payload = _load_payload()
-    funnel = payload["targetPopulations"]["polaris_like"]["funnel"]
-    assert funnel[-1]["step"] == "Final Broad amyloid-confirmed cohort"
-    assert funnel[-1]["remaining_n"] == 620
-
-
-def test_polaris_diagnosis_composition_matches_validated_target():
-    payload = _load_payload()
-    dx_row = next(v for v in payload["targetPopulations"]["polaris_like"]["profile"] if v["variable"] == "Baseline diagnosis")
-    by_level = {lvl["level"]: lvl["polaris"]["n"] for lvl in dx_row["levels"]}
-    assert by_level["CN"] == 151
-    assert by_level["MCI"] == 309
-    assert by_level["Dementia"] == 160
-
-
-def test_polaris_funnel_matches_governed_attrition_csv():
-    """Every field matches the original, already-approved POLARIS
-    attrition file byte-for-byte EXCEPT the final step's label text,
-    which is deliberately relabeled away from the original "POLARIS"
-    branding to this preset's own display name (see
-    run_adni_target_populations.py) -- counts/ordering are untouched."""
-    attrition = D.load_aggregate_csv(ADNI_OUTPUTS_DIR, "adni_polaris_cohort_attrition.csv")
-    payload = _load_payload()
-    funnel = payload["targetPopulations"]["polaris_like"]["funnel"]
-    assert len(funnel) == len(attrition) == 7
-    for i, (step, (_, row)) in enumerate(zip(funnel, attrition.iterrows())):
-        if i == len(funnel) - 1:
-            assert step["step"] == "Final Broad amyloid-confirmed cohort"
-        else:
-            assert step["step"] == row["step"]
-        assert step["remaining_n"] == int(row["remaining_n"])
-        assert step["excluded_n"] == int(row["excluded_n"])
-
-
 def test_polaris_funnel_step_over_step_percent_is_a_ratio_of_governed_counts():
     payload = _load_payload()
-    funnel = payload["targetPopulations"]["polaris_like"]["funnel"]
+    funnel = payload["targetPopulations"]["cn_amyloid_confirmed"]["funnel"]
     assert funnel[0]["percent_retained_of_previous"] is None
     for prev, cur in zip(funnel, funnel[1:]):
         expected = round(cur["remaining_n"] / prev["remaining_n"] * 100, 1)
         assert cur["percent_retained_of_previous"] == expected
 
 
-def test_polaris_population_profile_covers_requested_variables():
-    payload = _load_payload()
-    variables = {v["variable"] for v in payload["targetPopulations"]["polaris_like"]["profile"]}
-    assert variables == {
-        "Baseline age (years)", "Baseline MMSE", "Baseline ADAS-Cog13", "Baseline Centiloid",
-        "Baseline diagnosis", "Sex", "APOE4 carrier",
-    }
-
-
 def test_polaris_population_profile_matches_governed_csv():
     profile_csv = D.load_aggregate_csv(ADNI_OUTPUTS_DIR, "adni_polaris_population_profile.csv")
     payload = _load_payload()
-    age_row = next(v for v in payload["targetPopulations"]["polaris_like"]["profile"] if v["variable"] == "Baseline age (years)")
+    age_row = next(v for v in payload["targetPopulations"]["cn_amyloid_confirmed"]["profile"] if v["variable"] == "Baseline age (years)")
     csv_overall = profile_csv[(profile_csv["variable"] == "Baseline age (years)") & (profile_csv["population"] == "Overall ADNI")].iloc[0]
     assert age_row["overall"]["n"] == int(csv_overall["n"])
     assert abs(age_row["overall"]["mean"] - float(csv_overall["mean"])) < 1e-9
@@ -820,7 +769,7 @@ def test_no_participant_level_pet_file_referenced_anywhere_in_viz_modules():
 
 def test_polaris_payload_contains_no_participant_identifiers():
     payload = _load_payload()
-    raw_json = json.dumps(payload["targetPopulations"]["polaris_like"])
+    raw_json = json.dumps(payload["targetPopulations"]["cn_amyloid_confirmed"])
     for forbidden in ["\"RID\"", "\"PTID\"", "\"LONIUID\"", "\"USUBJID\"", "\"SUBJID\""]:
         assert forbidden not in raw_json
 
@@ -853,7 +802,7 @@ def test_existing_governance_protections_still_intact():
 def test_population_selector_changes_cognitive_data_source():
     payload = _load_payload()
     overall_mmse = payload["populations"]["overall"]["cognitiveChange"]["MMSE"]
-    polaris_mmse = payload["populations"]["target_polaris_like"]["cognitiveChange"]["MMSE"]
+    polaris_mmse = payload["populations"]["target_cn_amyloid_confirmed"]["cognitiveChange"]["MMSE"]
     assert overall_mmse != polaris_mmse
     # Real, population-specific n's -- not a coincidental reshuffle.
     overall_n_by_cell = {(p["month"], p["group"]): p["n"] for p in overall_mmse}
@@ -869,7 +818,7 @@ def test_population_selector_changes_cognitive_data_source():
 def test_population_selector_changes_biomarker_data_source():
     payload = _load_payload()
     overall_pts = payload["populations"]["overall"]["biomarkersChange"]["pTau181"]["Gothenburg_Simoa"]["primary"]
-    polaris_pts = payload["populations"]["target_polaris_like"]["biomarkersChange"]["pTau181"]["Gothenburg_Simoa"]["primary"]
+    polaris_pts = payload["populations"]["target_cn_amyloid_confirmed"]["biomarkersChange"]["pTau181"]["Gothenburg_Simoa"]["primary"]
     assert overall_pts != polaris_pts
     overall_n_by_cell = {(p["month"], p["group"]): p["n"] for p in overall_pts}
     polaris_n_by_cell = {(p["month"], p["group"]): p["n"] for p in polaris_pts}
@@ -900,55 +849,23 @@ def test_polaris_baseline_values_match_validated_population_profile():
         assert abs(weighted_mean - float(prof_row["mean"])) < 1.0
 
 
-def test_polaris_status_classification_matches_governed_status_csv():
-    """Spot-check a specific, known cell against the governed status
-    file directly (not re-derived) -- ADAS-Cog13 month 6, primary,
-    classified 'A. Adjusted analysis' per adni_polaris_trajectory_status.csv."""
-    status = pd.read_csv(os.path.join(ADNI_OUTPUTS_DIR, "adni_polaris_trajectory_status.csv"))
-    row = status[
-        (status["endpoint_or_biomarker"] == "ADAS_COG13") & (status["analysis_type"] == "primary") & (status["month"] == 6)
-    ].iloc[0]
-    expected_classification = row["classification"]
-
-    payload = _load_payload()
-    pts = payload["populations"]["target_polaris_like"]["cognitiveChange"]["ADAS_COG13"]
-    for p in pts:
-        if p["month"] == 6:
-            assert p["classification"] == expected_classification
-
-
-def test_polaris_sparse_observations_remain_disconnected():
-    """Real POLARIS data: MMSE month 18 has n<10 in all three diagnosis
-    groups (confirmed against adni_polaris_cognitive_trajectories.csv)
-    -- these must be rendered as isolated points (n < minGroupN),
-    exactly like the existing Overall-ADNI sparse-point rule, never
-    wired into a solid connected trajectory line."""
-    payload = _load_payload()
-    min_group_n = payload["minGroupN"]
-    pts = payload["populations"]["target_polaris_like"]["cognitiveChange"]["MMSE"]
-    month18 = [p for p in pts if p["month"] == 18]
-    assert len(month18) == 3
-    for p in month18:
-        assert p["n"] < min_group_n
-        assert p["estimate"] is not None  # a real, plottable value -- just never connected
-
 
 def test_key_pattern_differs_and_is_explicitly_labeled_by_population():
     payload = _load_payload()
     overall_text = payload["populations"]["overall"]["keyPatterns"]["cognitive"]["change"]["ADAS_COG13"]
-    polaris_text = payload["populations"]["target_polaris_like"]["keyPatterns"]["cognitive"]["change"]["ADAS_COG13"]
-    assert overall_text != polaris_text
-    assert "Preset: Broad amyloid-confirmed cohort" in polaris_text
-    assert "Preset: Broad amyloid-confirmed cohort" not in overall_text
-    assert "620" in polaris_text or "eligibility-filtered" in polaris_text
+    preset_text = payload["populations"]["target_cn_amyloid_confirmed"]["keyPatterns"]["cognitive"]["change"]["ADAS_COG13"]
+    assert overall_text != preset_text
+    assert "Preset: Cognitively Normal (CN) – Amyloid-confirmed" in preset_text
+    assert "Preset: Cognitively Normal (CN) – Amyloid-confirmed" not in overall_text
+    assert "151" in preset_text or "eligibility-filtered" in preset_text
     # Never a treatment-effect claim, in either population.
-    for text in (overall_text, polaris_text):
+    for text in (overall_text, preset_text):
         assert "treatment effect" not in text.lower() or "not a treatment effect" in text.lower() or "not compared" in text.lower()
 
 
 def test_key_pattern_never_turns_descriptive_biomarker_into_a_strong_claim():
     payload = _load_payload()
-    gfap_text = payload["populations"]["target_polaris_like"]["keyPatterns"]["biomarkers"]["change"]["GFAP"]["Quanterix"]["primary"]
+    gfap_text = payload["populations"]["target_cn_amyloid_confirmed"]["keyPatterns"]["biomarkers"]["change"]["GFAP"]["Quanterix"]["primary"]
     assert "no adjusted (hc3) timepoint" in gfap_text.lower() or "not available for all three" in gfap_text.lower()
     assert "markedly" not in gfap_text and "modestly" not in gfap_text
 
@@ -961,16 +878,23 @@ def test_cognitive_data_support_present_only_for_polaris_biomarker_for_both():
     assert payload["populations"]["overall"]["cognitiveDataSupport"] == {}
     assert payload["populations"]["overall"]["biomarkerDataSupport"] != {}
 
-    polaris_cog_support = payload["populations"]["target_polaris_like"]["cognitiveDataSupport"]
+    polaris_cog_support = payload["populations"]["target_cn_amyloid_confirmed"]["cognitiveDataSupport"]
     assert set(polaris_cog_support.keys()) == {"ADAS_COG13", "MMSE"}
     for text in polaris_cog_support.values():
         assert text.startswith("Data support:")
 
-    polaris_bio_support = payload["populations"]["target_polaris_like"]["biomarkerDataSupport"]
+    polaris_bio_support = payload["populations"]["target_cn_amyloid_confirmed"]["biomarkerDataSupport"]
     ptau181_change = polaris_bio_support["pTau181"]["Gothenburg_Simoa"]["primary"]["change"]
     gfap_change = polaris_bio_support["GFAP"]["Quanterix"]["primary"]["change"]
-    assert ptau181_change != gfap_change
-    assert "adjusted follow-up available" in ptau181_change
+    # cn_amyloid_confirmed (n=151) is small enough that neither biomarker
+    # reaches the adjusted-analysis threshold -- unlike Overall ADNI's
+    # much larger n, where pTau181 does (see
+    # test_biomarker_data_support_distinguishes_change_and_absolute_questions).
+    # Both texts must still be real, biomarker-labeled, and honestly
+    # reflect this smaller cohort's own (all-descriptive) support pattern.
+    assert ptau181_change.startswith("pTau181:")
+    assert gfap_change.startswith("GFAP:")
+    assert "descriptive-only" in ptau181_change
     assert "descriptive-only" in gfap_change
 
 
@@ -980,7 +904,7 @@ def test_disease_continuum_is_population_agnostic_and_stays_overall_only():
     for it to change when the Population selector is toggled."""
     payload = _load_payload()
     assert "diseaseContinuum" not in payload["populations"]["overall"]
-    assert "diseaseContinuum" not in payload["populations"]["target_polaris_like"]
+    assert "diseaseContinuum" not in payload["populations"]["target_cn_amyloid_confirmed"]
     assert len(payload["diseaseContinuum"]) == 7
 
 
@@ -1021,7 +945,7 @@ def test_polaris_data_view_rejects_participant_identifier_columns():
 
 def test_no_participant_level_data_in_polaris_population_payload():
     payload = _load_payload()
-    raw_json = json.dumps(payload["populations"]["target_polaris_like"])
+    raw_json = json.dumps(payload["populations"]["target_cn_amyloid_confirmed"])
     for forbidden in ["\"RID\"", "\"PTID\"", "\"LONIUID\"", "\"USUBJID\"", "\"SUBJID\""]:
         assert forbidden not in raw_json
 
@@ -1135,15 +1059,18 @@ def test_biomarker_absolute_data_support_present_for_overall_and_polaris():
     """Generalized (no longer POLARIS-only) data-support summaries --
     both populations must get real Absolute-view text, and it must
     reflect each population's own (different) support pattern: GFAP's
-    smaller POLARIS cohort loses MCI support earlier than Overall ADNI
-    does."""
+    much smaller cn_amyloid_confirmed cohort (n=151, single diagnosis
+    group) loses support at every follow-up month, unlike Overall
+    ADNI's much larger n, which stays well-supported for most of the
+    follow-up window."""
     payload = _load_payload()
     overall_text = payload["populations"]["overall"]["biomarkerDataSupport"]["GFAP"]["Quanterix"]["primary"]["absolute"]
-    polaris_text = payload["populations"]["target_polaris_like"]["biomarkerDataSupport"]["GFAP"]["Quanterix"]["primary"]["absolute"]
+    preset_text = payload["populations"]["target_cn_amyloid_confirmed"]["biomarkerDataSupport"]["GFAP"]["Quanterix"]["primary"]["absolute"]
     assert overall_text.startswith("GFAP:")
-    assert polaris_text.startswith("GFAP:")
-    assert overall_text != polaris_text
-    assert "MCI" in polaris_text and "MCI" not in overall_text
+    assert preset_text.startswith("GFAP:")
+    assert overall_text != preset_text
+    assert "well-supported" in overall_text
+    assert "limited support" in preset_text and "every follow-up month" in preset_text
 
 
 def test_biomarker_data_support_distinguishes_change_and_absolute_questions():
@@ -1158,7 +1085,7 @@ def test_biomarker_data_support_distinguishes_change_and_absolute_questions():
 def test_population_switching_uses_correct_biomarker_absolute_data():
     payload = _load_payload()
     overall_abs = payload["populations"]["overall"]["biomarkersAbsolute"]["pTau181"]["Gothenburg_Simoa"]["primary"]
-    polaris_abs = payload["populations"]["target_polaris_like"]["biomarkersAbsolute"]["pTau181"]["Gothenburg_Simoa"]["primary"]
+    polaris_abs = payload["populations"]["target_cn_amyloid_confirmed"]["biomarkersAbsolute"]["pTau181"]["Gothenburg_Simoa"]["primary"]
     assert overall_abs != polaris_abs
     overall_n = {(p["month"], p["group"]): p["n"] for p in overall_abs}
     polaris_n = {(p["month"], p["group"]): p["n"] for p in polaris_abs}
@@ -1416,25 +1343,29 @@ def test_panel_key_row_no_longer_has_a_negative_margin_overlap_bug():
     assert "margin: -54px" not in html_source
 
 
-def test_preset_grid_fits_all_presets_in_one_row():
+def test_preset_grid_is_a_3x3_layout():
+    # PRESET_LIBRARY is a 3x3 diagnosis x amyloid-status grid -- the CSS
+    # is a fixed 3-column grid (see adni_viz.py's comment on
+    # .preset-card-grid), which lays out as 3 rows (one per diagnosis)
+    # x 3 columns (one per amyloid status) rather than all 9 in one row.
     html_source = _load_dashboard_html()
-    assert ".preset-card-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));" in html_source
+    assert ".preset-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));" in html_source
 
 
-def test_first_preset_is_not_named_polaris_like():
-    """Requirement: the first preset's user-visible label/description
-    must not expose "POLARIS" branding -- the internal id (data-preset
-    attribute, never rendered as visible text) is unaffected, and a
-    historical/technical reference in the Methods documentation (which
-    explains this feature's lineage, not a preset's display name) is
-    also unaffected."""
+def test_no_polaris_branding_leaks_into_preset_picker_funnel_or_profile():
+    """Requirement: no preset's user-visible label/description/funnel/
+    profile text may expose "POLARIS" branding -- the POLARIS-equivalent
+    preset concept was retired along with the old 6-preset library, and
+    a historical/technical reference in the Methods documentation
+    (which explains this feature's lineage, not a preset's display
+    name) is unaffected."""
     payload = _load_payload()
     catalog = {p["id"]: p for p in payload["presetCatalog"]}
-    first = catalog["polaris_like"]
-    assert "polaris" not in first["label"].lower()
-    assert "polaris" not in first["description"].lower()
+    for preset in catalog.values():
+        assert "polaris" not in preset["label"].lower()
+        assert "polaris" not in preset["description"].lower()
 
-    entry = _load_target_population_entry("polaris_like")
+    entry = _load_target_population_entry("cn_amyloid_confirmed")
     for step in entry["funnel"]:
         assert "polaris" not in step["step"].lower()
 
@@ -1485,14 +1416,15 @@ def test_page_sections_appear_in_a_through_g_order():
     assert nav_positions == sorted(nav_positions)
 
 
-def test_preset_picker_renders_all_six_presets_with_criteria_and_n():
+def test_preset_picker_renders_all_nine_presets_with_criteria_and_n():
     payload = _load_payload()
     catalog = payload["presetCatalog"]
-    assert len(catalog) == 6
+    assert len(catalog) == 9
     ids = {p["id"] for p in catalog}
     assert ids == {
-        "polaris_like", "mild_moderate_amyloid", "mild_dementia_amyloid",
-        "prodromal_mci_amyloid", "biomarker_complete", "age_restricted_sensitivity",
+        "cn_overall", "cn_amyloid_confirmed", "cn_amyloid_not_confirmed",
+        "mci_overall", "mci_amyloid_confirmed", "mci_amyloid_not_confirmed",
+        "dementia_overall", "dementia_amyloid_confirmed", "dementia_amyloid_not_confirmed",
     }
     for p in catalog:
         assert p["n"] > 0
@@ -1501,13 +1433,6 @@ def test_preset_picker_renders_all_six_presets_with_criteria_and_n():
     for p in catalog:
         assert f'data-preset="{p["id"]}"' in html_source
         assert html.escape(p["description"]) in html_source or p["description"] in html_source
-
-
-def test_polaris_like_preset_is_flagged_and_others_are_not():
-    payload = _load_payload()
-    catalog = {p["id"]: p for p in payload["presetCatalog"]}
-    assert catalog["polaris_like"]["isPolarisEquivalent"] is True
-    assert sum(1 for p in catalog.values() if p["isPolarisEquivalent"]) == 1
 
 
 def test_custom_population_is_honestly_scoped_to_curated_presets():
@@ -1521,23 +1446,23 @@ def test_custom_population_is_honestly_scoped_to_curated_presets():
 
 
 def test_eligibility_funnel_distinguishes_available_from_threshold_steps():
-    entry = _load_target_population_entry("mild_moderate_amyloid")
+    entry = _load_target_population_entry("cn_amyloid_confirmed")
     steps = [s["step"] for s in entry["funnel"]]
     assert any("available" in s.lower() for s in steps)
-    assert any("MMSE" in s and "available" not in s.lower() for s in steps)
+    assert any("Centiloid" in s and "available" not in s.lower() for s in steps)
     assert steps[0] == "Validated ADNI cohort"
     assert entry["funnel"][-1]["remaining_n"] == entry["n"]
 
 
 def test_target_population_profile_is_purely_descriptive():
-    entry = _load_target_population_entry("mild_moderate_amyloid")
+    entry = _load_target_population_entry("cn_amyloid_confirmed")
     forbidden = {"p_value", "p", "t_stat", "f_stat", "test_statistic"}
     for row in entry["profile"]:
         assert forbidden.isdisjoint({k.lower() for k in row.keys()})
 
 
 def test_dual_population_pooled_chart_has_overall_and_target_series():
-    entry = _load_target_population_entry("polaris_like")
+    entry = _load_target_population_entry("cn_amyloid_confirmed")
     points = entry["pooled"]["ADAS_COG13"]
     groups = {p["group"] for p in points}
     assert groups == {"Overall ADNI", "Target Population"}
@@ -1546,7 +1471,7 @@ def test_dual_population_pooled_chart_has_overall_and_target_series():
 
 
 def test_pooled_trajectory_never_carries_a_test_statistic_or_p_value():
-    entry = _load_target_population_entry("polaris_like")
+    entry = _load_target_population_entry("cn_amyloid_confirmed")
     for points in entry["pooled"].values():
         for p in points:
             assert "overall_p_hc3" not in p or p.get("overall_p_hc3") is None
@@ -1586,7 +1511,7 @@ def test_no_subset_vs_superset_statistical_test_anywhere_in_payload():
     always a subset of Overall ADNI, so no p-value/test-statistic
     comparing them may exist anywhere in the target-population part of
     the payload."""
-    entry = _load_target_population_entry("polaris_like")
+    entry = _load_target_population_entry("cn_amyloid_confirmed")
     payload_json = json.dumps(entry)
     for forbidden_key in ['"p_value"', '"t_stat"', '"f_stat"', '"test_statistic"']:
         assert forbidden_key not in payload_json
@@ -1600,8 +1525,7 @@ def test_reframed_natural_history_placebo_reference_copy_present():
 
 ALL_TESTS = [
     test_page_sections_appear_in_a_through_g_order,
-    test_preset_picker_renders_all_six_presets_with_criteria_and_n,
-    test_polaris_like_preset_is_flagged_and_others_are_not,
+    test_preset_picker_renders_all_nine_presets_with_criteria_and_n,
     test_custom_population_is_honestly_scoped_to_curated_presets,
     test_eligibility_funnel_distinguishes_available_from_threshold_steps,
     test_target_population_profile_is_purely_descriptive,
@@ -1654,11 +1578,7 @@ ALL_TESTS = [
     test_navigation_label_renamed,
     test_population_selector_renders,
     test_population_selector_default_is_overall_adni,
-    test_polaris_cohort_final_n_is_620,
-    test_polaris_diagnosis_composition_matches_validated_target,
-    test_polaris_funnel_matches_governed_attrition_csv,
     test_polaris_funnel_step_over_step_percent_is_a_ratio_of_governed_counts,
-    test_polaris_population_profile_covers_requested_variables,
     test_polaris_population_profile_matches_governed_csv,
     test_not_propensity_score_matched_disclaimer_present,
     test_apoe4_context_text_is_neutral_not_causal,
@@ -1673,8 +1593,6 @@ ALL_TESTS = [
     test_population_selector_changes_cognitive_data_source,
     test_population_selector_changes_biomarker_data_source,
     test_polaris_baseline_values_match_validated_population_profile,
-    test_polaris_status_classification_matches_governed_status_csv,
-    test_polaris_sparse_observations_remain_disconnected,
     test_key_pattern_differs_and_is_explicitly_labeled_by_population,
     test_key_pattern_never_turns_descriptive_biomarker_into_a_strong_claim,
     test_cognitive_data_support_present_only_for_polaris_biomarker_for_both,
@@ -1704,8 +1622,8 @@ ALL_TESTS = [
     test_no_dead_two_column_layout_css_remains,
     test_cognitive_and_biomarker_sections_are_side_by_side_and_aligned,
     test_panel_key_row_no_longer_has_a_negative_margin_overlap_bug,
-    test_preset_grid_fits_all_presets_in_one_row,
-    test_first_preset_is_not_named_polaris_like,
+    test_preset_grid_is_a_3x3_layout,
+    test_no_polaris_branding_leaks_into_preset_picker_funnel_or_profile,
 ]
 
 

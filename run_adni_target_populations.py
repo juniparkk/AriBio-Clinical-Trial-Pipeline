@@ -7,19 +7,14 @@
 # (eligibility funnel + population profile) and run_adni_polaris_
 # trajectories.py (restrict-then-reuse trajectory fitting) from ONE
 # hardcoded alternate population (POLARIS) to adni_eligibility.
-# PRESET_LIBRARY's N named presets. Every sample-building, ANCOVA, HC3,
-# and influence-sensitivity function used here is IMPORTED from
-# run_adni_statistics.py / run_adni_robustness.py / adni_stats.py /
-# adni_robustness.py, never reimplemented or modified.
-#
-# The `polaris_like` preset is handled as a special case: rather than
-# re-evaluating it through adni_eligibility.evaluate_preset() (which
-# would risk numeric drift from the already-approved POLARIS cohort),
-# this script reads the existing POLARIS_ELIGIBLE flag and the existing
-# adni_polaris_cohort_attrition.csv / adni_polaris_population_profile.csv
-# outputs directly, re-tagging them with preset_id="polaris_like" --
-# guaranteeing byte-identical membership (n=620) and byte-identical
-# funnel/profile numbers to the already-validated POLARIS stage.
+# PRESET_LIBRARY's N named presets -- currently a 3x3 diagnosis
+# (CN/MCI/Dementia) x amyloid-status (Overall/Confirmed/Not confirmed)
+# grid. Every preset is evaluated identically through
+# adni_eligibility.evaluate_preset()/build_preset_attrition()/
+# build_preset_profile() -- no preset is special-cased. Every
+# sample-building, ANCOVA, HC3, and influence-sensitivity function used
+# here is IMPORTED from run_adni_statistics.py / run_adni_robustness.py /
+# adni_stats.py / adni_robustness.py, never reimplemented or modified.
 #
 # Pooled (non-diagnosis-stratified) trajectories are NEW: no existing
 # stage computes a whole-population (not split by CN/MCI/Dementia)
@@ -47,8 +42,6 @@
 #   ADNI_PROCESSED_DIR/adni_pet_eligibility.parquet
 #   ADNI_PROCESSED_DIR/adni_clinical_long.parquet
 #   ADNI_PROCESSED_DIR/adni_{ptau181,ptau217,abeta_ratio,gfap,nfl}_long.parquet
-#   ADNI_OUTPUTS_DIR/adni_polaris_cohort_attrition.csv (polaris_like only)
-#   ADNI_OUTPUTS_DIR/adni_polaris_population_profile.csv (polaris_like only)
 #
 # Writes (aggregate-only; no participant identifier in any output):
 #   ADNI_OUTPUTS_DIR/adni_target_population_presets.csv
@@ -80,7 +73,6 @@ from run_adni_polaris_trajectories import (
     run_cognitive_with_status,
 )
 
-EXPECTED_POLARIS_N = 620
 OVERALL_LABEL = "Overall ADNI"
 
 # (biomarker, value_col, assay_platform, table_key, platform, lot_bias_col)
@@ -277,10 +269,11 @@ def build_methods_md(preset_results):
         "## Grouping recommendation (all presets)\n\n"
         "Per-diagnosis-group (CN/MCI/Dementia) trajectory files retain the unchanged "
         f"n≥{S.MIN_GROUP_N} small-cell rule, exactly as the primary Overall-ADNI analysis and the "
-        "POLARIS trajectory stage do -- no preset collapses or regroups diagnosis. Smaller presets "
-        "(notably `biomarker_complete`) are expected to show more `B. Descriptive only`/`D. Not "
-        "available` cells at later follow-up months; this is the existing suppression rule working "
-        "correctly on a smaller n, not a new rule.\n"
+        "POLARIS trajectory stage do -- no preset collapses or regroups diagnosis. Presets with a "
+        "smaller resulting n (typically the amyloid-confirmed and amyloid-not-confirmed columns, "
+        "since both require a valid amyloid-PET scan on top of the diagnosis restriction) are "
+        "expected to show more `B. Descriptive only`/`D. Not available` cells at later follow-up "
+        "months; this is the existing suppression rule working correctly on a smaller n, not a new rule.\n"
     )
     return "\n".join(lines)
 
@@ -315,29 +308,10 @@ def main():
 
     for preset in E.PRESET_LIBRARY:
         print(f"--- {preset.label} ---")
-        if preset.is_polaris_equivalent:
-            rids = set(master.loc[master["POLARIS_ELIGIBLE"], "RID"])
-            if len(rids) != EXPECTED_POLARIS_N:
-                raise RuntimeError(
-                    f"Expected {EXPECTED_POLARIS_N} POLARIS-eligible participants, found {len(rids)} -- "
-                    "stopping rather than proceeding with a drifted cohort."
-                )
-            attrition_df = pd.read_csv(os.path.join(ADNI_OUTPUTS_DIR, "adni_polaris_cohort_attrition.csv"))
-            # Relabel the copied funnel's final-step text -- it's real,
-            # user-visible copy in the dashboard's Eligibility/Cohort
-            # Flow section, not just an internal identifier, so it must
-            # reflect this preset's own display label, not the original
-            # POLARIS-branded wording baked into the source file.
-            attrition_df.loc[attrition_df.index[-1], "step"] = f"Final {E.final_step_label(preset)}"
-            profile_df = pd.read_csv(os.path.join(ADNI_OUTPUTS_DIR, "adni_polaris_population_profile.csv"))
-            profile_df = profile_df.rename(columns={"population": "population"})
-            profile_df.loc[profile_df["population"] == "POLARIS-aligned ADNI", "population"] = "Target Population"
-            profile_df.loc[profile_df["population"] == "Overall ADNI", "population"] = OVERALL_LABEL
-        else:
-            target_mask = E.evaluate_preset(master, preset)
-            rids = set(master.loc[target_mask, "RID"])
-            attrition_df = E.build_preset_attrition(master, preset)
-            profile_df = E.build_preset_profile(master, target_mask, overall_label=OVERALL_LABEL, target_label="Target Population")
+        target_mask = E.evaluate_preset(master, preset)
+        rids = set(master.loc[target_mask, "RID"])
+        attrition_df = E.build_preset_attrition(master, preset)
+        profile_df = E.build_preset_profile(master, target_mask, overall_label=OVERALL_LABEL, target_label="Target Population")
 
         n = len(rids)
         dx_composition = master.loc[master["RID"].isin(rids), "DX_BASELINE_FIXED"].value_counts().to_dict()
@@ -351,8 +325,7 @@ def main():
         profile_frames.append(profile_df)
 
         preset_catalog_rows.append({
-            "id": preset.id, "label": preset.label, "description": preset.description,
-            "n": n, "is_polaris_equivalent": preset.is_polaris_equivalent,
+            "id": preset.id, "label": preset.label, "description": preset.description, "n": n,
         })
 
         cog_df, bio_df, status_df, target_pooled_rows = run_target_trajectories(preset.id, rids, tables)

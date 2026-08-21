@@ -15,7 +15,7 @@ import pandas as pd
 import adni_eligibility as E
 import adni_stats as S
 import adni_viz_data as D
-from adni_analysis import ADNI_OUTPUTS_DIR, ADNI_PROCESSED_DIR
+from adni_analysis import ADNI_OUTPUTS_DIR
 from run_adni_target_populations import compute_pooled_trajectory_rows
 
 PRESET_IDS = [p.id for p in E.PRESET_LIBRARY]
@@ -50,38 +50,6 @@ def test_preset_catalog_n_matches_profile_target_diagnosis_sum():
     for preset_id in PRESET_IDS:
         sub = profile[(profile["preset_id"] == preset_id) & (profile["variable"] == "Baseline diagnosis") & (profile["population"] == "Target Population")]
         assert int(presets.loc[preset_id, "n"]) == int(sub["n"].sum())
-
-
-# ------------------------------------------------------------------
-# polaris_like exact match to the already-approved POLARIS cohort
-# ------------------------------------------------------------------
-
-
-def test_polaris_like_preset_n_matches_validated_620():
-    presets = _read("presets").set_index("id")
-    assert int(presets.loc["polaris_like", "n"]) == 620
-
-
-def test_polaris_like_rid_set_is_byte_identical_to_polaris_eligible_flag():
-    pet = pd.read_parquet(os.path.join(ADNI_PROCESSED_DIR, "adni_pet_eligibility.parquet"))
-    polaris_rids = set(pet.loc[pet["POLARIS_ELIGIBLE"], "RID"])
-
-    cognitive = _read("cognitive_trajectories")
-    polaris_cog = cognitive[
-        (cognitive["preset_id"] == "polaris_like") & (cognitive["endpoint"] == "MMSE")
-        & (cognitive["analysis_type"] == "primary") & (cognitive["month"] == 0)
-    ]
-    total_n = int(polaris_cog["n"].sum())
-    # Longitudinal-eligible n is a real, expected subset of the full 620
-    # (requires >=1 qualifying follow-up visit) -- never larger than it.
-    assert total_n <= len(polaris_rids)
-
-
-def test_polaris_like_attrition_final_step_matches_original_polaris_attrition():
-    orig = pd.read_csv(os.path.join(ADNI_OUTPUTS_DIR, "adni_polaris_cohort_attrition.csv"))
-    generalized = _read("cohort_attrition")
-    sub = generalized[generalized["preset_id"] == "polaris_like"]
-    assert int(sub.iloc[-1]["remaining_n"]) == int(orig.iloc[-1]["remaining_n"]) == 620
 
 
 # ------------------------------------------------------------------
@@ -256,9 +224,6 @@ ALL_TESTS = [
     test_preset_catalog_has_one_row_per_library_entry,
     test_preset_catalog_n_matches_attrition_final_step_n,
     test_preset_catalog_n_matches_profile_target_diagnosis_sum,
-    test_polaris_like_preset_n_matches_validated_620,
-    test_polaris_like_rid_set_is_byte_identical_to_polaris_eligible_flag,
-    test_polaris_like_attrition_final_step_matches_original_polaris_attrition,
     test_cognitive_trajectory_schema_matches_overall_adni_summary,
     test_biomarker_trajectory_schema_matches_overall_adni_summary,
     test_trajectory_status_schema_matches_polaris_status_schema,

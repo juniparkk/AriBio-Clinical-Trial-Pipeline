@@ -25,7 +25,6 @@ I-123-MNI-168,NCT00870519,1,isotope-labeled tracer name (18F/11C-style notation)
 I123MNI388/I123MNI390,NCT00886951,1,isotope-labeled tracer name (18F/11C-style notation) combined with diagnostic study context (ClinicalTrials.gov Primary Purpose: DIAGNOSTIC and/or explicit PET/SPECT/radioligand/imaging wording in the trial's title or brief summary),Therapeutic Drug,Diagnostic Agent,Amyloid PET tracer,high,True
 Radioligand (11C)AZD2995,NCT00692705,1,isotope-labeled tracer name (18F/11C-style notation) combined with diagnostic study context (ClinicalTrials.gov Primary Purpose: DIAGNOSTIC and/or explicit PET/SPECT/radioligand/imaging wording in the trial's title or brief summary),Therapeutic Drug,Diagnostic Agent,Amyloid PET tracer,high,True
 [ 18F]3F4AP,NCT06999434,1,isotope-labeled tracer name (18F/11C-style notation) combined with diagnostic study context (ClinicalTrials.gov Primary Purpose: DIAGNOSTIC and/or explicit PET/SPECT/radioligand/imaging wording in the trial's title or brief summary),Therapeutic Drug,Diagnostic Agent,PET tracer,high,True
-[11C]-UCB-J,NCT03577262; NCT05911178,2,isotope-labeled tracer name (18F/11C-style notation) combined with diagnostic study context (ClinicalTrials.gov Primary Purpose: DIAGNOSTIC and/or explicit PET/SPECT/radioligand/imaging wording in the trial's title or brief summary),Therapeutic Drug,Diagnostic Agent,PET tracer,high,True
 [11C]HSP990 PET dosimetry,NCT07380204,1,isotope-labeled tracer name (18F/11C-style notation) combined with diagnostic study context (ClinicalTrials.gov Primary Purpose: DIAGNOSTIC and/or explicit PET/SPECT/radioligand/imaging wording in the trial's title or brief summary),Therapeutic Drug,Diagnostic Agent,PET tracer,high,True
 [11C]HSP990 PET test-retest,NCT07380204,1,isotope-labeled tracer name (18F/11C-style notation) combined with diagnostic study context (ClinicalTrials.gov Primary Purpose: DIAGNOSTIC and/or explicit PET/SPECT/radioligand/imaging wording in the trial's title or brief summary),Therapeutic Drug,Diagnostic Agent,PET tracer,high,True
 [11C]HSP990 simplified scan protocol,NCT07380204,1,isotope-labeled tracer name (18F/11C-style notation) combined with diagnostic study context (ClinicalTrials.gov Primary Purpose: DIAGNOSTIC and/or explicit PET/SPECT/radioligand/imaging wording in the trial's title or brief summary),Therapeutic Drug,Diagnostic Agent,PET tracer,high,True
@@ -74,22 +73,23 @@ radioligand [11C]AZD2184,NCT00692705; NCT00838877,2,isotope-labeled tracer name 
 18-F amyloid PET Scan,NCT05806697,1,RADIATION-type intervention with imaging/scan wording,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,medium,False
 18-F-Flortaucipir,NCT03821857,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 18-FDG PET,NCT01325259,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
+18F-AV-1451,NCT03283449; NCT04080544; NCT06723015,3,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 18F-AV-1451 (Tau-PET tracer),NCT02958670,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 18F-AV-45,NCT01503944,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,PET tracer,high,False
 18F-FDG,NCT01890343,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
-18F-Florbetaben,NCT02831283; NCT03706261; NCT04396873; NCT04576793; NCT04840979; NCT05527288; NCT07169630,7,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 18F-Florbetaben (FBB),NCT07758660,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 18F-Florbetaben PET,NCT02556502,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 18F-Florbetapir,NCT03058965; NCT03071224; NCT03080051; NCT03641768; NCT04305210,5,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 18F-Florbetapir or 18F-Flutemetamol,NCT07012993,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 18F-Flortaucipir radiopharmaceutical,NCT05361382,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
+18F-Flutemetamol,NCT01053312; NCT01092546; NCT01165554; NCT01202994; NCT01265394; NCT01672827; NCT02813070,7,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 18F-Flutemetamol PET/MRI,NCT03291093,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
-18F-MK-6240,NCT03373604; NCT03706261; NCT03757910; NCT04566003; NCT04784416; NCT06860373,6,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,PET tracer,high,False
+18F-MK-6240,NCT03373604; NCT03706261; NCT03757910; NCT04566003; NCT04784416; NCT06860373,6,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 18F-MK-6240 radiopharmaceutical,NCT05361382,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 18F-MK6240,NCT04576793; NCT05464368; NCT06999434; NCT07758660,4,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 18F-PM-PBB3,NCT04248270,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 18F-RO948,NCT06731842,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
-18F-THK-5351,NCT02656498; NCT02884492; NCT03024944; NCT03112096,4,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
+18F-florbetaben,NCT02831283; NCT03706261; NCT04396873; NCT04576793; NCT04840979; NCT05527288; NCT07169630,7,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 18F-florbetaben PET/CT,NCT06048601,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 18F-fluorodeoxyglucose (FDG) PET Scan,NCT05806697,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 AV45,NCT04309253,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
@@ -111,6 +111,7 @@ CT scan,NCT03597360,1,RADIATION-type intervention with imaging/scan wording,Diag
 California Cognitive Assessment Battery,NCT04800588,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Cognigram,NCT06191952,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Cognitive Tests,NCT06711952,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
+Cognitive assessment,NCT03991624; NCT04614532; NCT06213766,3,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Collection of nasal secretion,NCT05791552,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Computer assisted ambulatory electroencephalogram,NCT04002583,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Cytology and Immunohistochemistry,NCT03299062,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
@@ -124,14 +125,16 @@ F 18 T807,NCT02707978,1,matches a curated diagnostic/imaging tracer name,Diagnos
 F-18 AV 1451,NCT02740634,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 F-18 AV-45,NCT03430869,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 F-18 FDG,NCT00950430; NCT01609335,2,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
-F-18 THK-5351,NCT02686216; NCT03430869,2,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,PET tracer,high,False
 F-18-AV45,NCT04174287,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
+F-18-THK-5351,NCT02686216; NCT03430869,2,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 F18-AV45,NCT01624389,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 FDG-PET,NCT00757939; NCT02317250,2,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,PET tracer,high,False
 FDG-PET Scan,NCT00811122,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 FDG-PET brain scan,NCT00329706,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,PET tracer,high,False
 Florbetaben,NCT02362880; NCT03744312,2,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 Florbetaben (BAY94-9172),NCT00750282; NCT01020838; NCT01138111,3,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
+Florbetapir (18F),NCT01660815; NCT01662882; NCT01703702; NCT01890343; NCT02029547; NCT02107599; NCT02120664; NCT02164643,8,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
+Florbetapir F 18,NCT00702143; NCT00855868; NCT00857415; NCT00857506; NCT01447719; NCT01518374; NCT01550549; NCT01564706; NCT01565291; NCT01565330; NCT01565343; NCT01565356; NCT01565369; NCT01565382; NCT02016560; NCT02051764; NCT02051790; NCT03019536; NCT04474405,19,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 Florbetapir F 18 (18F-AV-45),NCT01606488,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 Florbetapir F18,NCT01946243; NCT02667496,2,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 Florbetapir F18 imaging,NCT02759887,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
@@ -197,21 +200,22 @@ UHR PET/CT scan of the brain with ¹⁸F-MK6240,NCT07509125,1,matches a curated 
 Urine pregnancy test,NCT04099823,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 Urine test,NCT06600880,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 XTR006,NCT06151795,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
+[11C]-UCB-J,NCT03577262; NCT05911178,2,"isotope-labeled name pattern (18F/11C-style notation) present, but no confirmed diagnostic study context (ClinicalTrials.gov Primary Purpose, or PET/imaging/radioligand wording in title or brief summary) was found — needs manual review",Non-Drug Intervention,Non-Drug Intervention,,low,False
 [11C]Acetoacetate[18F]Fluorodeoxyglucose positron emission tomography scan,NCT03130036,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 [11C]BU99008,NCT02323217; NCT02874820,2,"isotope-labeled name pattern (18F/11C-style notation) present, but no confirmed diagnostic study context (ClinicalTrials.gov Primary Purpose, or PET/imaging/radioligand wording in title or brief summary) was found — needs manual review",Non-Drug Intervention,Non-Drug Intervention,,low,False
 [123-I] AV-83 Injection and Imaging Procedures,NCT00448799,1,RADIATION-type intervention with imaging/scan wording,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,medium,False
 [123I] IMPY & SPECT Imaging,NCT00287248,1,"isotope-labeled name pattern (18F/11C-style notation) present, but no confirmed diagnostic study context (ClinicalTrials.gov Primary Purpose, or PET/imaging/radioligand wording in title or brief summary) was found — needs manual review",Non-Drug Intervention,Non-Drug Intervention,,low,False
 [123I]-MIBG SPECT CT,NCT06120049,1,"isotope-labeled name pattern (18F/11C-style notation) present, but no confirmed diagnostic study context (ClinicalTrials.gov Primary Purpose, or PET/imaging/radioligand wording in title or brief summary) was found — needs manual review",Non-Drug Intervention,Non-Drug Intervention,,low,False
 [123I]MNI-672 SPECT,NCT01859767,1,"isotope-labeled name pattern (18F/11C-style notation) present, but no confirmed diagnostic study context (ClinicalTrials.gov Primary Purpose, or PET/imaging/radioligand wording in title or brief summary) was found — needs manual review",Non-Drug Intervention,Non-Drug Intervention,,low,False
-[18F] Flutemetamol,NCT01053312; NCT01092546; NCT01165554; NCT01202994; NCT01265394; NCT01672827; NCT02813070,7,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 [18F]-DPA-714,NCT05911178,1,"isotope-labeled name pattern (18F/11C-style notation) present, but no confirmed diagnostic study context (ClinicalTrials.gov Primary Purpose, or PET/imaging/radioligand wording in title or brief summary) was found — needs manual review",Non-Drug Intervention,Non-Drug Intervention,,low,False
 [18F]-FE-PE2I PET CT or PET MRI,NCT06120049,1,"isotope-labeled name pattern (18F/11C-style notation) present, but no confirmed diagnostic study context (ClinicalTrials.gov Primary Purpose, or PET/imaging/radioligand wording in title or brief summary) was found — needs manual review",Non-Drug Intervention,Non-Drug Intervention,,low,False
 [18F]-FEOBV Radiotracer,NCT05231798,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 [18F]-MFBG PET CT,NCT06120049,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 [18F]-MFBG PET dosimetry scans,NCT06120049,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
+[18F]-PI-2620,NCT03510572; NCT03903211; NCT04566003; NCT05456503; NCT05641688,5,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 [18F]-PI2620,NCT04715750,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
+[18F]-RO6958948,NCT02187627; NCT02792179; NCT03174938,3,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 [18F]APN-1607,NCT04141150; NCT05043675; NCT05542953; NCT07422857; NCT07752784,5,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,PET tracer,high,False
-[18F]AV-1451,NCT03283449; NCT04080544; NCT06723015,3,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 [18F]AV-45 PET,NCT01325259,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 [18F]AV-45 PET amyloid binding imaging,NCT01238458; NCT01871610,2,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 [18F]AZD4694,NCT00991419,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
@@ -223,12 +227,11 @@ XTR006,NCT06151795,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagn
 "[18F]MK-6240, ~160 MBq",NCT02562989,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 "[18F]MK-6240, ~185 MBq",NCT02562989,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 [18F]NAV4694,NCT01680588; NCT01812213; NCT01886820,3,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
-[18F]PI-2620,NCT03510572; NCT03903211; NCT04566003; NCT05456503; NCT05641688,5,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
-[18F]RO6958948,NCT02187627; NCT02792179; NCT03174938,3,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 [18F]RP-115 PET/MRI or PET/CT and MRI,NCT05374278,1,"isotope-labeled name pattern (18F/11C-style notation) present, but no confirmed diagnostic study context (ClinicalTrials.gov Primary Purpose, or PET/imaging/radioligand wording in title or brief summary) was found — needs manual review",Non-Drug Intervention,Non-Drug Intervention,,low,False
 [18F]T807,NCT02370524,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 [18F]T807 ([18F]MNI-777),NCT02103894,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 [18F]T807 PET,NCT03022968,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
+[18F]THK-5351,NCT02656498; NCT02884492; NCT03024944; NCT03112096,4,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,PET tracer,high,False
 [18Fluor]AZD4694,NCT01325402,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 [C-11],NCT03746366,1,"isotope-labeled name pattern (18F/11C-style notation) present, but no confirmed diagnostic study context (ClinicalTrials.gov Primary Purpose, or PET/imaging/radioligand wording in title or brief summary) was found — needs manual review",Non-Drug Intervention,Non-Drug Intervention,,low,False
 [C-11]PiB-PET/MRI,NCT03503331,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
@@ -243,10 +246,7 @@ blood sampling,NCT03939286; NCT07166744,2,"drug/biologic used as a pharmacologic
 cerebral 18F-FDG PET-CT,NCT04514328,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,PET tracer,high,False
 cerebral RMI,NCT07367815,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 "clinical, functional, cognitive and psychiatric evaluations",NCT07166744,1,"drug/biologic used as a pharmacological challenge/probe agent or for diagnostic-tool/contrast-imaging development in this trial, not as an investigational AD treatment",Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
-cognitive assessment,NCT03991624; NCT04614532; NCT06213766,3,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
 fMRI,NCT06080659,1,intervention type is DIAGNOSTIC_TEST,Diagnostic Agent,Diagnostic Agent,,medium,False
-florbetapir (18F),NCT01660815; NCT01662882; NCT01703702; NCT01890343; NCT02029547; NCT02107599; NCT02120664; NCT02164643,8,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
-florbetapir F 18,NCT00702143; NCT00855868; NCT00857415; NCT00857506; NCT01447719; NCT01518374; NCT01550549; NCT01564706; NCT01565291; NCT01565330; NCT01565343; NCT01565356; NCT01565369; NCT01565382; NCT02016560; NCT02051764; NCT02051790; NCT03019536; NCT04474405,19,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 florbetapir F 18-PET,NCT02494531,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Amyloid PET tracer,high,False
 flortaucipir F 18,NCT03901092,1,matches a curated diagnostic/imaging tracer name,Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False
 nasopharyngeal swab,NCT07166744,1,"drug/biologic used as a pharmacological challenge/probe agent or for diagnostic-tool/contrast-imaging development in this trial, not as an investigational AD treatment",Diagnostic Agent,Diagnostic Agent,Tau PET tracer,high,False

@@ -19,14 +19,15 @@
 # new threshold logic beyond simple comparisons against fields that
 # already exist.
 #
-# The `polaris_like` preset is a DESCRIPTIVE placeholder in
-# PRESET_LIBRARY only -- run_adni_target_populations.py deliberately
-# does NOT evaluate it through evaluate_preset()/build_preset_attrition()
-# below. It reuses the already-approved POLARIS_ELIGIBLE flag and the
-# already-approved adni_polaris_cohort_attrition.csv /
-# adni_polaris_population_profile.csv outputs directly, so the
-# already-validated POLARIS cohort (n=620) can never numerically drift
-# from re-deriving the same rule through a different code path.
+# PRESET_LIBRARY is a 3x3 diagnosis x amyloid-status cross-tab (CN/MCI/
+# Dementia x Overall/Amyloid-confirmed/Amyloid-not-confirmed) -- a
+# natural-history descriptive grid, not an approximation of any
+# specific trial's eligibility criteria (the previous library's
+# clinically-framed presets, including the POLARIS-equivalent one, were
+# retired along with this change; run_adni_target_populations.py no
+# longer special-cases any preset -- every one of the 9 goes through
+# evaluate_preset()/build_preset_attrition()/build_preset_profile()
+# identically).
 # ============================================================
 
 from dataclasses import dataclass, field
@@ -49,11 +50,16 @@ class PresetSpec:
     mmse_min: float = None
     mmse_max: float = None
     centiloid_min: float = None
+    # Symmetric to centiloid_min, for "amyloid NOT confirmed" presets --
+    # like centiloid_min, gated on CENTILOID_ELIGIBLE in evaluate_preset()
+    # so a participant with no valid amyloid PET scan is excluded from
+    # BOTH the confirmed and not-confirmed buckets, never defaulted into
+    # "not confirmed" just because a value is missing.
+    centiloid_max: float = None
     age_min: float = None
     age_max: float = None
     # Column names on the master eligibility table, e.g. "HAS_PTAU217".
     require_biomarkers: tuple = ()
-    is_polaris_equivalent: bool = False
 
 
 # Column -> human-readable label, used in both attrition-step names and
@@ -73,70 +79,62 @@ BIOMARKER_COLUMNS = {
 # build_master_eligibility_table()) -- no criterion here requires new
 # data collection or a disease-stage granularity finer than
 # CN/MCI/Dementia, which does not exist upstream.
-PRESET_LIBRARY = [
-    PresetSpec(
-        id="polaris_like",
-        label="Preset: Broad amyloid-confirmed cohort",
-        description="Baseline MMSE ≥ 20 and QC-passed amyloid-PET Centiloid ≥ 30 within ±90 days of clinical baseline. No diagnosis restriction.",
-        mmse_min=20,
-        centiloid_min=30,
-        is_polaris_equivalent=True,
-    ),
-    PresetSpec(
-        id="mild_moderate_amyloid",
-        label="Preset: Mild-to-moderate AD, amyloid-confirmed",
-        description=(
-            "MCI or Dementia at baseline, MMSE 14–26, amyloid-confirmed (Centiloid ≥ 30). "
-            "The MMSE band is a general placeholder for a commonly-used mild-to-moderate AD trial "
-            "range -- NOT a specific trial's actual protocol -- pending clinical review."
-        ),
-        diagnosis=("MCI", "Dementia"),
-        mmse_min=14,
-        mmse_max=26,
-        centiloid_min=30,
-    ),
-    PresetSpec(
-        id="mild_dementia_amyloid",
-        label="Preset: Mild dementia, amyloid-confirmed",
-        description=(
-            "Dementia at baseline, MMSE 20–26, amyloid-confirmed (Centiloid ≥ 30). "
-            "The MMSE band is a general mild-dementia placeholder, pending clinical review."
-        ),
-        diagnosis=("Dementia",),
-        mmse_min=20,
-        mmse_max=26,
-        centiloid_min=30,
-    ),
-    PresetSpec(
-        id="prodromal_mci_amyloid",
-        label="Preset: Prodromal/MCI, amyloid-confirmed",
-        description="MCI at baseline, MMSE ≥ 24, amyloid-confirmed (Centiloid ≥ 30).",
-        diagnosis=("MCI",),
-        mmse_min=24,
-        centiloid_min=30,
-    ),
-    PresetSpec(
-        id="biomarker_complete",
-        label="Preset: Amyloid + full plasma panel available",
-        description=(
-            "MCI or Dementia at baseline, amyloid-confirmed (Centiloid ≥ 30), with both pTau217 "
-            "and Aβ42/Aβ40 plasma measurements available. Small cohort -- likely to hit small-cell "
-            "suppression at later follow-up months."
-        ),
-        diagnosis=("MCI", "Dementia"),
-        centiloid_min=30,
-        require_biomarkers=("HAS_PTAU217", "HAS_ABETA_RATIO"),
-    ),
-    PresetSpec(
-        id="age_restricted_sensitivity",
-        label="Preset: Amyloid-confirmed, age 65–85",
-        description="MCI or Dementia at baseline, amyloid-confirmed (Centiloid ≥ 30), age 65–85 at baseline.",
-        diagnosis=("MCI", "Dementia"),
-        centiloid_min=30,
-        age_min=65,
-        age_max=85,
-    ),
+#
+# 3x3 grid: one row per baseline diagnosis (CN/MCI/Dementia), one
+# column per amyloid-PET status (Overall/Confirmed/Not confirmed).
+# "Overall" is the bare diagnosis with no amyloid restriction at all --
+# it includes participants with no amyloid PET scan on file, alongside
+# both confirmed and not-confirmed ones, so it is NOT the union of the
+# other two columns. "Not confirmed" requires a valid scan reading
+# below the Centiloid ≥ 30 threshold (CENTILOID_ELIGIBLE gates this,
+# same as "confirmed" does) -- a missing scan is excluded from both
+# amyloid columns, never assumed negative.
+_AMYLOID_CONFIRMED_THRESHOLD = 30
+_DIAGNOSIS_PRESETS = [
+    ("cn", "Cognitively Normal (CN)", "CN"),
+    ("mci", "MCI", "MCI"),
+    ("dementia", "Dementia", "Dementia"),
 ]
+
+
+def _build_diagnosis_amyloid_grid():
+    presets = []
+    for dx_id, dx_label, dx_value in _DIAGNOSIS_PRESETS:
+        presets.append(PresetSpec(
+            id=f"{dx_id}_overall",
+            label=f"Preset: {dx_label} – Overall",
+            description=(
+                f"{dx_label} at baseline. No amyloid-PET restriction -- includes participants "
+                "confirmed amyloid-positive, confirmed amyloid-negative, and those with no "
+                "amyloid PET scan on file."
+            ),
+            diagnosis=(dx_value,),
+        ))
+        presets.append(PresetSpec(
+            id=f"{dx_id}_amyloid_confirmed",
+            label=f"Preset: {dx_label} – Amyloid-confirmed",
+            description=(
+                f"{dx_label} at baseline, amyloid-confirmed (QC-passed amyloid-PET "
+                f"Centiloid ≥ {_AMYLOID_CONFIRMED_THRESHOLD})."
+            ),
+            diagnosis=(dx_value,),
+            centiloid_min=_AMYLOID_CONFIRMED_THRESHOLD,
+        ))
+        presets.append(PresetSpec(
+            id=f"{dx_id}_amyloid_not_confirmed",
+            label=f"Preset: {dx_label} – Amyloid not confirmed",
+            description=(
+                f"{dx_label} at baseline, with a valid amyloid-PET scan reading below the "
+                f"Centiloid ≥ {_AMYLOID_CONFIRMED_THRESHOLD} confirmation threshold. "
+                "Participants with no amyloid PET scan on file are excluded here, not assumed negative."
+            ),
+            diagnosis=(dx_value,),
+            centiloid_max=_AMYLOID_CONFIRMED_THRESHOLD,
+        ))
+    return presets
+
+
+PRESET_LIBRARY = _build_diagnosis_amyloid_grid()
 
 PRESET_BY_ID = {p.id: p for p in PRESET_LIBRARY}
 
@@ -190,6 +188,8 @@ def evaluate_preset(master_df, preset):
         mask &= master_df["MMSE_BASELINE"].notna() & (master_df["MMSE_BASELINE"] <= preset.mmse_max)
     if preset.centiloid_min is not None:
         mask &= master_df["CENTILOID_ELIGIBLE"] & (master_df["CENTILOID_BASELINE"] >= preset.centiloid_min)
+    if preset.centiloid_max is not None:
+        mask &= master_df["CENTILOID_ELIGIBLE"] & (master_df["CENTILOID_BASELINE"] < preset.centiloid_max)
     if preset.age_min is not None:
         mask &= master_df["BASELINE_AGE"].notna() & (master_df["BASELINE_AGE"] >= preset.age_min)
     if preset.age_max is not None:
@@ -213,11 +213,7 @@ def evaluate_preset(master_df, preset):
 
 def final_step_label(preset):
     """"Final <preset name> cohort" -- appends "cohort" only if the
-    preset's own label doesn't already end with that word (e.g. "Broad
-    amyloid-confirmed cohort" would otherwise read "...cohort cohort").
-    Shared by build_preset_attrition() below and
-    run_adni_target_populations.py's polaris_like special case, so both
-    paths use the identical rule."""
+    preset's own label doesn't already end with that word."""
     name = preset.label.replace("Preset: ", "")
     return name if name.lower().endswith("cohort") else f"{name} cohort"
 
@@ -243,9 +239,12 @@ def build_preset_attrition(master_df, preset):
         if preset.mmse_max is not None:
             _add_step(f"MMSE ≤ {preset.mmse_max}", pop[pop["MMSE_BASELINE"] <= preset.mmse_max])
 
-    if preset.centiloid_min is not None:
+    if preset.centiloid_min is not None or preset.centiloid_max is not None:
         _add_step("Amyloid PET (Centiloid) data available (QC-passed, within ±90 days of baseline)", pop[pop["CENTILOID_ELIGIBLE"]])
-        _add_step(f"Centiloid ≥ {preset.centiloid_min}", pop[pop["CENTILOID_BASELINE"] >= preset.centiloid_min])
+        if preset.centiloid_min is not None:
+            _add_step(f"Centiloid ≥ {preset.centiloid_min}", pop[pop["CENTILOID_BASELINE"] >= preset.centiloid_min])
+        if preset.centiloid_max is not None:
+            _add_step(f"Centiloid < {preset.centiloid_max}", pop[pop["CENTILOID_BASELINE"] < preset.centiloid_max])
 
     if preset.age_min is not None or preset.age_max is not None:
         _add_step("Baseline age available", pop[pop["BASELINE_AGE"].notna()])

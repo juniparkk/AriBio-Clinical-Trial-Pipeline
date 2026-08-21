@@ -2439,7 +2439,8 @@ html_template = f"""
   <main>
     <div class="page-title-block">
       <div class="page-title">Alzheimer's Disease Clinical Trial Pipeline</div>
-      <div class="page-title-sub">AriBio competitive intelligence: track every drug in the global AD trial pipeline and benchmark it against AR1001 &middot; Source: clinicaltrials.gov &middot; Data as of {data_date_str} &middot; Dashboard generated {today_str} &middot; {len(df)} trials analyzed &middot; {total_drugs} therapeutic drugs ({total_resolved_records} total resolved records)</div>
+      <div class="page-title-sub">AriBio competitive intelligence: track every drug in the global AD trial pipeline and benchmark it against AR1001</div>
+      <div class="page-title-sub">Source: clinicaltrials.gov &middot; Data as of {data_date_str} &middot; Dashboard generated {today_str} &middot; {len(df)} trials analyzed &middot; {total_drugs} therapeutic drugs ({total_resolved_records} total resolved records)</div>
     </div>
 
     <div class="spotlight">
