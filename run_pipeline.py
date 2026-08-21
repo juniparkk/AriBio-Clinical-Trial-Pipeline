@@ -239,8 +239,16 @@ def run_refresh():
     _print_header("STEP 7/8: Scoring competitive attention")
     try:
         watchlist = aribio_watchlist.load_watchlist()
+
+        # Needs Attention and Materially Delayed draw from the same
+        # trailing 30-day changes_history_df as Recent Changes (not the
+        # single-run changes_df) so a detected change keeps surfacing
+        # for the same window instead of vanishing the run after it's
+        # first seen.
+        changes_history_df = competitive_attention.update_changes_history(changes_df, CHANGES_HISTORY_CSV)
+
         attention_df = competitive_attention.compute_attention(
-            changes_df, new_drugs_df, new_annotated_df, df, watchlist,
+            changes_history_df, new_drugs_df, new_annotated_df, df, watchlist,
         )
         os.makedirs(os.path.dirname(ATTENTION_CSV) or ".", exist_ok=True)
         attention_df.to_csv(ATTENTION_CSV, index=False)
@@ -249,11 +257,10 @@ def run_refresh():
             level_counts = attention_df["priority_level"].value_counts()
             print("  Priority levels: " + ", ".join(f"{k}={v}" for k, v in level_counts.items()))
 
-        milestones = competitive_attention.build_milestones(new_annotated_df, df, changes_df, watchlist, drugs_df=new_drugs_df)
+        milestones = competitive_attention.build_milestones(new_annotated_df, df, changes_history_df, watchlist, drugs_df=new_drugs_df)
         for key, items in milestones.items():
             print(f"  {key}: {len(items)}")
 
-        changes_history_df = competitive_attention.update_changes_history(changes_df, CHANGES_HISTORY_CSV)
         drug_nct_lookup = competitive_attention.build_drug_to_nct_lookup(new_annotated_df)
         recent_changes_df = competitive_attention.prepare_recent_changes(changes_history_df, drug_nct_lookup=drug_nct_lookup)
 
