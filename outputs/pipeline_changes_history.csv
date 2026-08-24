@@ -74,3 +74,11 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-08-21,trial,NCT06040905,Coenzyme Q10,Chung Shan Medical University,enrollment_change,100,51,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-21T163557Z),False
 2026-08-21,trial,NCT06040905,Coenzyme Q10,Chung Shan Medical University,primary_completion_date_change,2026-07-31,2026-02-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-21T163557Z),False
 2026-08-21,trial,NCT06040905,Coenzyme Q10,Chung Shan Medical University,completion_date_change,2026-07-31,2026-02-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-21T163557Z),False
+2026-08-24,trial,NCT07781657,RO7568282,Hoffmann-La Roche,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),True
+2026-08-24,trial,NCT03848312,,University of South Florida,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False
+2026-08-24,trial,NCT03848312,,University of South Florida,primary_completion_date_change,2026-01-31,2028-01-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False
+2026-08-24,trial,NCT03848312,,University of South Florida,completion_date_change,2026-01-31,2028-01-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False
+2026-08-24,trial,NCT06432166,2-hydroxybenzylamine acetate,MTI Biotech Inc,primary_completion_date_change,2028-06-30,2028-12-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False
+2026-08-24,trial,NCT06432166,2-hydroxybenzylamine acetate,MTI Biotech Inc,completion_date_change,2028-12-31,2029-06-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False
+2026-08-24,trial,NCT06489015,Recombinant Human Serum Albumin,"Beijing Protgen Biotechnology Development Co., Ltd.",sponsor_change,Protgen Ltd,"Beijing Protgen Biotechnology Development Co., Ltd.",Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),True
+2026-08-24,drug,,RO7568282,Hoffmann-La Roche,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False

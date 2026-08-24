@@ -691,6 +691,7 @@ RO5313534,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,
 RO7105705,Small Molecule,Biologic,Tau,Tau,known_compound_exact_match,high,modality corrected: 'Small Molecule' -> 'Biologic',True
 RO7126209,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 RO7269162,Small Molecule,Small Molecule,Other,Amyloid,nih_reference,medium,target corrected: 'Other' -> 'Amyloid',True
+RO7568282,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 RO7812653,Small Molecule,Biologic,Other,,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic',True
 Rosiglitazone,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Rotigotine,Small Molecule,Small Molecule,Other,Symptomatic,nih_reference,medium,target corrected: 'Other' -> 'Symptomatic',True
