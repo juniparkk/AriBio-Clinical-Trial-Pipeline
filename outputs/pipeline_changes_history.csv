@@ -82,3 +82,6 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-08-24,trial,NCT06432166,2-hydroxybenzylamine acetate,MTI Biotech Inc,completion_date_change,2028-12-31,2029-06-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False
 2026-08-24,trial,NCT06489015,Recombinant Human Serum Albumin,"Beijing Protgen Biotechnology Development Co., Ltd.",sponsor_change,Protgen Ltd,"Beijing Protgen Biotechnology Development Co., Ltd.",Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),True
 2026-08-24,drug,,RO7568282,Hoffmann-La Roche,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False
+2026-08-25,trial,NCT07786116,Probiotic Supplementation with L. reuteri,University of Cambridge,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-25T160439Z),False
+2026-08-25,trial,NCT06489015,Recombinant Human Serum Albumin,"Shenzhen Protgen Co., Ltd.",sponsor_change,"Beijing Protgen Biotechnology Development Co., Ltd.","Shenzhen Protgen Co., Ltd.",Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-25T160439Z),True
+2026-08-25,drug,,Probiotic Supplementation with L. reuteri,University of Cambridge,new_drug,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-25T160439Z),False

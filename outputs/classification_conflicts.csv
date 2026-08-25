@@ -637,6 +637,7 @@ PrimeC,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no
 PrimePro™/ PrimeMSK™,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Probiotic,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Probiotic Blend,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Probiotic Supplementation with L. reuteri,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Probucol,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Progenitor Stem Cell Culture,Cell/Gene Therapy,Cell/Gene Therapy,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Proleukin,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
