@@ -470,6 +470,7 @@ LY3372993,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium
 LY3439539,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 LY3954068,Small Molecule,Biologic,Tau,,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Tau' -> '',True
 LY4006895,Small Molecule,Biologic,Other,,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic',True
+LY4405094,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 LY450139,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 LY451395,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 LYN-057,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True

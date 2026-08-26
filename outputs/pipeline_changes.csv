@@ -1,4 +1,10 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-08-25,trial,NCT07786116,Probiotic Supplementation with L. reuteri,University of Cambridge,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-25T160439Z),False
-2026-08-25,trial,NCT06489015,Recombinant Human Serum Albumin,"Shenzhen Protgen Co., Ltd.",sponsor_change,"Beijing Protgen Biotechnology Development Co., Ltd.","Shenzhen Protgen Co., Ltd.",Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-25T160439Z),True
-2026-08-25,drug,,Probiotic Supplementation with L. reuteri,University of Cambridge,new_drug,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-25T160439Z),False
+2026-08-26,trial,NCT07787169,LY4405094,Eli Lilly and Company,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
+2026-08-26,trial,NCT07787182,LY4405094,Eli Lilly and Company,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
+2026-08-26,trial,NCT06061406,,Wuerzburg University Hospital,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
+2026-08-26,trial,NCT06061406,,Wuerzburg University Hospital,completion_date_change,2024-06,2024-06-30,Low,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
+2026-08-26,trial,NCT07205601,RB-ADSC,"Regeneration Biomedical, Inc.",primary_completion_date_change,2028-03,2029-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
+2026-08-26,trial,NCT07205601,RB-ADSC,"Regeneration Biomedical, Inc.",completion_date_change,2029-03,2030-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
+2026-08-26,trial,NCT07373067,RB-ADSC,"Regeneration Biomedical, Inc.",primary_completion_date_change,2028-01,2028-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
+2026-08-26,trial,NCT07373067,RB-ADSC,"Regeneration Biomedical, Inc.",completion_date_change,2028-01,2028-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
+2026-08-26,drug,,LY4405094,Eli Lilly and Company,new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
