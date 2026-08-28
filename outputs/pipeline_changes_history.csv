@@ -94,3 +94,11 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-08-26,trial,NCT07373067,RB-ADSC,"Regeneration Biomedical, Inc.",primary_completion_date_change,2028-01,2028-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
 2026-08-26,trial,NCT07373067,RB-ADSC,"Regeneration Biomedical, Inc.",completion_date_change,2028-01,2028-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
 2026-08-26,drug,,LY4405094,Eli Lilly and Company,new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
+2026-08-28,trial,NCT07789873,GAL-101 Salt,Galimedix Therapeutics Inc,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),True
+2026-08-28,trial,NCT04842552,Hydralazine hydrochloride,Shahid Sadoughi University of Medical Sciences and Health Services,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
+2026-08-28,trial,NCT04842552,Hydralazine hydrochloride,Shahid Sadoughi University of Medical Sciences and Health Services,enrollment_change,424,228,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
+2026-08-28,trial,NCT04842552,Hydralazine hydrochloride,Shahid Sadoughi University of Medical Sciences and Health Services,primary_completion_date_change,2023-06-01,2026-03-05,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
+2026-08-28,trial,NCT04842552,Hydralazine hydrochloride,Shahid Sadoughi University of Medical Sciences and Health Services,completion_date_change,2023-12-20,2026-03-05,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
+2026-08-28,trial,NCT06881277,,Linkoeping University,primary_completion_date_change,2026-12-31,2027-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
+2026-08-28,trial,NCT06881277,,Linkoeping University,completion_date_change,2026-12-31,2027-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
+2026-08-28,drug,,GAL-101 Salt,Galimedix Therapeutics Inc,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
