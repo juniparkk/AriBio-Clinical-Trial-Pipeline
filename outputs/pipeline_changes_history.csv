@@ -102,3 +102,19 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-08-28,trial,NCT06881277,,Linkoeping University,primary_completion_date_change,2026-12-31,2027-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
 2026-08-28,trial,NCT06881277,,Linkoeping University,completion_date_change,2026-12-31,2027-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
 2026-08-28,drug,,GAL-101 Salt,Galimedix Therapeutics Inc,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
+2026-08-31,trial,NCT05907343,,University of Texas at Austin,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT07794670,Obicetrapib,NewAmsterdam Pharma,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),True
+2026-08-31,trial,NCT07795307,Emtricitabine and tenofovir disoproxil fumarate combination,Brigham and Women's Hospital,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT04500847,Emtriva,Butler Hospital,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT06397339,INTACT Program,Washington State University,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT06474013,,Korea University Anam Hospital,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT06514001,AMDX-2011P,Amydis Inc.,primary_completion_date_change,2026-09,2027-07,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT06514001,AMDX-2011P,Amydis Inc.,completion_date_change,2026-10,2027-08,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT06565143,,Anhui Medical University,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT06575218,control,Yeditepe University,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT06595511,,Istanbul Medipol University Hospital,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT06881836,ONO-2020,"Ono Pharmaceutical Co., Ltd.",enrollment_change,240,260,Low,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT06881836,ONO-2020,"Ono Pharmaceutical Co., Ltd.",primary_completion_date_change,2026-07,2026-07-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT06881836,ONO-2020,"Ono Pharmaceutical Co., Ltd.",completion_date_change,2026-08,2026-09-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT07324161,,Fujian Medical University Union Hospital,enrollment_change,66,81,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,drug,,Emtricitabine and tenofovir disoproxil fumarate combination,Brigham and Women's Hospital,new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
