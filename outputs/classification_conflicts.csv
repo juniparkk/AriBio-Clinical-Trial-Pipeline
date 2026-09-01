@@ -783,6 +783,7 @@ Telehealth Integrated Primary Care (TIPC),Non-Drug/Behavioral,Other,Other,,struc
 Telephone support as needed,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Temporal perception tasks,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 TEP,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Terazosin (Hytrin),Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 testosterone gel,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 "tetanus toxoid, reduced diphtheria toxoid and acellular pertussis vaccine",Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 TH9507 human growth hormone releasing hormone (GHRH),Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False

@@ -102,7 +102,7 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-08-28,trial,NCT06881277,,Linkoeping University,primary_completion_date_change,2026-12-31,2027-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
 2026-08-28,trial,NCT06881277,,Linkoeping University,completion_date_change,2026-12-31,2027-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
 2026-08-28,drug,,GAL-101 Salt,Galimedix Therapeutics Inc,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
-2026-08-31,trial,NCT05907343,,University of Texas at Austin,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-08-31,trial,NCT05907343,,University of Texas at Austin,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
 2026-08-31,trial,NCT07794670,Obicetrapib,NewAmsterdam Pharma,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),True
 2026-08-31,trial,NCT07795307,Emtricitabine and tenofovir disoproxil fumarate combination,Brigham and Women's Hospital,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
 2026-08-31,trial,NCT04500847,Emtriva,Butler Hospital,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
@@ -118,3 +118,8 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-08-31,trial,NCT06881836,ONO-2020,"Ono Pharmaceutical Co., Ltd.",completion_date_change,2026-08,2026-09-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
 2026-08-31,trial,NCT07324161,,Fujian Medical University Union Hospital,enrollment_change,66,81,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
 2026-08-31,drug,,Emtricitabine and tenofovir disoproxil fumarate combination,Brigham and Women's Hospital,new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
+2026-09-01,trial,NCT07796308,Terazosin (Hytrin),Qiang Zhang,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-09-01T134024Z),True
+2026-09-01,trial,NCT07796347,,University of Rochester,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-01T134024Z),False
+2026-09-01,trial,NCT06761066,NVP-NK4146,NVP Healthcare,primary_completion_date_change,2026-03-31,2027-09-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-01T134024Z),False
+2026-09-01,trial,NCT06761066,NVP-NK4146,NVP Healthcare,completion_date_change,2026-04-30,2027-12-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-01T134024Z),False
+2026-09-01,drug,,Terazosin (Hytrin),Qiang Zhang,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-01T134024Z),False
