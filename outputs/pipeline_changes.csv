@@ -1,16 +1,5 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-09-02,trial,NCT07800195,Probiotic Fermented Milk (PFM) Drink,University of South Florida,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
-2026-09-02,trial,NCT05644262,T2:C100,University of Southern California,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
-2026-09-02,trial,NCT05644262,T2:C100,University of Southern California,primary_completion_date_change,2026-04-30,2025-11-25,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
-2026-09-02,trial,NCT05644262,T2:C100,University of Southern California,completion_date_change,2026-08-01,2026-04-28,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
-2026-09-02,trial,NCT05785910,IUDS,Fondazione Policlinico Universitario Agostino Gemelli IRCCS,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
-2026-09-02,trial,NCT05785910,IUDS,Fondazione Policlinico Universitario Agostino Gemelli IRCCS,completion_date_change,2025-12,2025-09-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
-2026-09-02,trial,NCT06276023,,Massachusetts General Hospital,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),True
-2026-09-02,trial,NCT06292741,,Fondazione Policlinico Universitario Agostino Gemelli IRCCS,primary_completion_date_change,2025-10,2026-10,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
-2026-09-02,trial,NCT06292741,,Fondazione Policlinico Universitario Agostino Gemelli IRCCS,completion_date_change,2026-01,2027-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
-2026-09-02,trial,NCT07234942,RO7812653,Hoffmann-La Roche,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
-2026-09-02,trial,NCT07234942,RO7812653,Hoffmann-La Roche,enrollment_change,50,6,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
-2026-09-02,trial,NCT07234942,RO7812653,Hoffmann-La Roche,primary_completion_date_change,2029-12-03,2027-03-23,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
-2026-09-02,trial,NCT07234942,RO7812653,Hoffmann-La Roche,completion_date_change,2030-05-30,2027-03-23,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
-2026-09-02,trial,NCT07413744,Probiotic,"University of Wisconsin, Madison",primary_completion_date_change,2029-03,2029-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
-2026-09-02,trial,NCT07413744,Probiotic,"University of Wisconsin, Madison",completion_date_change,2029-03,2029-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-02T134043Z),False
+2026-09-03,trial,NCT07803055,,Fondazione Policlinico Universitario Agostino Gemelli IRCCS,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-03T134022Z),False
+2026-09-03,trial,NCT05466422,MK-2214,Merck Sharp & Dohme LLC,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-09-03T134022Z),True
+2026-09-03,trial,NCT06304129,Blood ponction,"Central Hospital, Nancy, France",status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-03T134022Z),False
+2026-09-03,trial,NCT06896201,,Fondazione Policlinico Universitario Agostino Gemelli IRCCS,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-03T134022Z),False
