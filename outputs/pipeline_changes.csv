@@ -1,5 +1,1 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-09-03,trial,NCT07803055,,Fondazione Policlinico Universitario Agostino Gemelli IRCCS,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-03T134022Z),False
-2026-09-03,trial,NCT05466422,MK-2214,Merck Sharp & Dohme LLC,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-09-03T134022Z),True
-2026-09-03,trial,NCT06304129,Blood ponction,"Central Hospital, Nancy, France",status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-03T134022Z),False
-2026-09-03,trial,NCT06896201,,Fondazione Policlinico Universitario Agostino Gemelli IRCCS,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-03T134022Z),False
