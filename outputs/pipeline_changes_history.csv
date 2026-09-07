@@ -142,3 +142,14 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-09-03,trial,NCT05466422,MK-2214,Merck Sharp & Dohme LLC,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-09-03T134022Z),True
 2026-09-03,trial,NCT06304129,Blood ponction,"Central Hospital, Nancy, France",status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-03T134022Z),False
 2026-09-03,trial,NCT06896201,,Fondazione Policlinico Universitario Agostino Gemelli IRCCS,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-03T134022Z),False
+2026-09-07,trial,NCT04123314,Psilocybin,Johns Hopkins University,primary_completion_date_change,2026-09-30,2027-06-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
+2026-09-07,trial,NCT04123314,Psilocybin,Johns Hopkins University,completion_date_change,2026-12-31,2027-09-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
+2026-09-07,trial,NCT06597942,,"University of California, Los Angeles",primary_completion_date_change,2026-10,2029-10,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
+2026-09-07,trial,NCT06597942,,"University of California, Los Angeles",completion_date_change,2026-10,2029-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
+2026-09-07,trial,NCT06940687,,Yale University,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
+2026-09-07,trial,NCT06940687,,Yale University,primary_completion_date_change,2026-03-22,2026-09-22,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
+2026-09-07,trial,NCT06940687,,Yale University,completion_date_change,2026-03-22,2026-09-22,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
+2026-09-07,trial,NCT07260253,,Maya Henry,primary_completion_date_change,2029-05,2030-04-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
+2026-09-07,trial,NCT07260253,,Maya Henry,completion_date_change,2029-08,2030-04-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
+2026-09-07,trial,NCT07413744,Probiotic,"University of Wisconsin, Madison",phase_change,Phase 2,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
+2026-09-07,drug,,Probiotic,"University of Wisconsin, Madison",highest_drug_phase_change,Phase 2,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
