@@ -153,3 +153,4 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-09-07,trial,NCT07260253,,Maya Henry,completion_date_change,2029-08,2030-04-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
 2026-09-07,trial,NCT07413744,Probiotic,"University of Wisconsin, Madison",phase_change,Phase 2,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
 2026-09-07,drug,,Probiotic,"University of Wisconsin, Madison",highest_drug_phase_change,Phase 2,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
+2026-09-08,trial,NCT03860792,,University of Kansas Medical Center,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-09-08T172055Z),True
