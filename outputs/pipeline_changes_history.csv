@@ -154,3 +154,21 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-09-07,trial,NCT07413744,Probiotic,"University of Wisconsin, Madison",phase_change,Phase 2,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
 2026-09-07,drug,,Probiotic,"University of Wisconsin, Madison",highest_drug_phase_change,Phase 2,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-07T134134Z),False
 2026-09-08,trial,NCT03860792,,University of Kansas Medical Center,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-09-08T172055Z),True
+2026-09-09,trial,NCT04740580,,Baylor College of Medicine,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT04740580,,Baylor College of Medicine,primary_completion_date_change,2026-04-30,2026-08-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT04740580,,Baylor College of Medicine,completion_date_change,2026-12-31,2027-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT04908358,,Massachusetts General Hospital,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT04908358,,Massachusetts General Hospital,primary_completion_date_change,2026-08-31,2026-08-25,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT04908358,,Massachusetts General Hospital,completion_date_change,2026-08-31,2026-08-25,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT05267535,Piromelatine,Neurim Pharmaceuticals Ltd.,status_change,Active,Discontinued,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT05267535,Piromelatine,Neurim Pharmaceuticals Ltd.,enrollment_change,225,216,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT05267535,Piromelatine,Neurim Pharmaceuticals Ltd.,primary_completion_date_change,2025-06,2024-09-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT05267535,Piromelatine,Neurim Pharmaceuticals Ltd.,completion_date_change,2025-06,2024-12-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT05267535,Piromelatine,Neurim Pharmaceuticals Ltd.,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),True
+2026-09-09,trial,NCT05637801,,"Cognito Therapeutics, Inc.",status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT05637801,,"Cognito Therapeutics, Inc.",enrollment_change,670,673,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT05637801,,"Cognito Therapeutics, Inc.",primary_completion_date_change,2026-06,2026-06-22,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT05637801,,"Cognito Therapeutics, Inc.",completion_date_change,2026-07,2026-08-17,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT06223360,,Weill Medical College of Cornell University,sponsor_change,Alzheimer's Disease Cooperative Study (ADCS),Weill Medical College of Cornell University,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),True
+2026-09-09,trial,NCT07234942,RO7812653,Hoffmann-La Roche,primary_completion_date_change,2027-03-23,2027-03-31,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
+2026-09-09,trial,NCT07234942,RO7812653,Hoffmann-La Roche,completion_date_change,2027-03-23,2027-03-31,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-09T171340Z),False
