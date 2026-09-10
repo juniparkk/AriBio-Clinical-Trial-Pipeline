@@ -733,6 +733,7 @@ Senicapoc,Small Molecule,Small Molecule,Other,Inflammation,nih_reference,medium,
 serious games use,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Sertraline (Zoloft),Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,no change from legacy classification,False
 SGS742,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+Shared decision-making support tool,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 SHR-1707,Small Molecule,Biologic,Amyloid,Amyloid,nih_reference,high,modality corrected: 'Small Molecule' -> 'Biologic',True
 Simufilam,Small Molecule,Small Molecule,Amyloid,Amyloid,official_pipeline_reference,high,no change from legacy classification,False
 Simvastatin,Small Molecule,Small Molecule,Metabolism,Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
