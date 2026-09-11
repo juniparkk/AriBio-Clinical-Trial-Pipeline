@@ -1,8 +1,5 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-09-10,trial,NCT07812337,Shared decision-making support tool,"University of Wisconsin, Madison",new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-10T170451Z),False
-2026-09-10,trial,NCT04701957,,Assistance Publique - Hôpitaux de Paris,status_change,Active,Discontinued,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-10T170451Z),False
-2026-09-10,trial,NCT04701957,,Assistance Publique - Hôpitaux de Paris,primary_completion_date_change,2026-09,2026-09-03,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-10T170451Z),False
-2026-09-10,trial,NCT04701957,,Assistance Publique - Hôpitaux de Paris,completion_date_change,2026-09,2026-09-03,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-10T170451Z),False
-2026-09-10,trial,NCT06245499,,Indiana University,enrollment_change,989,987,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-10T170451Z),False
-2026-09-10,trial,NCT06245499,,Indiana University,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-09-10T170451Z),True
-2026-09-10,drug,,Shared decision-making support tool,"University of Wisconsin, Madison",new_drug,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-10T170451Z),False
+2026-09-11,trial,NCT07815132,,Tanta University,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-11T170502Z),False
+2026-09-11,trial,NCT07545577,,George Mason University,primary_completion_date_change,2026-06-30,2026-12-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-11T170502Z),False
+2026-09-11,trial,NCT07545577,,George Mason University,completion_date_change,2026-08-31,2027-08-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-11T170502Z),False
+2026-09-11,trial,NCT07599670,ABBV-1758,AbbVie,primary_completion_date_change,2030-04,2030-10,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-11T170502Z),False
