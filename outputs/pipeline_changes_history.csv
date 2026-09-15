@@ -160,3 +160,8 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-09-14,trial,NCT07332377,,Virginia Commonwealth University,primary_completion_date_change,2027-03-31,2026-06-08,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-14T184841Z),False
 2026-09-14,trial,NCT07332377,,Virginia Commonwealth University,completion_date_change,2027-03-31,2026-06-08,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-14T184841Z),False
 2026-09-14,trial,NCT07615647,,Golden Gamers Go SL,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-14T184841Z),False
+2026-09-15,trial,NCT05397639,,Suven Life Sciences Limited,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-15T174408Z),False
+2026-09-15,trial,NCT06079216,,Hopeful Aging,primary_completion_date_change,2025-09-30,2027-04-29,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-15T174408Z),False
+2026-09-15,trial,NCT06079216,,Hopeful Aging,completion_date_change,2025-09-30,2027-04-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-15T174408Z),False
+2026-09-15,trial,NCT06298474,,Hopeful Aging,primary_completion_date_change,2026-06-15,2026-11-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-15T174408Z),False
+2026-09-15,trial,NCT06298474,,Hopeful Aging,completion_date_change,2026-07-30,2026-11-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-15T174408Z),False
