@@ -109,6 +109,7 @@ Attention Control (AtCon),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evi
 Augmented reality technological assistance for the movements of people with Alzheimer's disease or MCI in a controlled environment.,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Augmented Waitlist Control,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 AV-1959D,Biologic,Biologic,Amyloid,Amyloid,nih_reference,high,no change from legacy classification,False
+AV-1959R,Biologic,Biologic,Other,Amyloid,nih_reference,medium,target corrected: 'Other' -> 'Amyloid',True
 AV-1959R (Abeta vaccine),Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Avagacestat,Small Molecule,Small Molecule,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 AVE1625,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
