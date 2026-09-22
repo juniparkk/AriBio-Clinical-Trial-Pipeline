@@ -154,3 +154,7 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-09-21,trial,NCT06362824,Active Comparison Group: Healthy Actions And Lifestyles To Avoid Dementia (HALT-AD),Kaiser Permanente,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
 2026-09-21,trial,NCT07602283,,Yale University,primary_completion_date_change,2027-08-01,2027-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
 2026-09-21,trial,NCT07602283,,Yale University,completion_date_change,2028-02-01,2027-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
+2026-09-22,trial,NCT07832383,NBI-1117567,Neurocrine Biosciences,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),True
+2026-09-22,trial,NCT07834528,,Chinese University of Hong Kong,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False
+2026-09-22,trial,NCT07835399,,Jun Xu,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False
+2026-09-22,drug,,NBI-1117567,Neurocrine Biosciences,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False

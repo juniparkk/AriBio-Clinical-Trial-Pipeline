@@ -540,6 +540,7 @@ Nabilone,Small Molecule,Small Molecule,Neuropsychiatric,Neuropsychiatric,nih_ref
 NanoLithium® NP03,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Naproxen,Small Molecule,Small Molecule,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Nature Connections Intervention,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+NBI-1117567,Small Molecule,Small Molecule,Symptomatic,Symptomatic,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NDX-1017,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 NE3107,Small Molecule,Small Molecule,Inflammation,Inflammation; Metabolism,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Nefiracetam,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
