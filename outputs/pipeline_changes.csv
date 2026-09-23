@@ -1,5 +1,8 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-09-22,trial,NCT07832383,NBI-1117567,Neurocrine Biosciences,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),True
-2026-09-22,trial,NCT07834528,,Chinese University of Hong Kong,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False
-2026-09-22,trial,NCT07835399,,Jun Xu,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False
-2026-09-22,drug,,NBI-1117567,Neurocrine Biosciences,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False
+2026-09-23,trial,NCT07835568,,"University of California, Santa Barbara",new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
+2026-09-23,trial,NCT07836491,,University of Missouri-Columbia,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
+2026-09-23,trial,NCT04855630,,University of Miami,enrollment_change,30,60,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
+2026-09-23,trial,NCT06745583,EI-1071,Elixiron Immunotherapeutics Inc.,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
+2026-09-23,trial,NCT06745583,EI-1071,Elixiron Immunotherapeutics Inc.,enrollment_change,15,7,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
+2026-09-23,trial,NCT06745583,EI-1071,Elixiron Immunotherapeutics Inc.,primary_completion_date_change,2026-12,2026-03-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
+2026-09-23,trial,NCT06745583,EI-1071,Elixiron Immunotherapeutics Inc.,completion_date_change,2026-12,2026-05-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
