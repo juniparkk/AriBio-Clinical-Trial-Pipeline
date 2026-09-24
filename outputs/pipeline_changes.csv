@@ -1,8 +1,8 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-09-23,trial,NCT07835568,,"University of California, Santa Barbara",new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
-2026-09-23,trial,NCT07836491,,University of Missouri-Columbia,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
-2026-09-23,trial,NCT04855630,,University of Miami,enrollment_change,30,60,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
-2026-09-23,trial,NCT06745583,EI-1071,Elixiron Immunotherapeutics Inc.,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
-2026-09-23,trial,NCT06745583,EI-1071,Elixiron Immunotherapeutics Inc.,enrollment_change,15,7,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
-2026-09-23,trial,NCT06745583,EI-1071,Elixiron Immunotherapeutics Inc.,primary_completion_date_change,2026-12,2026-03-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
-2026-09-23,trial,NCT06745583,EI-1071,Elixiron Immunotherapeutics Inc.,completion_date_change,2026-12,2026-05-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
+2026-09-24,trial,NCT07838155,Donanemab,Eli Lilly and Company,new_trial,,Phase 4,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
+2026-09-24,trial,NCT07839286,,Callahan-Young LLC DBA Jigsawdio,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
+2026-09-24,trial,NCT07839650,,IRCCS Centro San Giovanni di Dio Fatebenefratelli,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
+2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
+2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",enrollment_change,18,7,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
+2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",primary_completion_date_change,2026-08,2026-06-25,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
+2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",completion_date_change,2026-08,2026-06-25,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False

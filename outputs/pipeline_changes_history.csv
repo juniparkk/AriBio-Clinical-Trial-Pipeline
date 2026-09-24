@@ -1,12 +1,4 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-08-24,trial,NCT07781657,RO7568282,Hoffmann-La Roche,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),True
-2026-08-24,trial,NCT03848312,,University of South Florida,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False
-2026-08-24,trial,NCT03848312,,University of South Florida,primary_completion_date_change,2026-01-31,2028-01-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False
-2026-08-24,trial,NCT03848312,,University of South Florida,completion_date_change,2026-01-31,2028-01-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False
-2026-08-24,trial,NCT06432166,2-hydroxybenzylamine acetate,MTI Biotech Inc,primary_completion_date_change,2028-06-30,2028-12-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False
-2026-08-24,trial,NCT06432166,2-hydroxybenzylamine acetate,MTI Biotech Inc,completion_date_change,2028-12-31,2029-06-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False
-2026-08-24,trial,NCT06489015,Recombinant Human Serum Albumin,"Beijing Protgen Biotechnology Development Co., Ltd.",sponsor_change,Protgen Ltd,"Beijing Protgen Biotechnology Development Co., Ltd.",Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),True
-2026-08-24,drug,,RO7568282,Hoffmann-La Roche,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-24T152507Z),False
 2026-08-25,trial,NCT07786116,Probiotic Supplementation with L. reuteri,University of Cambridge,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-25T160439Z),False
 2026-08-25,trial,NCT06489015,Recombinant Human Serum Albumin,"Shenzhen Protgen Co., Ltd.",sponsor_change,"Beijing Protgen Biotechnology Development Co., Ltd.","Shenzhen Protgen Co., Ltd.",Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-25T160439Z),True
 2026-08-25,drug,,Probiotic Supplementation with L. reuteri,University of Cambridge,new_drug,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-25T160439Z),False
@@ -158,10 +150,17 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-09-22,trial,NCT07834528,,Chinese University of Hong Kong,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False
 2026-09-22,trial,NCT07835399,,Jun Xu,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False
 2026-09-22,drug,,NBI-1117567,Neurocrine Biosciences,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False
-2026-09-23,trial,NCT07835568,,"University of California, Santa Barbara",new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
-2026-09-23,trial,NCT07836491,,University of Missouri-Columbia,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
+2026-09-23,trial,NCT07835568,,"University of California, Santa Barbara",new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
+2026-09-23,trial,NCT07836491,,University of Missouri-Columbia,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
 2026-09-23,trial,NCT04855630,,University of Miami,enrollment_change,30,60,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
 2026-09-23,trial,NCT06745583,EI-1071,Elixiron Immunotherapeutics Inc.,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
 2026-09-23,trial,NCT06745583,EI-1071,Elixiron Immunotherapeutics Inc.,enrollment_change,15,7,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
 2026-09-23,trial,NCT06745583,EI-1071,Elixiron Immunotherapeutics Inc.,primary_completion_date_change,2026-12,2026-03-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
 2026-09-23,trial,NCT06745583,EI-1071,Elixiron Immunotherapeutics Inc.,completion_date_change,2026-12,2026-05-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
+2026-09-24,trial,NCT07838155,Donanemab,Eli Lilly and Company,new_trial,,Phase 4,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
+2026-09-24,trial,NCT07839286,,Callahan-Young LLC DBA Jigsawdio,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
+2026-09-24,trial,NCT07839650,,IRCCS Centro San Giovanni di Dio Fatebenefratelli,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
+2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
+2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",enrollment_change,18,7,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
+2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",primary_completion_date_change,2026-08,2026-06-25,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
+2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",completion_date_change,2026-08,2026-06-25,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
