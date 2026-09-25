@@ -1,8 +1,16 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-09-24,trial,NCT07838155,Donanemab,Eli Lilly and Company,new_trial,,Phase 4,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
-2026-09-24,trial,NCT07839286,,Callahan-Young LLC DBA Jigsawdio,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
-2026-09-24,trial,NCT07839650,,IRCCS Centro San Giovanni di Dio Fatebenefratelli,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
-2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
-2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",enrollment_change,18,7,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
-2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",primary_completion_date_change,2026-08,2026-06-25,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
-2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",completion_date_change,2026-08,2026-06-25,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
+2026-09-25,trial,NCT07842146,Urolithin A,"University Hospital, Akershus",new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT05888961,,Centre Hospitalier Universitaire Dijon,enrollment_change,72,74,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT05888961,,Centre Hospitalier Universitaire Dijon,primary_completion_date_change,2027-07,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT05888961,,Centre Hospitalier Universitaire Dijon,completion_date_change,2027-07,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT06565169,,University of Pittsburgh,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT06565169,,University of Pittsburgh,enrollment_change,120,101,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT06565169,,University of Pittsburgh,primary_completion_date_change,2027-05-31,2027-04-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT07169578,Trontinemab,Hoffmann-La Roche,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT07169578,Trontinemab,Hoffmann-La Roche,enrollment_change,800,1101,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT07169578,Trontinemab,Hoffmann-La Roche,primary_completion_date_change,2028-06-07,2028-02-16,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT07169578,Trontinemab,Hoffmann-La Roche,completion_date_change,2028-06-07,2028-02-16,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT07170150,Trontinemab,Hoffmann-La Roche,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT07170150,Trontinemab,Hoffmann-La Roche,enrollment_change,800,1060,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT07170150,Trontinemab,Hoffmann-La Roche,primary_completion_date_change,2028-06-07,2028-02-16,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT07170150,Trontinemab,Hoffmann-La Roche,completion_date_change,2028-06-07,2028-02-16,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
