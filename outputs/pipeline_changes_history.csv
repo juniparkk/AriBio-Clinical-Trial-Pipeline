@@ -1,21 +1,4 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-08-26,trial,NCT07787169,LY4405094,Eli Lilly and Company,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
-2026-08-26,trial,NCT07787182,LY4405094,Eli Lilly and Company,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
-2026-08-26,trial,NCT06061406,,Wuerzburg University Hospital,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
-2026-08-26,trial,NCT06061406,,Wuerzburg University Hospital,completion_date_change,2024-06,2024-06-30,Low,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
-2026-08-26,trial,NCT07205601,RB-ADSC,"Regeneration Biomedical, Inc.",primary_completion_date_change,2028-03,2029-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
-2026-08-26,trial,NCT07205601,RB-ADSC,"Regeneration Biomedical, Inc.",completion_date_change,2029-03,2030-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
-2026-08-26,trial,NCT07373067,RB-ADSC,"Regeneration Biomedical, Inc.",primary_completion_date_change,2028-01,2028-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
-2026-08-26,trial,NCT07373067,RB-ADSC,"Regeneration Biomedical, Inc.",completion_date_change,2028-01,2028-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
-2026-08-26,drug,,LY4405094,Eli Lilly and Company,new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-26T163908Z),False
-2026-08-28,trial,NCT07789873,GAL-101 Salt,Galimedix Therapeutics Inc,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),True
-2026-08-28,trial,NCT04842552,Hydralazine hydrochloride,Shahid Sadoughi University of Medical Sciences and Health Services,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
-2026-08-28,trial,NCT04842552,Hydralazine hydrochloride,Shahid Sadoughi University of Medical Sciences and Health Services,enrollment_change,424,228,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
-2026-08-28,trial,NCT04842552,Hydralazine hydrochloride,Shahid Sadoughi University of Medical Sciences and Health Services,primary_completion_date_change,2023-06-01,2026-03-05,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
-2026-08-28,trial,NCT04842552,Hydralazine hydrochloride,Shahid Sadoughi University of Medical Sciences and Health Services,completion_date_change,2023-12-20,2026-03-05,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
-2026-08-28,trial,NCT06881277,,Linkoeping University,primary_completion_date_change,2026-12-31,2027-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
-2026-08-28,trial,NCT06881277,,Linkoeping University,completion_date_change,2026-12-31,2027-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
-2026-08-28,drug,,GAL-101 Salt,Galimedix Therapeutics Inc,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-28T215116Z),False
 2026-08-31,trial,NCT05907343,,University of Texas at Austin,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
 2026-08-31,trial,NCT07794670,Obicetrapib,NewAmsterdam Pharma,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),True
 2026-08-31,trial,NCT07795307,Emtricitabine and tenofovir disoproxil fumarate combination,Brigham and Women's Hospital,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-08-31T133545Z),False
@@ -161,7 +144,7 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",enrollment_change,18,7,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
 2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",primary_completion_date_change,2026-08,2026-06-25,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
 2026-09-24,trial,NCT05667649,RB-ADSC,"Regeneration Biomedical, Inc.",completion_date_change,2026-08,2026-06-25,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-24T175506Z),False
-2026-09-25,trial,NCT07842146,Urolithin A,"University Hospital, Akershus",new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-25,trial,NCT07842146,Urolithin A,"University Hospital, Akershus",new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
 2026-09-25,trial,NCT05888961,,Centre Hospitalier Universitaire Dijon,enrollment_change,72,74,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
 2026-09-25,trial,NCT05888961,,Centre Hospitalier Universitaire Dijon,primary_completion_date_change,2027-07,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
 2026-09-25,trial,NCT05888961,,Centre Hospitalier Universitaire Dijon,completion_date_change,2027-07,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
@@ -176,3 +159,7 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-09-25,trial,NCT07170150,Trontinemab,Hoffmann-La Roche,enrollment_change,800,1060,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
 2026-09-25,trial,NCT07170150,Trontinemab,Hoffmann-La Roche,primary_completion_date_change,2028-06-07,2028-02-16,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
 2026-09-25,trial,NCT07170150,Trontinemab,Hoffmann-La Roche,completion_date_change,2028-06-07,2028-02-16,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-25T180131Z),False
+2026-09-28,trial,NCT07843459,LY4560736,Eli Lilly and Company,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-28T201136Z),False
+2026-09-28,trial,NCT03954899,melatonin,Natalie Denburg,primary_completion_date_change,2025-11,2028-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-28T201136Z),False
+2026-09-28,trial,NCT03954899,melatonin,Natalie Denburg,completion_date_change,2025-11,2028-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-28T201136Z),False
+2026-09-28,drug,,LY4560736,Eli Lilly and Company,new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-28T201136Z),False
