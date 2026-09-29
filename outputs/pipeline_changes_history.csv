@@ -163,3 +163,11 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-09-28,trial,NCT03954899,melatonin,Natalie Denburg,primary_completion_date_change,2025-11,2028-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-28T201136Z),False
 2026-09-28,trial,NCT03954899,melatonin,Natalie Denburg,completion_date_change,2025-11,2028-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-28T201136Z),False
 2026-09-28,drug,,LY4560736,Eli Lilly and Company,new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-28T201136Z),False
+2026-09-29,trial,NCT07846566,CYOA booklet,The Cleveland Clinic,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
+2026-09-29,trial,NCT07847944,,Spanish National Research Council,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
+2026-09-29,trial,NCT06397339,INTACT Program,Washington State University,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
+2026-09-29,trial,NCT06397339,INTACT Program,Washington State University,enrollment_change,28,7,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
+2026-09-29,trial,NCT07146412,,HudsonAlpha Institute for Biotechnology,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
+2026-09-29,trial,NCT07146412,,HudsonAlpha Institute for Biotechnology,primary_completion_date_change,2026-04-30,2026-12-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
+2026-09-29,trial,NCT07146412,,HudsonAlpha Institute for Biotechnology,completion_date_change,2026-04-30,2026-12-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
+2026-09-29,drug,,CYOA booklet,The Cleveland Clinic,new_drug,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
