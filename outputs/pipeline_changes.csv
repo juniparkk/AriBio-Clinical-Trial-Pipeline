@@ -1,4 +1,5 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-10-05,trial,NCT07857759,,Daniel Maliszewski,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-05T211153Z),False
-2026-10-05,trial,NCT07859540,,Northwestern University,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-05T211153Z),False
-2026-10-05,trial,NCT06125951,Xanamem,Actinogen Medical,primary_completion_date_change,2026-10,2026-09-22,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-05T211153Z),False
+2026-10-06,trial,NCT03887455,Lecanemab IV; Lecanemab SC,Eisai Inc.,primary_completion_date_change,2029-06-30,2026-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-06T185919Z),False
+2026-10-06,trial,NCT03887455,Lecanemab IV; Lecanemab SC,Eisai Inc.,completion_date_change,2029-06-30,2026-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-06T185919Z),False
+2026-10-06,trial,NCT05905796,Brain Health Assessment,"University of California, San Francisco",enrollment_change,1271,1261,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-06T185919Z),False
+2026-10-06,trial,NCT05905796,Brain Health Assessment,"University of California, San Francisco",results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-10-06T185919Z),True
