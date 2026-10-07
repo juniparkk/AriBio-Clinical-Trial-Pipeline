@@ -860,6 +860,7 @@ VP4896,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no
 VT301,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 VX-745,Small Molecule,Small Molecule,Amyloid,Amyloid; Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
 VY7523,Small Molecule,Biologic,Other,Tau,nih_reference,low,NIH and existing (official-pipeline/known-compound/ct.gov) evidence disagree: modality: NIH='Biologic' vs existing='Small Molecule' | modality corrected: 'Small Molecule' -> 'Biologic' | target corrected: 'Other' -> 'Tau',True
+Waiting list,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Walking,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Washout (2 wks),Device,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Device' -> 'Other',True
 Watching nature videos,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
