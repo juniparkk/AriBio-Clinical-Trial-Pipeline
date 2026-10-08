@@ -1,11 +1,3 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-10-07,trial,NCT07862244,Waiting list,Medical Research Council Cognition and Brain Sciences Unit,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT07863011,,ReadyCure Inc.,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06691256,,HiDO Technologies,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06691256,,HiDO Technologies,enrollment_change,70,50,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06691256,,HiDO Technologies,primary_completion_date_change,2026-05-31,2025-09-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06691256,,HiDO Technologies,completion_date_change,2026-05-31,2025-09-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06705738,,Aristotle University Of Thessaloniki,status_change,Active,Recruiting,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06705738,,Aristotle University Of Thessaloniki,primary_completion_date_change,2026-04-30,2029-09-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06705738,,Aristotle University Of Thessaloniki,completion_date_change,2026-11-01,2029-11-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,drug,,Waiting list,Medical Research Council Cognition and Brain Sciences Unit,new_drug,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
+2026-10-08,trial,NCT07866768,,"University of California, San Francisco",new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-08T192153Z),False
+2026-10-08,trial,NCT07033494,MK-2214,Merck Sharp & Dohme LLC,completion_date_change,2029-04-30,2030-04-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-08T192153Z),False
