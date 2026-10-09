@@ -1,3 +1,7 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-10-08,trial,NCT07866768,,"University of California, San Francisco",new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-08T192153Z),False
-2026-10-08,trial,NCT07033494,MK-2214,Merck Sharp & Dohme LLC,completion_date_change,2029-04-30,2030-04-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-08T192153Z),False
+2026-10-09,trial,NCT07868718,,Ohio State University,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),True
+2026-10-09,trial,NCT07869238,,Neumous Inc.,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),False
+2026-10-09,trial,NCT02681172,,Lantheus Biosciences Ltd.,sponsor_change,Piramal Imaging Limited,Lantheus Biosciences Ltd.,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),True
+2026-10-09,trial,NCT07424443,,Massachusetts General Hospital,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),False
+2026-10-09,trial,NCT07424443,,Massachusetts General Hospital,primary_completion_date_change,2026-08-01,2026-08-25,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),False
+2026-10-09,trial,NCT07424443,,Massachusetts General Hospital,completion_date_change,2026-08-01,2026-08-25,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),False
