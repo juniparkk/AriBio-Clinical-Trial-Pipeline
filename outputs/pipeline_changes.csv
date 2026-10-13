@@ -1,1 +1,8 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
+2026-10-13,trial,NCT07872072,,HiDO Technologies,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
+2026-10-13,trial,NCT05027789,,"University of California, Davis",primary_completion_date_change,2026-08-31,2026-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
+2026-10-13,trial,NCT05027789,,"University of California, Davis",completion_date_change,2026-08-31,2026-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
+2026-10-13,trial,NCT05939362,,Poitiers University Hospital,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
+2026-10-13,trial,NCT07224607,,Cedars-Sinai Medical Center,primary_completion_date_change,2026-08-28,2027-11-28,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
+2026-10-13,trial,NCT07224607,,Cedars-Sinai Medical Center,completion_date_change,2026-10,2028-03-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
+2026-10-13,trial,NCT07636811,Mivelsiran,Alnylam Pharmaceuticals,completion_date_change,2031-07-23,2031-07-30,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
