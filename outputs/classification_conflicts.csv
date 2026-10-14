@@ -330,6 +330,7 @@ Gam-COVID-Vac,Biologic,Biologic,Other,,structured_ct_gov_evidence,medium,no chan
 Gantenerumab,Biologic,Biologic,Amyloid,Amyloid,nih_reference,high,no change from legacy classification,False
 GB-5001,Small Molecule,Small Molecule,Symptomatic,,structured_ct_gov_evidence,medium,target corrected: 'Symptomatic' -> '',True
 GC021109,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
+GE-287,Small Molecule,Small Molecule,Amyloid,,structured_ct_gov_evidence,medium,target corrected: 'Amyloid' -> '',True
 Gemfibrozil,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 genetically encoded engineered proteins,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Ginkgo biloba,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False

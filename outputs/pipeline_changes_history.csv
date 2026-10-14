@@ -131,10 +131,17 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-10-09,trial,NCT07424443,,Massachusetts General Hospital,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),False
 2026-10-09,trial,NCT07424443,,Massachusetts General Hospital,primary_completion_date_change,2026-08-01,2026-08-25,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),False
 2026-10-09,trial,NCT07424443,,Massachusetts General Hospital,completion_date_change,2026-08-01,2026-08-25,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),False
-2026-10-13,trial,NCT07872072,,HiDO Technologies,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
+2026-10-13,trial,NCT07872072,,HiDO Technologies,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
 2026-10-13,trial,NCT05027789,,"University of California, Davis",primary_completion_date_change,2026-08-31,2026-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
 2026-10-13,trial,NCT05027789,,"University of California, Davis",completion_date_change,2026-08-31,2026-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
 2026-10-13,trial,NCT05939362,,Poitiers University Hospital,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
 2026-10-13,trial,NCT07224607,,Cedars-Sinai Medical Center,primary_completion_date_change,2026-08-28,2027-11-28,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
 2026-10-13,trial,NCT07224607,,Cedars-Sinai Medical Center,completion_date_change,2026-10,2028-03-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
 2026-10-13,trial,NCT07636811,Mivelsiran,Alnylam Pharmaceuticals,completion_date_change,2031-07-23,2031-07-30,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
+2026-10-14,trial,NCT03536767,Acoramidis,"Eidos Therapeutics, a BridgeBio company",new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),True
+2026-10-14,trial,NCT07872956,,Linkoeping University,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
+2026-10-14,trial,NCT07873463,GE-287,GE Healthcare,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),True
+2026-10-14,trial,NCT05531526,AR1001,"AriBio Co., Ltd.",primary_completion_date_change,2026-05,2026-06-29,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
+2026-10-14,trial,NCT05531526,AR1001,"AriBio Co., Ltd.",completion_date_change,2027-12,2027-10,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
+2026-10-14,trial,NCT07646054,,Scripps Translational Science Institute,primary_completion_date_change,2028-07-31,2028-08-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
+2026-10-14,drug,,GE-287,GE Healthcare,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
