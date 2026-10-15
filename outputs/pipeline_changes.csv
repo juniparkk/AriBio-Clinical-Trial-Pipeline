@@ -1,8 +1,3 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-10-14,trial,NCT03536767,Acoramidis,"Eidos Therapeutics, a BridgeBio company",new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),True
-2026-10-14,trial,NCT07872956,,Linkoeping University,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
-2026-10-14,trial,NCT07873463,GE-287,GE Healthcare,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),True
-2026-10-14,trial,NCT05531526,AR1001,"AriBio Co., Ltd.",primary_completion_date_change,2026-05,2026-06-29,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
-2026-10-14,trial,NCT05531526,AR1001,"AriBio Co., Ltd.",completion_date_change,2027-12,2027-10,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
-2026-10-14,trial,NCT07646054,,Scripps Translational Science Institute,primary_completion_date_change,2028-07-31,2028-08-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
-2026-10-14,drug,,GE-287,GE Healthcare,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
+2026-10-15,trial,NCT07838155,Donanemab,Eli Lilly and Company,primary_completion_date_change,2030-07,2030-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-15T175046Z),False
+2026-10-15,trial,NCT07838155,Donanemab,Eli Lilly and Company,completion_date_change,2030-07,2030-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-15T175046Z),False
