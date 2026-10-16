@@ -1,3 +1,9 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-10-15,trial,NCT07838155,Donanemab,Eli Lilly and Company,primary_completion_date_change,2030-07,2030-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-15T175046Z),False
-2026-10-15,trial,NCT07838155,Donanemab,Eli Lilly and Company,completion_date_change,2030-07,2030-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-15T175046Z),False
+2026-10-16,trial,NCT04471779,Disclosure of APOE genotype,Columbia University,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),True
+2026-10-16,trial,NCT06902753,,Poitiers University Hospital,status_change,Recruiting,Discontinued,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
+2026-10-16,trial,NCT06902753,,Poitiers University Hospital,primary_completion_date_change,2027-01,2027-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
+2026-10-16,trial,NCT06902753,,Poitiers University Hospital,completion_date_change,2027-04,2028-08,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
+2026-10-16,trial,NCT07388186,,University of Salamanca,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
+2026-10-16,trial,NCT07388186,,University of Salamanca,enrollment_change,62,43,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
+2026-10-16,trial,NCT07388186,,University of Salamanca,primary_completion_date_change,2026-07,2026-09-28,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
+2026-10-16,trial,NCT07388186,,University of Salamanca,completion_date_change,2026-09,2026-10-10,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
