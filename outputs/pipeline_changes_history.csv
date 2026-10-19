@@ -1,25 +1,4 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-09-16,trial,NCT06682767,FMD1 (LNT22-017-1),Cedars-Sinai Medical Center,phase_change,,Phase 1/Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-09-16T174121Z),True
-2026-09-16,trial,NCT06682767,FMD1 (LNT22-017-1),Cedars-Sinai Medical Center,enrollment_change,40,60,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-16T174121Z),False
-2026-09-16,trial,NCT06682767,FMD1 (LNT22-017-1),Cedars-Sinai Medical Center,primary_completion_date_change,2027-03,2028-03,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-16T174121Z),False
-2026-09-16,trial,NCT06682767,FMD1 (LNT22-017-1),Cedars-Sinai Medical Center,completion_date_change,2027-03,2028-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-16T174121Z),False
-2026-09-16,trial,NCT07698431,,"Barcelonabeta Brain Research Center, Pasqual Maragall Foundation",primary_completion_date_change,2027-02-01,2027-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-16T174121Z),False
-2026-09-17,trial,NCT07824128,,Emory University,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-17T174210Z),False
-2026-09-17,trial,NCT07824245,ACP Counselor Video Program,Tufts Medical Center,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-17T174210Z),False
-2026-09-17,trial,NCT02720445,Nicotine Patch,University of Southern California,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-09-17T174210Z),True
-2026-09-17,trial,NCT05295615,,Herrick Medical LLC,primary_completion_date_change,2025-12-30,2027-06-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-17T174210Z),False
-2026-09-17,trial,NCT05295615,,Herrick Medical LLC,completion_date_change,2026-09-30,2027-09-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-17T174210Z),False
-2026-09-17,trial,NCT06079190,GSK4527226,GlaxoSmithKline,status_change,Active,Discontinued,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-17T174210Z),False
-2026-09-17,trial,NCT06079190,GSK4527226,GlaxoSmithKline,primary_completion_date_change,2026-09-30,2026-05-14,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-17T174210Z),False
-2026-09-17,trial,NCT06079190,GSK4527226,GlaxoSmithKline,completion_date_change,2026-11-23,2026-08-18,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-17T174210Z),False
-2026-09-17,trial,NCT06862557,,Herrick Medical LLC,primary_completion_date_change,2026-04-30,2027-04-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-17T174210Z),False
-2026-09-17,trial,NCT06862557,,Herrick Medical LLC,completion_date_change,2026-09-30,2027-09-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-17T174210Z),False
-2026-09-17,drug,,ACP Counselor Video Program,Tufts Medical Center,new_drug,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-17T174210Z),False
-2026-09-18,trial,NCT07827196,,Anhui Medical University,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-18T170906Z),False
-2026-09-18,trial,NCT07827768,AV-1959R,Institute for Molecular Medicine,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-09-18T170906Z),True
-2026-09-18,trial,NCT05139290,,Emory University,status_change,Recruiting,Discontinued,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-18T170906Z),False
-2026-09-18,trial,NCT05139290,,Emory University,enrollment_change,40,0,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-18T170906Z),False
-2026-09-18,drug,,AV-1959R,Institute for Molecular Medicine,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-18T170906Z),False
 2026-09-21,trial,NCT07531940,Memantine,University Hospitals Cleveland Medical Center,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
 2026-09-21,trial,NCT03649724,Eligard,Weill Medical College of Cornell University,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
 2026-09-21,trial,NCT03649724,Eligard,Weill Medical College of Cornell University,enrollment_change,180,86,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
@@ -144,3 +123,11 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-10-16,trial,NCT07388186,,University of Salamanca,enrollment_change,62,43,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
 2026-10-16,trial,NCT07388186,,University of Salamanca,primary_completion_date_change,2026-07,2026-09-28,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
 2026-10-16,trial,NCT07388186,,University of Salamanca,completion_date_change,2026-09,2026-10-10,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
+2026-10-19,trial,NCT05779839,,Mayo Clinic,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
+2026-10-19,trial,NCT05779839,,Mayo Clinic,enrollment_change,355,420,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
+2026-10-19,trial,NCT05779839,,Mayo Clinic,primary_completion_date_change,2026-07-31,2026-03-22,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
+2026-10-19,trial,NCT05779839,,Mayo Clinic,completion_date_change,2026-07-31,2026-03-22,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
+2026-10-19,trial,NCT06940687,,Yale University,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
+2026-10-19,trial,NCT06940687,,Yale University,enrollment_change,60,10,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
+2026-10-19,trial,NCT06940687,,Yale University,primary_completion_date_change,2026-09-22,2026-08-27,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
+2026-10-19,trial,NCT06940687,,Yale University,completion_date_change,2026-09-22,2026-08-27,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
