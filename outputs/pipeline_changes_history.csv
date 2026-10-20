@@ -131,3 +131,9 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-10-19,trial,NCT06940687,,Yale University,enrollment_change,60,10,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
 2026-10-19,trial,NCT06940687,,Yale University,primary_completion_date_change,2026-09-22,2026-08-27,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
 2026-10-19,trial,NCT06940687,,Yale University,completion_date_change,2026-09-22,2026-08-27,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
+2026-10-20,trial,NCT07882251,,Azienda Usl di Bologna,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
+2026-10-20,trial,NCT07883148,,IRCCS San Raffaele Roma,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
+2026-10-20,trial,NCT07883291,,Penn State University,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
+2026-10-20,trial,NCT05231785,ALN-APP,Alnylam Pharmaceuticals,primary_completion_date_change,2029-04-20,2029-01-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
+2026-10-20,trial,NCT05231785,ALN-APP,Alnylam Pharmaceuticals,completion_date_change,2029-04-20,2029-01-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
+2026-10-20,trial,NCT06089161,,University of Miami,primary_completion_date_change,2027-05-31,2027-11-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
