@@ -1,18 +1,4 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-09-21,trial,NCT07531940,Memantine,University Hospitals Cleveland Medical Center,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
-2026-09-21,trial,NCT03649724,Eligard,Weill Medical College of Cornell University,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
-2026-09-21,trial,NCT03649724,Eligard,Weill Medical College of Cornell University,enrollment_change,180,86,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
-2026-09-21,trial,NCT04018092,,University of Florida,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
-2026-09-21,trial,NCT05048966,,Kessler Foundation,status_change,Unknown,Recruiting,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
-2026-09-21,trial,NCT05048966,,Kessler Foundation,primary_completion_date_change,2025-09,2027-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
-2026-09-21,trial,NCT05048966,,Kessler Foundation,completion_date_change,2025-09,2027-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
-2026-09-21,trial,NCT05596760,,University of Washington,primary_completion_date_change,2026-06-02,2026-05-19,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
-2026-09-21,trial,NCT05596760,,University of Washington,completion_date_change,2027-07,2027-07-01,Low,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
-2026-09-21,trial,NCT06041789,,Duke University,primary_completion_date_change,2026-11,2027-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
-2026-09-21,trial,NCT06041789,,Duke University,completion_date_change,2026-11,2027-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
-2026-09-21,trial,NCT06362824,Active Comparison Group: Healthy Actions And Lifestyles To Avoid Dementia (HALT-AD),Kaiser Permanente,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
-2026-09-21,trial,NCT07602283,,Yale University,primary_completion_date_change,2027-08-01,2027-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
-2026-09-21,trial,NCT07602283,,Yale University,completion_date_change,2028-02-01,2027-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-21T185139Z),False
 2026-09-22,trial,NCT07832383,NBI-1117567,Neurocrine Biosciences,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),True
 2026-09-22,trial,NCT07834528,,Chinese University of Hong Kong,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False
 2026-09-22,trial,NCT07835399,,Jun Xu,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False
@@ -137,7 +123,7 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-10-20,trial,NCT05231785,ALN-APP,Alnylam Pharmaceuticals,primary_completion_date_change,2029-04-20,2029-01-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
 2026-10-20,trial,NCT05231785,ALN-APP,Alnylam Pharmaceuticals,completion_date_change,2029-04-20,2029-01-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
 2026-10-20,trial,NCT06089161,,University of Miami,primary_completion_date_change,2027-05-31,2027-11-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
-2026-10-21,trial,NCT07887737,,University of Texas Southwestern Medical Center,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
+2026-10-21,trial,NCT07887737,,University of Texas Southwestern Medical Center,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
 2026-10-21,trial,NCT03138018,,Assistance Publique Hopitaux De Marseille,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
 2026-10-21,trial,NCT03138018,,Assistance Publique Hopitaux De Marseille,enrollment_change,260,130,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
 2026-10-21,trial,NCT03138018,,Assistance Publique Hopitaux De Marseille,primary_completion_date_change,2023-07-01,2023-08-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
@@ -150,3 +136,8 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-10-21,trial,NCT07094516,VHB937,Novartis Pharmaceuticals,enrollment_change,407,97,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
 2026-10-21,trial,NCT07827768,AV-1959R,Institute for Molecular Medicine,primary_completion_date_change,2029-06-15,2029-10-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
 2026-10-21,trial,NCT07827768,AV-1959R,Institute for Molecular Medicine,completion_date_change,2029-06-15,2029-11-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
+2026-10-22,trial,NCT07889349,SHR 3201,"Beijing Suncadia Pharmaceuticals Co., Ltd",new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-22T180652Z),False
+2026-10-22,trial,NCT04042532,,Chang Gung Memorial Hospital,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-22T180652Z),False
+2026-10-22,trial,NCT04042532,,Chang Gung Memorial Hospital,enrollment_change,70,30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-22T180652Z),False
+2026-10-22,trial,NCT06881836,ONO-2020,"Ono Pharmaceutical Co., Ltd.",status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-22T180652Z),False
+2026-10-22,drug,,SHR 3201,"Beijing Suncadia Pharmaceuticals Co., Ltd",new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-22T180652Z),False

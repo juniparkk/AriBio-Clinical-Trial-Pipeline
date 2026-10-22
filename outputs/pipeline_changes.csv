@@ -1,14 +1,6 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-10-21,trial,NCT07887737,,University of Texas Southwestern Medical Center,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
-2026-10-21,trial,NCT03138018,,Assistance Publique Hopitaux De Marseille,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
-2026-10-21,trial,NCT03138018,,Assistance Publique Hopitaux De Marseille,enrollment_change,260,130,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
-2026-10-21,trial,NCT03138018,,Assistance Publique Hopitaux De Marseille,primary_completion_date_change,2023-07-01,2023-08-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
-2026-10-21,trial,NCT03138018,,Assistance Publique Hopitaux De Marseille,completion_date_change,2023-07-01,2023-08-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
-2026-10-21,trial,NCT05978804,,Johns Hopkins University,enrollment_change,36,5,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
-2026-10-21,trial,NCT05978804,,Johns Hopkins University,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),True
-2026-10-21,trial,NCT06451952,Virtual darkness,University of Bergen,primary_completion_date_change,2026-12-31,2027-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
-2026-10-21,trial,NCT06451952,Virtual darkness,University of Bergen,completion_date_change,2026-12-31,2027-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
-2026-10-21,trial,NCT07094516,VHB937,Novartis Pharmaceuticals,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
-2026-10-21,trial,NCT07094516,VHB937,Novartis Pharmaceuticals,enrollment_change,407,97,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
-2026-10-21,trial,NCT07827768,AV-1959R,Institute for Molecular Medicine,primary_completion_date_change,2029-06-15,2029-10-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
-2026-10-21,trial,NCT07827768,AV-1959R,Institute for Molecular Medicine,completion_date_change,2029-06-15,2029-11-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
+2026-10-22,trial,NCT07889349,SHR 3201,"Beijing Suncadia Pharmaceuticals Co., Ltd",new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-22T180652Z),False
+2026-10-22,trial,NCT04042532,,Chang Gung Memorial Hospital,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-22T180652Z),False
+2026-10-22,trial,NCT04042532,,Chang Gung Memorial Hospital,enrollment_change,70,30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-22T180652Z),False
+2026-10-22,trial,NCT06881836,ONO-2020,"Ono Pharmaceutical Co., Ltd.",status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-22T180652Z),False
+2026-10-22,drug,,SHR 3201,"Beijing Suncadia Pharmaceuticals Co., Ltd",new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-22T180652Z),False
