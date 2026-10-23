@@ -1,8 +1,4 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-09-22,trial,NCT07832383,NBI-1117567,Neurocrine Biosciences,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),True
-2026-09-22,trial,NCT07834528,,Chinese University of Hong Kong,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False
-2026-09-22,trial,NCT07835399,,Jun Xu,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False
-2026-09-22,drug,,NBI-1117567,Neurocrine Biosciences,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-22T174206Z),False
 2026-09-23,trial,NCT07835568,,"University of California, Santa Barbara",new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
 2026-09-23,trial,NCT07836491,,University of Missouri-Columbia,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
 2026-09-23,trial,NCT04855630,,University of Miami,enrollment_change,30,60,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-23T175506Z),False
@@ -141,3 +137,12 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-10-22,trial,NCT04042532,,Chang Gung Memorial Hospital,enrollment_change,70,30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-22T180652Z),False
 2026-10-22,trial,NCT06881836,ONO-2020,"Ono Pharmaceutical Co., Ltd.",status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-22T180652Z),False
 2026-10-22,drug,,SHR 3201,"Beijing Suncadia Pharmaceuticals Co., Ltd",new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-22T180652Z),False
+2026-10-23,trial,NCT05178992,,Vanderbilt University,phase_change,Phase 1/Phase 2,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-23T175617Z),False
+2026-10-23,trial,NCT05178992,,Vanderbilt University,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-10-23T175617Z),True
+2026-10-23,trial,NCT05641688,,Lantheus Biosciences Ltd.,primary_completion_date_change,2027-06,2028-03,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-23T175617Z),False
+2026-10-23,trial,NCT05641688,,Lantheus Biosciences Ltd.,completion_date_change,2027-06,2028-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-23T175617Z),False
+2026-10-23,trial,NCT06523296,,Centre Hospitalier Universitaire de Nice,status_change,Recruiting,Discontinued,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-23T175617Z),False
+2026-10-23,trial,NCT06523296,,Centre Hospitalier Universitaire de Nice,enrollment_change,30,1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-23T175617Z),False
+2026-10-23,trial,NCT06523296,,Centre Hospitalier Universitaire de Nice,primary_completion_date_change,2028-08-18,2026-08-18,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-23T175617Z),False
+2026-10-23,trial,NCT06523296,,Centre Hospitalier Universitaire de Nice,completion_date_change,2028-09-18,2026-08-18,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-23T175617Z),False
+2026-10-23,trial,NCT06874621,VY7523,Voyager Therapeutics,primary_completion_date_change,2027-05,2026-10-13,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-23T175617Z),False
