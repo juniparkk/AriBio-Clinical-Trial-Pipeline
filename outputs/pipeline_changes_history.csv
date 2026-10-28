@@ -125,3 +125,8 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-10-27,trial,NCT04549155,,Duke University,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-10-27T185059Z),True
 2026-10-27,trial,NCT06052254,Dexmedetomidine,"Teikoku Pharma USA, Inc.",status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-27T185059Z),False
 2026-10-27,drug,,PF-08161842,Pfizer,new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-27T185059Z),False
+2026-10-28,trial,NCT07259369,,Taipei Medical University,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-28T185858Z),False
+2026-10-28,trial,NCT07259369,,Taipei Medical University,enrollment_change,70,60,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-28T185858Z),False
+2026-10-28,trial,NCT07259369,,Taipei Medical University,primary_completion_date_change,2026-03-15,2026-05-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-28T185858Z),False
+2026-10-28,trial,NCT07259369,,Taipei Medical University,completion_date_change,2026-03-15,2026-05-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-28T185858Z),False
+2026-10-28,trial,NCT07259369,,Taipei Medical University,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-10-28T185858Z),True
