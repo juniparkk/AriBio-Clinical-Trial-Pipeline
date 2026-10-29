@@ -1,8 +1,4 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-09-28,trial,NCT07843459,LY4560736,Eli Lilly and Company,new_trial,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-28T201136Z),False
-2026-09-28,trial,NCT03954899,melatonin,Natalie Denburg,primary_completion_date_change,2025-11,2028-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-28T201136Z),False
-2026-09-28,trial,NCT03954899,melatonin,Natalie Denburg,completion_date_change,2025-11,2028-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-28T201136Z),False
-2026-09-28,drug,,LY4560736,Eli Lilly and Company,new_drug,,Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-28T201136Z),False
 2026-09-29,trial,NCT07846566,CYOA booklet,The Cleveland Clinic,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
 2026-09-29,trial,NCT07847944,,Spanish National Research Council,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
 2026-09-29,trial,NCT06397339,INTACT Program,Washington State University,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
@@ -130,3 +126,13 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-10-28,trial,NCT07259369,,Taipei Medical University,primary_completion_date_change,2026-03-15,2026-05-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-28T185858Z),False
 2026-10-28,trial,NCT07259369,,Taipei Medical University,completion_date_change,2026-03-15,2026-05-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-28T185858Z),False
 2026-10-28,trial,NCT07259369,,Taipei Medical University,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-10-28T185858Z),True
+2026-10-29,trial,NCT07905352,,Vigonvita Life Sciences,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),True
+2026-10-29,trial,NCT04784416,,NYU Langone Health,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
+2026-10-29,trial,NCT04784416,,NYU Langone Health,completion_date_change,2026-01-31,2026-02-28,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
+2026-10-29,trial,NCT06297590,LY3954068,Eli Lilly and Company,enrollment_change,48,56,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
+2026-10-29,trial,NCT06297590,LY3954068,Eli Lilly and Company,primary_completion_date_change,2027-02,2028-07,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
+2026-10-29,trial,NCT06297590,LY3954068,Eli Lilly and Company,completion_date_change,2027-02,2028-07,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
+2026-10-29,trial,NCT07058688,NTRX-07,"NeuroTherapia, Inc.",status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
+2026-10-29,trial,NCT07058688,NTRX-07,"NeuroTherapia, Inc.",primary_completion_date_change,2025-12-31,2026-02-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
+2026-10-29,trial,NCT07058688,NTRX-07,"NeuroTherapia, Inc.",completion_date_change,2026-06-30,2026-03-03,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
+2026-10-29,trial,NCT07444554,,University of Illinois Chicago,sponsor_change,University of Illinois at Chicago,University of Illinois Chicago,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),True
