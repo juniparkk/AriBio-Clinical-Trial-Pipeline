@@ -1,12 +1,4 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-09-29,trial,NCT07846566,CYOA booklet,The Cleveland Clinic,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
-2026-09-29,trial,NCT07847944,,Spanish National Research Council,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
-2026-09-29,trial,NCT06397339,INTACT Program,Washington State University,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
-2026-09-29,trial,NCT06397339,INTACT Program,Washington State University,enrollment_change,28,7,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
-2026-09-29,trial,NCT07146412,,HudsonAlpha Institute for Biotechnology,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
-2026-09-29,trial,NCT07146412,,HudsonAlpha Institute for Biotechnology,primary_completion_date_change,2026-04-30,2026-12-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
-2026-09-29,trial,NCT07146412,,HudsonAlpha Institute for Biotechnology,completion_date_change,2026-04-30,2026-12-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
-2026-09-29,drug,,CYOA booklet,The Cleveland Clinic,new_drug,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-29T184826Z),False
 2026-09-30,trial,NCT01681602,,"Copenhagen University Hospital, Rigshospitalet",sponsor_change,"Rigshospitalet, Denmark","Copenhagen University Hospital, Rigshospitalet",Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-30T183116Z),True
 2026-09-30,trial,NCT05543681,IGC AD1,"IGC Pharma, LLC",status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-30T183116Z),False
 2026-09-30,trial,NCT05543681,IGC AD1,"IGC Pharma, LLC",primary_completion_date_change,2026-08,2026-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-30T183116Z),False
@@ -136,3 +128,11 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-10-29,trial,NCT07058688,NTRX-07,"NeuroTherapia, Inc.",primary_completion_date_change,2025-12-31,2026-02-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
 2026-10-29,trial,NCT07058688,NTRX-07,"NeuroTherapia, Inc.",completion_date_change,2026-06-30,2026-03-03,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
 2026-10-29,trial,NCT07444554,,University of Illinois Chicago,sponsor_change,University of Illinois at Chicago,University of Illinois Chicago,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),True
+2026-10-30,trial,NCT07906769,,Istituti Clinici Scientifici Maugeri SpA,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,trial,NCT04389437,,Fondation Ophtalmologique Adolphe de Rothschild,primary_completion_date_change,2026-06,2027-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,trial,NCT04389437,,Fondation Ophtalmologique Adolphe de Rothschild,completion_date_change,2026-06,2027-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,trial,NCT05607732,MyCog,Northwestern University,enrollment_change,57738,57589,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,trial,NCT05607732,MyCog,Northwestern University,primary_completion_date_change,2026-10-30,2027-04-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,trial,NCT05809908,Tricaprilin,Cerecin,primary_completion_date_change,2029-06,2030-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,trial,NCT05809908,Tricaprilin,Cerecin,completion_date_change,2029-07,2030-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,drug,,C-11 -176,Mayo Clinic,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False

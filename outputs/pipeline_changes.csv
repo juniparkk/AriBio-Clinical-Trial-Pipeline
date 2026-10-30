@@ -1,11 +1,9 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-10-29,trial,NCT07905352,,Vigonvita Life Sciences,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),True
-2026-10-29,trial,NCT04784416,,NYU Langone Health,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
-2026-10-29,trial,NCT04784416,,NYU Langone Health,completion_date_change,2026-01-31,2026-02-28,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
-2026-10-29,trial,NCT06297590,LY3954068,Eli Lilly and Company,enrollment_change,48,56,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
-2026-10-29,trial,NCT06297590,LY3954068,Eli Lilly and Company,primary_completion_date_change,2027-02,2028-07,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
-2026-10-29,trial,NCT06297590,LY3954068,Eli Lilly and Company,completion_date_change,2027-02,2028-07,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
-2026-10-29,trial,NCT07058688,NTRX-07,"NeuroTherapia, Inc.",status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
-2026-10-29,trial,NCT07058688,NTRX-07,"NeuroTherapia, Inc.",primary_completion_date_change,2025-12-31,2026-02-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
-2026-10-29,trial,NCT07058688,NTRX-07,"NeuroTherapia, Inc.",completion_date_change,2026-06-30,2026-03-03,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
-2026-10-29,trial,NCT07444554,,University of Illinois Chicago,sponsor_change,University of Illinois at Chicago,University of Illinois Chicago,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),True
+2026-10-30,trial,NCT07906769,,Istituti Clinici Scientifici Maugeri SpA,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,trial,NCT04389437,,Fondation Ophtalmologique Adolphe de Rothschild,primary_completion_date_change,2026-06,2027-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,trial,NCT04389437,,Fondation Ophtalmologique Adolphe de Rothschild,completion_date_change,2026-06,2027-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,trial,NCT05607732,MyCog,Northwestern University,enrollment_change,57738,57589,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,trial,NCT05607732,MyCog,Northwestern University,primary_completion_date_change,2026-10-30,2027-04-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,trial,NCT05809908,Tricaprilin,Cerecin,primary_completion_date_change,2029-06,2030-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,trial,NCT05809908,Tricaprilin,Cerecin,completion_date_change,2029-07,2030-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,drug,,C-11 -176,Mayo Clinic,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False

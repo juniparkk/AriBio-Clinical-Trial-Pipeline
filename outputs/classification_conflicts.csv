@@ -164,6 +164,7 @@ Bromocriptine Mesilate,Small Molecule,Small Molecule,Amyloid,Amyloid; Metabolism
 Bryostatin,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Bumetanide,Small Molecule,Small Molecule,Other,,nih_reference,high,no change from legacy classification,False
 Buntanetap/Posiphen,Small Molecule,Small Molecule,Neuroprotection,Neuroprotection,structured_ct_gov_evidence,medium,no change from legacy classification,False
+C-11 -176,Small Molecule,Small Molecule,Tau,Amyloid; Tau,structured_ct_gov_evidence,medium,no change from legacy classification,False
 CAD106,Biologic,Biologic,Amyloid,Amyloid,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Caffeine,Small Molecule,Small Molecule,Other,Symptomatic,nih_reference,medium,target corrected: 'Other' -> 'Symptomatic',True
 Canakinumab,Biologic,Biologic,Inflammation,Inflammation,structured_ct_gov_evidence,medium,no change from legacy classification,False
