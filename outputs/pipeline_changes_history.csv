@@ -1,20 +1,4 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-09-30,trial,NCT01681602,,"Copenhagen University Hospital, Rigshospitalet",sponsor_change,"Rigshospitalet, Denmark","Copenhagen University Hospital, Rigshospitalet",Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-30T183116Z),True
-2026-09-30,trial,NCT05543681,IGC AD1,"IGC Pharma, LLC",status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-30T183116Z),False
-2026-09-30,trial,NCT05543681,IGC AD1,"IGC Pharma, LLC",primary_completion_date_change,2026-08,2026-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-30T183116Z),False
-2026-09-30,trial,NCT05543681,IGC AD1,"IGC Pharma, LLC",completion_date_change,2026-08,2026-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-30T183116Z),False
-2026-09-30,trial,NCT05730023,,IRCCS Centro San Giovanni di Dio Fatebenefratelli,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-30T183116Z),False
-2026-09-30,trial,NCT05891431,,University of Bath,status_change,Active,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-30T183116Z),False
-2026-09-30,trial,NCT06623864,,Universidad de Burgos,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-09-30T183116Z),False
-2026-10-01,trial,NCT05200208,Citicoline supplement,Emory University,primary_completion_date_change,2025-09-21,2025-12-21,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-01T185930Z),False
-2026-10-01,trial,NCT05200208,Citicoline supplement,Emory University,completion_date_change,2025-09-21,2025-12-21,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-01T185930Z),False
-2026-10-02,trial,NCT07854327,,University of Siena,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-02T183554Z),False
-2026-10-02,trial,NCT04337255,,Rush University Medical Center,enrollment_change,250,266,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-02T183554Z),False
-2026-10-02,trial,NCT04337255,,Rush University Medical Center,completion_date_change,2026-07-31,2027-05-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-02T183554Z),False
-2026-10-02,trial,NCT06189963,SNK01,"NKGen Biotech, Inc.",primary_completion_date_change,2026-12,2028-03,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-02T183554Z),False
-2026-10-02,trial,NCT06189963,SNK01,"NKGen Biotech, Inc.",completion_date_change,2027-06,2028-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-02T183554Z),False
-2026-10-02,trial,NCT07631247,,Dartmouth-Hitchcock Medical Center,primary_completion_date_change,2027-01,2027-03,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-02T183554Z),False
-2026-10-02,trial,NCT07631247,,Dartmouth-Hitchcock Medical Center,completion_date_change,2027-02,2027-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-02T183554Z),False
 2026-10-05,trial,NCT07857759,,Daniel Maliszewski,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-05T211153Z),False
 2026-10-05,trial,NCT07859540,,Northwestern University,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-05T211153Z),False
 2026-10-05,trial,NCT06125951,Xanamem,Actinogen Medical,primary_completion_date_change,2026-10,2026-09-22,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-05T211153Z),False
@@ -128,7 +112,7 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-10-29,trial,NCT07058688,NTRX-07,"NeuroTherapia, Inc.",primary_completion_date_change,2025-12-31,2026-02-15,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
 2026-10-29,trial,NCT07058688,NTRX-07,"NeuroTherapia, Inc.",completion_date_change,2026-06-30,2026-03-03,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),False
 2026-10-29,trial,NCT07444554,,University of Illinois Chicago,sponsor_change,University of Illinois at Chicago,University of Illinois Chicago,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-29T190629Z),True
-2026-10-30,trial,NCT07906769,,Istituti Clinici Scientifici Maugeri SpA,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-10-30,trial,NCT07906769,,Istituti Clinici Scientifici Maugeri SpA,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
 2026-10-30,trial,NCT04389437,,Fondation Ophtalmologique Adolphe de Rothschild,primary_completion_date_change,2026-06,2027-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
 2026-10-30,trial,NCT04389437,,Fondation Ophtalmologique Adolphe de Rothschild,completion_date_change,2026-06,2027-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
 2026-10-30,trial,NCT05607732,MyCog,Northwestern University,enrollment_change,57738,57589,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
@@ -136,3 +120,11 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-10-30,trial,NCT05809908,Tricaprilin,Cerecin,primary_completion_date_change,2029-06,2030-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
 2026-10-30,trial,NCT05809908,Tricaprilin,Cerecin,completion_date_change,2029-07,2030-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
 2026-10-30,drug,,C-11 -176,Mayo Clinic,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-30T184356Z),False
+2026-11-02,trial,NCT04524338,,Lady Davis Institute,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-02T225015Z),False
+2026-11-02,trial,NCT05296980,,University of Coimbra,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-02T225015Z),False
+2026-11-02,trial,NCT05550727,PorchLight,University of Minnesota,primary_completion_date_change,2026-10-30,2027-01-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-02T225015Z),False
+2026-11-02,trial,NCT05550727,PorchLight,University of Minnesota,completion_date_change,2026-10-30,2027-01-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-02T225015Z),False
+2026-11-02,trial,NCT05887674,,Ruijin Hospital,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-02T225015Z),False
+2026-11-02,trial,NCT06268886,BMS-986446,Bristol-Myers Squibb,primary_completion_date_change,2027-03-18,2026-12-17,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-02T225015Z),False
+2026-11-02,trial,NCT06268886,BMS-986446,Bristol-Myers Squibb,completion_date_change,2027-03-18,2028-04-17,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-02T225015Z),False
+2026-11-02,trial,NCT06608589,CoMPAS+ MNCDs Program - Quality improvement program targeting the care transitions of patients living with a major neurocognitive disorder and their caregivers,Laval University,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-02T225015Z),False
