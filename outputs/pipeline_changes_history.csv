@@ -128,3 +128,13 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-11-02,trial,NCT06268886,BMS-986446,Bristol-Myers Squibb,primary_completion_date_change,2027-03-18,2026-12-17,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-02T225015Z),False
 2026-11-02,trial,NCT06268886,BMS-986446,Bristol-Myers Squibb,completion_date_change,2027-03-18,2028-04-17,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-02T225015Z),False
 2026-11-02,trial,NCT06608589,CoMPAS+ MNCDs Program - Quality improvement program targeting the care transitions of patients living with a major neurocognitive disorder and their caregivers,Laval University,status_change,Recruiting,Unknown,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-02T225015Z),False
+2026-11-03,trial,NCT07911826,,New York State Psychiatric Institute,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-03T203255Z),False
+2026-11-03,trial,NCT06843824,,"Institute of Psychology, Chinese Academy of Sciences",trial_disappeared,Completed,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-03T203255Z),True
+2026-11-03,trial,NCT05929924,Extra virgin olive oil,Augusta University,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-03T203255Z),False
+2026-11-03,trial,NCT05929924,Extra virgin olive oil,Augusta University,enrollment_change,40,39,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-03T203255Z),False
+2026-11-03,trial,NCT06452407,,McGill University Health Centre/Research Institute of the McGill University Health Centre,primary_completion_date_change,2026-09,2027-07,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-03T203255Z),False
+2026-11-03,trial,NCT06452407,,McGill University Health Centre/Research Institute of the McGill University Health Centre,completion_date_change,2026-11,2027-08,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-03T203255Z),False
+2026-11-03,trial,NCT07066137,,IRCCS Centro Neurolesi Bonino Pulejo,status_change,Active,Recruiting,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-03T203255Z),False
+2026-11-03,trial,NCT07066137,,IRCCS Centro Neurolesi Bonino Pulejo,primary_completion_date_change,2026-05-05,2028-12-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-03T203255Z),False
+2026-11-03,trial,NCT07066137,,IRCCS Centro Neurolesi Bonino Pulejo,completion_date_change,2026-12-31,2028-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-03T203255Z),False
+2026-11-03,trial,NCT07692542,,Anhui Medical University,primary_completion_date_change,2026-12,2026-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-03T203255Z),False
