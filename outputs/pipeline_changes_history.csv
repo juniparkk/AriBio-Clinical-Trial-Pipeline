@@ -1,7 +1,4 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-10-05,trial,NCT07857759,,Daniel Maliszewski,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-05T211153Z),False
-2026-10-05,trial,NCT07859540,,Northwestern University,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-05T211153Z),False
-2026-10-05,trial,NCT06125951,Xanamem,Actinogen Medical,primary_completion_date_change,2026-10,2026-09-22,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-05T211153Z),False
 2026-10-06,trial,NCT03887455,Lecanemab IV; Lecanemab SC,Eisai Inc.,primary_completion_date_change,2029-06-30,2026-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-06T185919Z),False
 2026-10-06,trial,NCT03887455,Lecanemab IV; Lecanemab SC,Eisai Inc.,completion_date_change,2029-06-30,2026-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-06T185919Z),False
 2026-10-06,trial,NCT05905796,Brain Health Assessment,"University of California, San Francisco",enrollment_change,1271,1261,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-06T185919Z),False
@@ -143,3 +140,13 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-11-04,trial,NCT05642429,AV-1959D,Institute for Molecular Medicine,primary_completion_date_change,2026-07-20,2025-08-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-04T205201Z),False
 2026-11-04,trial,NCT05642429,AV-1959D,Institute for Molecular Medicine,completion_date_change,2026-11-07,2026-03-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-04T205201Z),False
 2026-11-04,trial,NCT05722743,,Elizabeth K Rhodus,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-11-04T205201Z),True
+2026-11-05,trial,NCT07918417,,European University Miguel de Cervantes,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
+2026-11-05,trial,NCT07918534,,Florida State University,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
+2026-11-05,trial,NCT04619420,JNJ-63733657,"Janssen Research & Development, LLC",results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),True
+2026-11-05,trial,NCT04905238,,Alberto Alonso Fernandez,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
+2026-11-05,trial,NCT04905238,,Alberto Alonso Fernandez,enrollment_change,130,136,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
+2026-11-05,trial,NCT04905238,,Alberto Alonso Fernandez,primary_completion_date_change,2025-04-10,2026-07-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
+2026-11-05,trial,NCT04905238,,Alberto Alonso Fernandez,completion_date_change,2025-05-06,2026-07-06,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
+2026-11-05,trial,NCT05741060,S-equol,Akira Sekikawa,primary_completion_date_change,2026-10-31,2026-10-29,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
+2026-11-05,trial,NCT05741060,S-equol,Akira Sekikawa,completion_date_change,2027-01-30,2027-01-31,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
+2026-11-05,trial,NCT07094516,VHB937,Novartis Pharmaceuticals,enrollment_change,97,96,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
