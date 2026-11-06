@@ -1,8 +1,4 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-10-06,trial,NCT03887455,Lecanemab IV; Lecanemab SC,Eisai Inc.,primary_completion_date_change,2029-06-30,2026-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-06T185919Z),False
-2026-10-06,trial,NCT03887455,Lecanemab IV; Lecanemab SC,Eisai Inc.,completion_date_change,2029-06-30,2026-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-06T185919Z),False
-2026-10-06,trial,NCT05905796,Brain Health Assessment,"University of California, San Francisco",enrollment_change,1271,1261,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-06T185919Z),False
-2026-10-06,trial,NCT05905796,Brain Health Assessment,"University of California, San Francisco",results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-10-06T185919Z),True
 2026-10-07,trial,NCT07862244,Waiting list,Medical Research Council Cognition and Brain Sciences Unit,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
 2026-10-07,trial,NCT07863011,,ReadyCure Inc.,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
 2026-10-07,trial,NCT06691256,,HiDO Technologies,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
@@ -140,8 +136,8 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-11-04,trial,NCT05642429,AV-1959D,Institute for Molecular Medicine,primary_completion_date_change,2026-07-20,2025-08-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-04T205201Z),False
 2026-11-04,trial,NCT05642429,AV-1959D,Institute for Molecular Medicine,completion_date_change,2026-11-07,2026-03-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-04T205201Z),False
 2026-11-04,trial,NCT05722743,,Elizabeth K Rhodus,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-11-04T205201Z),True
-2026-11-05,trial,NCT07918417,,European University Miguel de Cervantes,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
-2026-11-05,trial,NCT07918534,,Florida State University,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
+2026-11-05,trial,NCT07918417,,European University Miguel de Cervantes,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
+2026-11-05,trial,NCT07918534,,Florida State University,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
 2026-11-05,trial,NCT04619420,JNJ-63733657,"Janssen Research & Development, LLC",results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),True
 2026-11-05,trial,NCT04905238,,Alberto Alonso Fernandez,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
 2026-11-05,trial,NCT04905238,,Alberto Alonso Fernandez,enrollment_change,130,136,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
@@ -150,3 +146,13 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-11-05,trial,NCT05741060,S-equol,Akira Sekikawa,primary_completion_date_change,2026-10-31,2026-10-29,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
 2026-11-05,trial,NCT05741060,S-equol,Akira Sekikawa,completion_date_change,2027-01-30,2027-01-31,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
 2026-11-05,trial,NCT07094516,VHB937,Novartis Pharmaceuticals,enrollment_change,97,96,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-05T210823Z),False
+2026-11-06,trial,NCT04403165,,NYU Langone Health,enrollment_change,30,34,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
+2026-11-06,trial,NCT04403165,,NYU Langone Health,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),True
+2026-11-06,trial,NCT04516057,Nabilone,Sunnybrook Health Sciences Centre,primary_completion_date_change,2027-04,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
+2026-11-06,trial,NCT04516057,Nabilone,Sunnybrook Health Sciences Centre,completion_date_change,2027-04,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
+2026-11-06,trial,NCT05977088,,Istanbul Medipol University Hospital,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
+2026-11-06,trial,NCT06978166,Just-In-Time Adaptive Interventions (JITAIs),Washington University School of Medicine,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
+2026-11-06,trial,NCT06978166,Just-In-Time Adaptive Interventions (JITAIs),Washington University School of Medicine,enrollment_change,1000,773,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
+2026-11-06,trial,NCT06978166,Just-In-Time Adaptive Interventions (JITAIs),Washington University School of Medicine,primary_completion_date_change,2026-12,2026-10-29,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
+2026-11-06,trial,NCT06978166,Just-In-Time Adaptive Interventions (JITAIs),Washington University School of Medicine,completion_date_change,2026-12,2026-10-29,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
+2026-11-06,trial,NCT07717411,Trontinemab,Hoffmann-La Roche,primary_completion_date_change,2032-09-03,2032-07-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
