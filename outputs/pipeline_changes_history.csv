@@ -1,22 +1,4 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-10-07,trial,NCT07862244,Waiting list,Medical Research Council Cognition and Brain Sciences Unit,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT07863011,,ReadyCure Inc.,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06691256,,HiDO Technologies,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06691256,,HiDO Technologies,enrollment_change,70,50,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06691256,,HiDO Technologies,primary_completion_date_change,2026-05-31,2025-09-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06691256,,HiDO Technologies,completion_date_change,2026-05-31,2025-09-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06705738,,Aristotle University Of Thessaloniki,status_change,Active,Recruiting,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06705738,,Aristotle University Of Thessaloniki,primary_completion_date_change,2026-04-30,2029-09-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,trial,NCT06705738,,Aristotle University Of Thessaloniki,completion_date_change,2026-11-01,2029-11-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-07,drug,,Waiting list,Medical Research Council Cognition and Brain Sciences Unit,new_drug,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-07T192653Z),False
-2026-10-08,trial,NCT07866768,,"University of California, San Francisco",new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-08T192153Z),False
-2026-10-08,trial,NCT07033494,MK-2214,Merck Sharp & Dohme LLC,completion_date_change,2029-04-30,2030-04-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-08T192153Z),False
-2026-10-09,trial,NCT07868718,,Ohio State University,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),True
-2026-10-09,trial,NCT07869238,,Neumous Inc.,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),False
-2026-10-09,trial,NCT02681172,,Lantheus Biosciences Ltd.,sponsor_change,Piramal Imaging Limited,Lantheus Biosciences Ltd.,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),True
-2026-10-09,trial,NCT07424443,,Massachusetts General Hospital,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),False
-2026-10-09,trial,NCT07424443,,Massachusetts General Hospital,primary_completion_date_change,2026-08-01,2026-08-25,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),False
-2026-10-09,trial,NCT07424443,,Massachusetts General Hospital,completion_date_change,2026-08-01,2026-08-25,Low,ClinicalTrials.gov API v2 (snapshot 2026-10-09T185519Z),False
 2026-10-13,trial,NCT07872072,,HiDO Technologies,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
 2026-10-13,trial,NCT05027789,,"University of California, Davis",primary_completion_date_change,2026-08-31,2026-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
 2026-10-13,trial,NCT05027789,,"University of California, Davis",completion_date_change,2026-08-31,2026-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-13T195544Z),False
@@ -156,3 +138,7 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-11-06,trial,NCT06978166,Just-In-Time Adaptive Interventions (JITAIs),Washington University School of Medicine,primary_completion_date_change,2026-12,2026-10-29,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
 2026-11-06,trial,NCT06978166,Just-In-Time Adaptive Interventions (JITAIs),Washington University School of Medicine,completion_date_change,2026-12,2026-10-29,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
 2026-11-06,trial,NCT07717411,Trontinemab,Hoffmann-La Roche,primary_completion_date_change,2032-09-03,2032-07-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
+2026-11-09,trial,NCT07924657,,"Xuanwu Hospital, Beijing",new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-09T232916Z),False
+2026-11-09,trial,NCT07926438,,The First Affiliated Hospital of Xiamen University,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-09T232916Z),False
+2026-11-09,trial,NCT05231954,Passive Digital Marker for screening for ADRD,Indiana University,phase_change,NA,Phase 4,High,ClinicalTrials.gov API v2 (snapshot 2026-11-09T232916Z),True
+2026-11-09,drug,,Passive Digital Marker for screening for ADRD,Indiana University,highest_drug_phase_change,,Phase 4,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-09T232916Z),False

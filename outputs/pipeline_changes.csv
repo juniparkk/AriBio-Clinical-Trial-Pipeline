@@ -1,11 +1,5 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-11-06,trial,NCT04403165,,NYU Langone Health,enrollment_change,30,34,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
-2026-11-06,trial,NCT04403165,,NYU Langone Health,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),True
-2026-11-06,trial,NCT04516057,Nabilone,Sunnybrook Health Sciences Centre,primary_completion_date_change,2027-04,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
-2026-11-06,trial,NCT04516057,Nabilone,Sunnybrook Health Sciences Centre,completion_date_change,2027-04,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
-2026-11-06,trial,NCT05977088,,Istanbul Medipol University Hospital,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
-2026-11-06,trial,NCT06978166,Just-In-Time Adaptive Interventions (JITAIs),Washington University School of Medicine,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
-2026-11-06,trial,NCT06978166,Just-In-Time Adaptive Interventions (JITAIs),Washington University School of Medicine,enrollment_change,1000,773,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
-2026-11-06,trial,NCT06978166,Just-In-Time Adaptive Interventions (JITAIs),Washington University School of Medicine,primary_completion_date_change,2026-12,2026-10-29,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
-2026-11-06,trial,NCT06978166,Just-In-Time Adaptive Interventions (JITAIs),Washington University School of Medicine,completion_date_change,2026-12,2026-10-29,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
-2026-11-06,trial,NCT07717411,Trontinemab,Hoffmann-La Roche,primary_completion_date_change,2032-09-03,2032-07-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-06T202912Z),False
+2026-11-09,trial,NCT07924657,,"Xuanwu Hospital, Beijing",new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-09T232916Z),False
+2026-11-09,trial,NCT07926438,,The First Affiliated Hospital of Xiamen University,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-09T232916Z),False
+2026-11-09,trial,NCT05231954,Passive Digital Marker for screening for ADRD,Indiana University,phase_change,NA,Phase 4,High,ClinicalTrials.gov API v2 (snapshot 2026-11-09T232916Z),True
+2026-11-09,drug,,Passive Digital Marker for screening for ADRD,Indiana University,highest_drug_phase_change,,Phase 4,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-09T232916Z),False
