@@ -1,5 +1,8 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-11-09,trial,NCT07924657,,"Xuanwu Hospital, Beijing",new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-09T232916Z),False
-2026-11-09,trial,NCT07926438,,The First Affiliated Hospital of Xiamen University,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-09T232916Z),False
-2026-11-09,trial,NCT05231954,Passive Digital Marker for screening for ADRD,Indiana University,phase_change,NA,Phase 4,High,ClinicalTrials.gov API v2 (snapshot 2026-11-09T232916Z),True
-2026-11-09,drug,,Passive Digital Marker for screening for ADRD,Indiana University,highest_drug_phase_change,,Phase 4,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-09T232916Z),False
+2026-11-10,trial,NCT04309461,,Nancy Schoenberg,status_change,Active,Recruiting,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-10T205546Z),False
+2026-11-10,trial,NCT04309461,,Nancy Schoenberg,primary_completion_date_change,2026-10,2027-04-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-10T205546Z),False
+2026-11-10,trial,NCT04309461,,Nancy Schoenberg,completion_date_change,2026-10,2027-04-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-10T205546Z),False
+2026-11-10,trial,NCT07221344,ARO-MAPT-SC,Arrowhead Pharmaceuticals,enrollment_change,112,160,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-10T205546Z),False
+2026-11-10,trial,NCT07425769,,University of Kansas Medical Center,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-10T205546Z),False
+2026-11-10,trial,NCT07425769,,University of Kansas Medical Center,primary_completion_date_change,2026-12-31,2027-01-21,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-10T205546Z),False
+2026-11-10,trial,NCT07425769,,University of Kansas Medical Center,completion_date_change,2026-12-31,2027-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-10T205546Z),False
