@@ -149,3 +149,10 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-11-10,trial,NCT07425769,,University of Kansas Medical Center,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-10T205546Z),False
 2026-11-10,trial,NCT07425769,,University of Kansas Medical Center,primary_completion_date_change,2026-12-31,2027-01-21,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-10T205546Z),False
 2026-11-10,trial,NCT07425769,,University of Kansas Medical Center,completion_date_change,2026-12-31,2027-02,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-10T205546Z),False
+2026-11-12,trial,NCT07933367,,Rhode Island Hospital,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
+2026-11-12,trial,NCT06335173,sabirnetug,Acumen Pharmaceuticals,primary_completion_date_change,2026-10,2026-10-29,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
+2026-11-12,trial,NCT06335173,sabirnetug,Acumen Pharmaceuticals,completion_date_change,2026-10,2026-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
+2026-11-12,trial,NCT06631144,,"Ceresti Health, Inc.",status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
+2026-11-12,trial,NCT06631144,,"Ceresti Health, Inc.",completion_date_change,2026-02-27,2026-01-22,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
+2026-11-12,trial,NCT07690228,GSM-779690T,Acta Pharmaceuticals,primary_completion_date_change,2026-08-15,2027-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
+2026-11-12,trial,NCT07690228,GSM-779690T,Acta Pharmaceuticals,completion_date_change,2027-07-15,2027-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
