@@ -1,8 +1,13 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-11-12,trial,NCT07933367,,Rhode Island Hospital,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
-2026-11-12,trial,NCT06335173,sabirnetug,Acumen Pharmaceuticals,primary_completion_date_change,2026-10,2026-10-29,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
-2026-11-12,trial,NCT06335173,sabirnetug,Acumen Pharmaceuticals,completion_date_change,2026-10,2026-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
-2026-11-12,trial,NCT06631144,,"Ceresti Health, Inc.",status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
-2026-11-12,trial,NCT06631144,,"Ceresti Health, Inc.",completion_date_change,2026-02-27,2026-01-22,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
-2026-11-12,trial,NCT07690228,GSM-779690T,Acta Pharmaceuticals,primary_completion_date_change,2026-08-15,2027-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
-2026-11-12,trial,NCT07690228,GSM-779690T,Acta Pharmaceuticals,completion_date_change,2027-07-15,2027-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
+2026-11-13,trial,NCT07935629,,Centre de Recherche de l'Institut Universitaire de Geriatrie de Montreal,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
+2026-11-13,trial,NCT06378372,,David Franco Castellanos,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
+2026-11-13,trial,NCT06378372,,David Franco Castellanos,enrollment_change,20,5,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
+2026-11-13,trial,NCT06378372,,David Franco Castellanos,primary_completion_date_change,2024-08-01,2025-05-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
+2026-11-13,trial,NCT06378372,,David Franco Castellanos,completion_date_change,2025-06-01,2025-05-12,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
+2026-11-13,trial,NCT06516965,Povorcitinib,Incyte Corporation,primary_completion_date_change,2026-10-19,2026-09-28,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
+2026-11-13,trial,NCT07226674,Polyphenol Supplement,University of Ulster,primary_completion_date_change,2027-06,2027-12-20,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
+2026-11-13,trial,NCT07226674,Polyphenol Supplement,University of Ulster,completion_date_change,2028-01,2028-01-20,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
+2026-11-13,trial,NCT07672977,,Bitbrain,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
+2026-11-13,trial,NCT07672977,,Bitbrain,enrollment_change,30,25,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
+2026-11-13,trial,NCT07672977,,Bitbrain,primary_completion_date_change,2026-11-30,2026-09-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
+2026-11-13,trial,NCT07672977,,Bitbrain,completion_date_change,2026-12-30,2026-10-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
