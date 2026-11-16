@@ -1,21 +1,4 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-10-14,trial,NCT03536767,Acoramidis,"Eidos Therapeutics, a BridgeBio company",new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),True
-2026-10-14,trial,NCT07872956,,Linkoeping University,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
-2026-10-14,trial,NCT07873463,GE-287,GE Healthcare,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),True
-2026-10-14,trial,NCT05531526,AR1001,"AriBio Co., Ltd.",primary_completion_date_change,2026-05,2026-06-29,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
-2026-10-14,trial,NCT05531526,AR1001,"AriBio Co., Ltd.",completion_date_change,2027-12,2027-10,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
-2026-10-14,trial,NCT07646054,,Scripps Translational Science Institute,primary_completion_date_change,2028-07-31,2028-08-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
-2026-10-14,drug,,GE-287,GE Healthcare,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-14T180746Z),False
-2026-10-15,trial,NCT07838155,Donanemab,Eli Lilly and Company,primary_completion_date_change,2030-07,2030-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-15T175046Z),False
-2026-10-15,trial,NCT07838155,Donanemab,Eli Lilly and Company,completion_date_change,2030-07,2030-09,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-15T175046Z),False
-2026-10-16,trial,NCT04471779,Disclosure of APOE genotype,Columbia University,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),True
-2026-10-16,trial,NCT06902753,,Poitiers University Hospital,status_change,Recruiting,Discontinued,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
-2026-10-16,trial,NCT06902753,,Poitiers University Hospital,primary_completion_date_change,2027-01,2027-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
-2026-10-16,trial,NCT06902753,,Poitiers University Hospital,completion_date_change,2027-04,2028-08,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
-2026-10-16,trial,NCT07388186,,University of Salamanca,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
-2026-10-16,trial,NCT07388186,,University of Salamanca,enrollment_change,62,43,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
-2026-10-16,trial,NCT07388186,,University of Salamanca,primary_completion_date_change,2026-07,2026-09-28,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
-2026-10-16,trial,NCT07388186,,University of Salamanca,completion_date_change,2026-09,2026-10-10,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-16T173636Z),False
 2026-10-19,trial,NCT05779839,,Mayo Clinic,status_change,Active,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
 2026-10-19,trial,NCT05779839,,Mayo Clinic,enrollment_change,355,420,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
 2026-10-19,trial,NCT05779839,,Mayo Clinic,primary_completion_date_change,2026-07-31,2026-03-22,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-19T192508Z),False
@@ -149,7 +132,7 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-11-12,trial,NCT06631144,,"Ceresti Health, Inc.",completion_date_change,2026-02-27,2026-01-22,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
 2026-11-12,trial,NCT07690228,GSM-779690T,Acta Pharmaceuticals,primary_completion_date_change,2026-08-15,2027-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
 2026-11-12,trial,NCT07690228,GSM-779690T,Acta Pharmaceuticals,completion_date_change,2027-07-15,2027-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-12T213037Z),False
-2026-11-13,trial,NCT07935629,,Centre de Recherche de l'Institut Universitaire de Geriatrie de Montreal,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
+2026-11-13,trial,NCT07935629,,Centre de Recherche de l'Institut Universitaire de Geriatrie de Montreal,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
 2026-11-13,trial,NCT06378372,,David Franco Castellanos,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
 2026-11-13,trial,NCT06378372,,David Franco Castellanos,enrollment_change,20,5,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
 2026-11-13,trial,NCT06378372,,David Franco Castellanos,primary_completion_date_change,2024-08-01,2025-05-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
@@ -161,3 +144,5 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-11-13,trial,NCT07672977,,Bitbrain,enrollment_change,30,25,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
 2026-11-13,trial,NCT07672977,,Bitbrain,primary_completion_date_change,2026-11-30,2026-09-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
 2026-11-13,trial,NCT07672977,,Bitbrain,completion_date_change,2026-12-30,2026-10-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
+2026-11-16,trial,NCT07940335,Lithium Orotate (LiO),Massachusetts General Hospital,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-16T232651Z),False
+2026-11-16,trial,NCT05016219,,Icahn School of Medicine at Mount Sinai,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-16T232651Z),False
