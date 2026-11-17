@@ -144,5 +144,11 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-11-13,trial,NCT07672977,,Bitbrain,enrollment_change,30,25,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
 2026-11-13,trial,NCT07672977,,Bitbrain,primary_completion_date_change,2026-11-30,2026-09-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
 2026-11-13,trial,NCT07672977,,Bitbrain,completion_date_change,2026-12-30,2026-10-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-13T205613Z),False
-2026-11-16,trial,NCT07940335,Lithium Orotate (LiO),Massachusetts General Hospital,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-16T232651Z),False
+2026-11-16,trial,NCT07940335,Lithium Orotate (LiO),Massachusetts General Hospital,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-16T232651Z),False
 2026-11-16,trial,NCT05016219,,Icahn School of Medicine at Mount Sinai,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-16T232651Z),False
+2026-11-17,trial,NCT07940673,,University of Pittsburgh,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-17T223005Z),False
+2026-11-17,trial,NCT07942324,,New York University,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-17T223005Z),False
+2026-11-17,trial,NCT07943741,Ketamine and saline,Vanderbilt University Medical Center,new_trial,,Phase 2,High,ClinicalTrials.gov API v2 (snapshot 2026-11-17T223005Z),True
+2026-11-17,trial,NCT06014424,CBD,Sunnybrook Health Sciences Centre,primary_completion_date_change,2026-12-29,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-17T223005Z),False
+2026-11-17,trial,NCT06014424,CBD,Sunnybrook Health Sciences Centre,completion_date_change,2026-12-29,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-17T223005Z),False
+2026-11-17,drug,,Ketamine and saline,Vanderbilt University Medical Center,new_drug,,Phase 2,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-17T223005Z),False
