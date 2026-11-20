@@ -1,10 +1,4 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-10-20,trial,NCT07882251,,Azienda Usl di Bologna,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
-2026-10-20,trial,NCT07883148,,IRCCS San Raffaele Roma,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
-2026-10-20,trial,NCT07883291,,Penn State University,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
-2026-10-20,trial,NCT05231785,ALN-APP,Alnylam Pharmaceuticals,primary_completion_date_change,2029-04-20,2029-01-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
-2026-10-20,trial,NCT05231785,ALN-APP,Alnylam Pharmaceuticals,completion_date_change,2029-04-20,2029-01-11,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
-2026-10-20,trial,NCT06089161,,University of Miami,primary_completion_date_change,2027-05-31,2027-11-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-20T180429Z),False
 2026-10-21,trial,NCT07887737,,University of Texas Southwestern Medical Center,new_trial,,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
 2026-10-21,trial,NCT03138018,,Assistance Publique Hopitaux De Marseille,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
 2026-10-21,trial,NCT03138018,,Assistance Publique Hopitaux De Marseille,enrollment_change,260,130,Medium,ClinicalTrials.gov API v2 (snapshot 2026-10-21T181021Z),False
@@ -155,3 +149,10 @@ detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_t
 2026-11-19,trial,NCT07214194,,Stanford University,status_change,Recruiting,Discontinued,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-19T221923Z),False
 2026-11-19,trial,NCT07214194,,Stanford University,enrollment_change,150,0,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-19T221923Z),False
 2026-11-19,trial,NCT07529015,,Institut de Recerca Biomèdica de Lleida-Fundació Dr. Pifarré (IRBLleida),primary_completion_date_change,2027-09,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-19T221923Z),False
+2026-11-20,trial,NCT04191486,T-817MA,"FUJIFILM Toyama Chemical Co., Ltd.",results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),True
+2026-11-20,trial,NCT04522739,Spironolactone,Emory University,enrollment_change,25,27,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),False
+2026-11-20,trial,NCT04522739,Spironolactone,Emory University,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),True
+2026-11-20,trial,NCT05730023,,IRCCS Centro San Giovanni di Dio Fatebenefratelli,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),False
+2026-11-20,trial,NCT05730023,,IRCCS Centro San Giovanni di Dio Fatebenefratelli,enrollment_change,60,70,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),False
+2026-11-20,trial,NCT05730023,,IRCCS Centro San Giovanni di Dio Fatebenefratelli,primary_completion_date_change,2026-01,2026-01-13,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),False
+2026-11-20,trial,NCT05730023,,IRCCS Centro San Giovanni di Dio Fatebenefratelli,completion_date_change,2026-02,2026-01-13,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),False

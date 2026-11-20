@@ -1,10 +1,8 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-11-19,trial,NCT06045988,,Indiana University,trial_disappeared,Recruiting,,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-19T221923Z),True
-2026-11-19,trial,NCT03625622,AR1001,"AriBio Co., Ltd.",primary_completion_date_change,2020-12-22,2020-12-21,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-19T221923Z),False
-2026-11-19,trial,NCT03625622,AR1001,"AriBio Co., Ltd.",results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-11-19T221923Z),True
-2026-11-19,trial,NCT05983575,,"Sound Wave Innovation CO., LTD.",primary_completion_date_change,2026-01-31,2026-06-30,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-19T221923Z),False
-2026-11-19,trial,NCT05983575,,"Sound Wave Innovation CO., LTD.",completion_date_change,2026-07-31,2027-03-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-19T221923Z),False
-2026-11-19,trial,NCT06709014,buntanetap/posiphen,Annovis Bio Inc.,enrollment_change,760,861,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-19T221923Z),False
-2026-11-19,trial,NCT07214194,,Stanford University,status_change,Recruiting,Discontinued,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-19T221923Z),False
-2026-11-19,trial,NCT07214194,,Stanford University,enrollment_change,150,0,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-19T221923Z),False
-2026-11-19,trial,NCT07529015,,Institut de Recerca Biomèdica de Lleida-Fundació Dr. Pifarré (IRBLleida),primary_completion_date_change,2027-09,2027-12,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-19T221923Z),False
+2026-11-20,trial,NCT04191486,T-817MA,"FUJIFILM Toyama Chemical Co., Ltd.",results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),True
+2026-11-20,trial,NCT04522739,Spironolactone,Emory University,enrollment_change,25,27,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),False
+2026-11-20,trial,NCT04522739,Spironolactone,Emory University,results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),True
+2026-11-20,trial,NCT05730023,,IRCCS Centro San Giovanni di Dio Fatebenefratelli,status_change,Unknown,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),False
+2026-11-20,trial,NCT05730023,,IRCCS Centro San Giovanni di Dio Fatebenefratelli,enrollment_change,60,70,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),False
+2026-11-20,trial,NCT05730023,,IRCCS Centro San Giovanni di Dio Fatebenefratelli,primary_completion_date_change,2026-01,2026-01-13,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),False
+2026-11-20,trial,NCT05730023,,IRCCS Centro San Giovanni di Dio Fatebenefratelli,completion_date_change,2026-02,2026-01-13,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-20T215330Z),False
