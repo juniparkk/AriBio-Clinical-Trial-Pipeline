@@ -1,13 +1,9 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-11-24,trial,NCT07953322,,City University Malaysia,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T014509Z),False
-2026-11-24,trial,NCT02063269,Rivastigmine,Seoul National University Hospital,status_change,Unknown,Discontinued,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T014509Z),False
-2026-11-24,trial,NCT02063269,Rivastigmine,Seoul National University Hospital,enrollment_change,70,57,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T014509Z),False
-2026-11-24,trial,NCT02063269,Rivastigmine,Seoul National University Hospital,primary_completion_date_change,2017-06,2018-12-14,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T014509Z),False
-2026-11-24,trial,NCT02063269,Rivastigmine,Seoul National University Hospital,completion_date_change,2017-06,2018-12-14,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T014509Z),False
-2026-11-24,trial,NCT06112860,,Northwestern University,enrollment_change,50,52,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-24T014509Z),False
-2026-11-24,trial,NCT06112860,,Northwestern University,primary_completion_date_change,2026-12-31,2027-02-28,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T014509Z),False
-2026-11-24,trial,NCT06112860,,Northwestern University,completion_date_change,2027-03-30,2027-02-28,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T014509Z),False
-2026-11-24,trial,NCT06715995,,Chang Gung Memorial Hospital,status_change,Recruiting,Completed,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T014509Z),False
-2026-11-24,trial,NCT06715995,,Chang Gung Memorial Hospital,enrollment_change,52,33,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T014509Z),False
-2026-11-24,trial,NCT06715995,,Chang Gung Memorial Hospital,primary_completion_date_change,2025-09-30,2025-10-07,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-24T014509Z),False
-2026-11-24,trial,NCT06715995,,Chang Gung Memorial Hospital,completion_date_change,2025-09-30,2025-10-07,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-24T014509Z),False
+2026-11-24,trial,NCT07956650,Active native estradiol + progesterone,University of Southern California,new_trial,,Phase 2/Phase 3,High,ClinicalTrials.gov API v2 (snapshot 2026-11-24T233309Z),True
+2026-11-24,trial,NCT05295615,,Herrick Medical LLC,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T233309Z),False
+2026-11-24,trial,NCT06191198,,University of Chicago,enrollment_change,200,212,Low,ClinicalTrials.gov API v2 (snapshot 2026-11-24T233309Z),False
+2026-11-24,trial,NCT06862557,,Herrick Medical LLC,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T233309Z),False
+2026-11-24,trial,NCT07196592,,Yuan Shen,status_change,Recruiting,Active,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T233309Z),False
+2026-11-24,trial,NCT07196592,,Yuan Shen,primary_completion_date_change,2026-11-01,2027-02-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T233309Z),False
+2026-11-24,trial,NCT07196592,,Yuan Shen,completion_date_change,2026-12-01,2027-03-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T233309Z),False
+2026-11-24,drug,,Active native estradiol + progesterone,University of Southern California,new_drug,,Phase 2/Phase 3,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-24T233309Z),False
