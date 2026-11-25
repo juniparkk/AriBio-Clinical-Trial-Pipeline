@@ -209,6 +209,7 @@ cognitive treatment (CT),Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evid
 CommunityRx-Dpeer,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 CoMPAS+ MNCDs Program - Quality improvement program targeting the care transitions of patients living with a major neurocognitive disorder and their caregivers,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Complex Rhythmic Movement Sequences (CRMS) Sessions,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
+Compound 10,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
 Computerized games,Non-Drug/Behavioral,Other,Other,,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Continuous positive airway pressure (CPAP),Non-Drug/Behavioral,Other,Neuropsychiatric,Neuropsychiatric,structured_ct_gov_evidence,medium,modality corrected: 'Non-Drug/Behavioral' -> 'Other',True
 Contraloid,Small Molecule,Small Molecule,Other,,structured_ct_gov_evidence,medium,no change from legacy classification,False
