@@ -1,9 +1,1 @@
 detected_date,entity_type,nct_id,canonical_drug_name,sponsor_or_company,change_type,old_value,new_value,importance,source,needs_review
-2026-11-25,trial,NCT07958431,Compound 10,Ain Shams University,new_trial,,Early Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-25T231026Z),False
-2026-11-25,trial,NCT07960329,,Hopitaux de Saint-Maurice,new_trial,,NA,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-25T231026Z),False
-2026-11-25,trial,NCT03682081,,"University of Wisconsin, Madison",enrollment_change,76,58,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-25T231026Z),False
-2026-11-25,trial,NCT03682081,,"University of Wisconsin, Madison",results_posted,NO,YES,High,ClinicalTrials.gov API v2 (snapshot 2026-11-25T231026Z),True
-2026-11-25,trial,NCT07800195,Probiotic Fermented Milk (PFM) Drink,University of South Florida,primary_completion_date_change,2026-10-01,2027-10-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-25T231026Z),False
-2026-11-25,trial,NCT07800195,Probiotic Fermented Milk (PFM) Drink,University of South Florida,completion_date_change,2026-10-20,2027-12-31,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-25T231026Z),False
-2026-11-25,trial,NCT07940335,Lithium Orotate (LiO),Massachusetts General Hospital,completion_date_change,2027-11-01,2027-12-01,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-25T231026Z),False
-2026-11-25,drug,,Compound 10,Ain Shams University,new_drug,,Early Phase 1,Medium,ClinicalTrials.gov API v2 (snapshot 2026-11-25T231026Z),False
